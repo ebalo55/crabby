@@ -1,7 +1,9 @@
 <p align="center">
-
-![crab.png](.assets/crab.png)
-# Crabby
-### WebShells for Red Teams, just easily.
-
+<img src=".assets/crab.png" width="432">
 </p>
+<h1 align="center">
+    Crabby
+</h1>
+<h3 align="center">
+    WebShells for Red Teams, just easily.
+</h3>
