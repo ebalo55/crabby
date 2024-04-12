@@ -5,7 +5,7 @@
     Crabby
 </h1>
 <h3 align="center">
-    WebShells for Red Teams, just easily.
+    WebShells for Red Teams, just easily
 </h3>
 
 ## What is Crabby?
