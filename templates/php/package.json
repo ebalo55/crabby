@@ -1,0 +1,17 @@
+{
+  "name": "crabby-php-template",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "tailwind:compile-5.x": "tailwindcss -i ./tailwind.css -o ./5.x/compiled.css -m -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ebalo55/crabby.git"
+  },
+  "private": true,
+  "devDependencies": {
+    "tailwindcss": "^3.4.3",
+    "@tailwindcss/forms": "^0.5.7"
+  }
+}
