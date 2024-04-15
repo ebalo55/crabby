@@ -1,0 +1,9 @@
+services:
+  template-5.x:
+    build:
+      context: 5.x
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./5.x:/var/www/html
