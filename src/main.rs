@@ -1,9 +1,11 @@
 use clap::Parser;
 
+use crate::actions::folder_exists::folder_exists;
 use crate::enums::obfuscation_method::ObfuscationMethod;
 use crate::enums::template::Template;
 
 mod enums;
+mod actions;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "Crabby, WebShells for Red Team.")]
@@ -44,11 +46,12 @@ struct Args {
 fn main() {
 	let args = Args::parse();
 
-	// Implement your logic here using the parsed arguments
-	// For example:
-	println!("Output filename: {:?}", args.output);
-	println!("Template: {}", args.template);
-	println!("Args: {:?}", args);
+	if args.bare_clone {
+		actions::download_templates::download_templates();
+		return;
+	}
 
-	// ... handle other arguments
+	if !folder_exists("templates").unwrap() {
+		actions::download_templates::download_templates();
+	}
 }
