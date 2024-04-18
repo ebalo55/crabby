@@ -13,6 +13,7 @@ pub fn download_templates() {
 	fs::remove_file("crabby.zip").unwrap();
 }
 
+/// Function to download a file from a given URL to a given path
 fn download_file(url: &str, file_path: &str) -> Result<(), Box<dyn Error>> {
 	// Send a GET request to the URL
 	let response = reqwest::blocking::get(url)?;
@@ -35,7 +36,7 @@ fn download_file(url: &str, file_path: &str) -> Result<(), Box<dyn Error>> {
 	}
 }
 
-// Function to unzip an archive to a given path
+/// Function to unzip an archive to a given path
 fn unzip_templates(archive_path: &str, extract_to: &str) -> Result<(), Box<dyn Error>> {
 	// Open the ZIP archive
 	let file = File::open(archive_path)?;
