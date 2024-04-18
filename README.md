@@ -26,8 +26,6 @@ Refer to the list below for the supported web shells and their current status, m
 associated template folder.
 
 - [x] PHP (5.x, 7.x, 8.x)
-- [ ] ASP Classic
-- [ ] JSP
 
 ## Installation
 
