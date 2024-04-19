@@ -35,5 +35,5 @@ the [releases page](https://github.com/ebalo55/crabby/releases) or by building f
 ```bash
 git clone https://github.com/ebalo55/crabby.git
 cd crabby
-cargo build --release
+cargo build -r --bins
 ```

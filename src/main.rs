@@ -91,9 +91,7 @@ fn main() -> anyhow::Result<()> {
 		args.salt = Some(generate_random_string::generate_password(args.salt_length).unwrap());
 	}
 
-	info!("Defined username: {}", args.username.as_ref().unwrap());
-	info!("Defined password: {}", args.password.as_ref().unwrap());
-	info!("Random salt:      {}", args.salt.as_ref().unwrap());
+	debug!("Random salt: {}", args.salt.as_ref().unwrap());
 
 	if !args.template_version.is_some() {
 		args.template_version = Some(

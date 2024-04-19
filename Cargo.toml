@@ -4,6 +4,9 @@ authors = ["Ebalo"]
 version = "1.0.0"
 edition = "2021"
 
+[profile.release]
+strip = true
+
 [dependencies]
 anyhow = "1.0.82"
 clap = { version = "4.5.4", features = ["derive"] }

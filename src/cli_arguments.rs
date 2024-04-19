@@ -1,6 +1,5 @@
 use clap::Parser;
 
-use crate::enums::obfuscation_method::ObfuscationMethod;
 use crate::enums::template::Template;
 
 #[derive(Parser, Debug)]
@@ -36,12 +35,6 @@ pub struct CliArguments {
 	/// harder to analyze and detect by antivirus software
 	#[arg(long)]
 	pub obfuscate: bool,
-
-	/// Obfuscation methods to apply to the generated code
-	///
-	/// Pass multiple times to apply multiple methods
-	#[arg(long, value_enum)]
-	pub obfuscation_method: Option<ObfuscationMethod>,
 
 	/// Password used to authenticate to the webshell
 	///

