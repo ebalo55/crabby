@@ -33,7 +33,7 @@ module.exports = {
             prerelease: true,
         },
     ],
-    repositoryUrl: "git@github.com:Art2me-net/marketplace.git",
+    repositoryUrl: "git@github.com:ebalo55/crabby.git",
     plugins: [
         [
             "@semantic-release/commit-analyzer",
