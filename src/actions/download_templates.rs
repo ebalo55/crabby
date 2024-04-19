@@ -4,13 +4,15 @@ use std::fs::File;
 use std::io::copy;
 
 pub fn download_templates() {
-	println!("Cloning templates...");
+	info!("Cloning templates...");
 	download_file(
 		"https://github.com/ebalo55/crabby/archive/refs/heads/main.zip",
 		"crabby.zip",
 	).unwrap();
 	unzip_templates("crabby.zip", ".").unwrap();
 	fs::remove_file("crabby.zip").unwrap();
+
+	info!("Templates cloned successfully!");
 }
 
 /// Function to download a file from a given URL to a given path
@@ -26,7 +28,7 @@ fn download_file(url: &str, file_path: &str) -> Result<(), Box<dyn Error>> {
 		// Copy the content of the response body to the file
 		copy(&mut response.bytes().unwrap().as_ref(), &mut file)?;
 
-		println!("File downloaded successfully!");
+		info!("Project archive downloaded successfully!");
 		Ok(())
 	} else {
 		// If the request was not successful, extract the error message and return it
@@ -46,6 +48,5 @@ fn unzip_templates(archive_path: &str, extract_to: &str) -> Result<(), Box<dyn E
 	fs::rename("crabby-main/templates", "templates")?;
 	fs::remove_dir_all("crabby-main")?;
 
-	println!("Archive extracted successfully!");
 	Ok(())
 }

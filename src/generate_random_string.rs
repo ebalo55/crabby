@@ -1,11 +1,12 @@
 use anyhow::anyhow;
+use anyhow::Result;
 use rand::prelude::*;
 use rand::thread_rng;
 
 /// Generate a random string based on a pattern
 ///
 /// - `pattern` - The pattern to use for generating the random string (A: uppercase/lowercase letter, 0: digit, !: special character)
-pub fn generate_random_string(pattern: &str) -> Result<String, Box<dyn std::error::Error>> {
+pub fn generate_random_string(pattern: &str) -> Result<String> {
 	let mut rng = thread_rng();
 	let mut result = String::new();
 
@@ -39,7 +40,7 @@ pub fn generate_random_string(pattern: &str) -> Result<String, Box<dyn std::erro
 /// Generate a random password of a given length
 ///
 /// - `length` - The length of the password to generate
-pub fn generate_password(length: u32) -> Result<String, Box<dyn std::error::Error>> {
+pub fn generate_password(length: u32) -> Result<String> {
 	let mut rng = thread_rng();
 	let mut pattern = String::new();
 
