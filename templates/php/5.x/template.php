@@ -1031,7 +1031,7 @@ function handleLogin() {
     if ($username === USERNAME && $password === PASSWORD) {
         $_SESSION["auth"] = true;
         header("Location: ?page=" . FILE_EXTRACTION);
-        die();
+        die(0);
     }
 }
 
@@ -1044,7 +1044,7 @@ $isolated_ops = array(
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
-    $page = isset($_GET['page']) ? $_GET['page'] : LOGIN;
+    $page = isset($_GET['page']) ? $_GET['page'] : ($_SESSION["auth"] === true ? FILE_EXTRACTION : LOGIN);
 
     $content = "";
 
