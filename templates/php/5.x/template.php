@@ -366,7 +366,7 @@ function makePage($elements, $current_page) {
     <head>
         <title>__TITLE__</title>
         <style>__CSS__</style>
-        <link rel="stylesheet" href="./compiled.css">
+        <script>__JS__</script>
     </head>
     <body class="bg-white">
     <div class="fixed inset-y-0 z-50 w-72 flex flex-col">
