@@ -416,7 +416,7 @@ function makeLoginPage() {
     <head>
         <title>__TITLE__</title>
         <style>__CSS__</style>
-        <link rel="stylesheet" href="./compiled.css">
+        <script>__JS__</script>
     </head>
     <body class="h-full">
     <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -428,6 +428,7 @@ function makeLoginPage() {
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
             <form class="space-y-6" action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="post">
+                <input type="hidden" name="__OPERATION__" value="<?php echo LOGIN ?>"/>
                 <div>
                     <label for="__PARAM_1__" class="block text-sm font-medium leading-6 text-white">
                         Username
@@ -1019,6 +1020,10 @@ function handleWriteFile() {
     out("File written successfully.");
 }
 
+/**
+ * Handle the login operation
+ * @return void
+ */
 function handleLogin() {
     $username = hash("sha512", $_POST["__PARAM_1__"] . SALT);
     $password = hash("sha512", $_POST["__PARAM_2__"] . SALT);
