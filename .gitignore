@@ -1,4 +1,6 @@
-/target
-.idea
-.vscode
+/**/target
+/**/.idea
+/**/.vscode
 /**/node_modules
+/**/vendor
+/**/out
