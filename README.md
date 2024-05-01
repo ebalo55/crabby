@@ -29,11 +29,28 @@ associated template folder.
 
 ## Installation
 
-Get the latest version of Crabby by downloading a precompiled binary from
-the [releases page](https://github.com/ebalo55/crabby/releases) or by building from source.
+### Precompiled Binaries
+
+Get the latest version of Crabby by downloading a precompiled binary from the
+[releases page](https://github.com/ebalo55/crabby/releases). Precompiled binaries are available for Linux and Windows.
+
+### Building from Source
+
+To build Crabby from source, you will need to have Rust installed on your system. You can install Rust by following the
+instructions on the [official website](https://www.rust-lang.org/tools/install).
 
 ```bash
 git clone https://github.com/ebalo55/crabby.git
 cd crabby
-cargo build -r --bins
+cargo build --release --bins
+```
+
+The compiled binary will be available in the `target/release` directory.
+
+### Install via Cargo
+
+You can also install Crabby using Cargo, the Rust package manager.
+
+```bash
+cargo install crabby
 ```

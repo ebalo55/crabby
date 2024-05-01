@@ -73,7 +73,7 @@ module.exports = {
                 "prepareCmd": "cargo build --release --target x86_64-unknown-linux-gnu --target x86_64-pc-windows-gnu",
             }
         ],
-        /*[
+        [
             "@semantic-release/github",
             {
                 "assets": [
@@ -89,7 +89,7 @@ module.exports = {
                 "check": true,
                 "publishArgs": ["--locked --target x86_64-unknown-linux-gnu --target x86_64-pc-windows-gnu"]
             }
-        ]*/
+        ]
     ],
     preset: "angular",
 };

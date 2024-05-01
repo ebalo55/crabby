@@ -26,7 +26,7 @@ jobs:
           node-version: "lts/*"
           cache: 'npm'
       - name: Install dependencies
-        run: npm i --package-lock-only
+        run: npm i
       - name: Install Rust and cross compile dependencies
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
