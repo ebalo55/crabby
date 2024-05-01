@@ -52,5 +52,5 @@ The compiled binary will be available in the `target/release` directory.
 You can also install Crabby using Cargo, the Rust package manager.
 
 ```bash
-cargo install crabby
+cargo install crabby-webshell-generator
 ```
