@@ -9,6 +9,7 @@
   },
   "private": true,
   "dependencies": {
-    "semantic-release": "^23.0.8"
+    "semantic-release": "^23.0.8",
+    "semantic-release-cargo": "^2.2.7"
   }
 }

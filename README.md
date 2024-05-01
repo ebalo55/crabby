@@ -10,7 +10,7 @@
 
 ## What is Crabby?
 
-Crabby is a tool developed to generate webshells written in <insert your desired webshell language>.
+Crabby is a tool developed to generate webshells written in - insert your desired webshell language -.
 It is designed to be used by red teams to aid in lateral movement, privilege escalation, and data exfiltration.
 
 ## Features

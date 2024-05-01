@@ -68,6 +68,7 @@ module.exports = {
             },
         ],
         "@semantic-release/github",
+        "semantic-release-cargo"
     ],
     preset: "angular",
 };

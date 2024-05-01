@@ -3,9 +3,13 @@ name = "crabby"
 authors = ["Ebalo"]
 version = "1.0.0"
 edition = "2021"
+homepage = "https://github.com/ebalo55/crabby"
+repository = "https://github.com/ebalo55/crabby"
+description = "Crabby is a tool developed to generate webshells written in - insert your desired webshell language -. It is designed to be used by red teams to aid in lateral movement, privilege escalation, and data exfiltration."
 
 [profile.release]
 strip = true
+opt-level = 3
 
 [dependencies]
 anyhow = "1.0.82"
