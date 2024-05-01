@@ -25,7 +25,7 @@ It is designed to be used by red teams to aid in lateral movement, privilege esc
 Refer to the list below for the supported web shells and their current status, more information are available in the
 associated template folder.
 
-- [x] PHP (5.x, 7.x, 8.x)
+- [x] PHP (5.5+, 7.x, 8.x) - Most of the php 5.5+ code is compatible down to 5.3 but some features have not been tested.
 
 ## Installation
 
