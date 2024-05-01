@@ -78,7 +78,7 @@ module.exports = {
             {
                 "assets": [
                     {"path": "target/x86_64-unknown-linux-gnu/release/crabby", "label": "Crabby Linux binary"},
-                    {"path": "target/x86_64-unknown-linux-gnu/release/crabby.exe", "label": "Crabby Windows binary"},
+                    {"path": "target/x86_64-pc-windows-gnu/release/crabby.exe", "label": "Crabby Windows binary"},
                 ]
             }
         ],
