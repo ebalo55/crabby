@@ -7,6 +7,22 @@ services:
       - "8080:80"
     volumes:
       - ./5.x:/var/www/html
+  template-7.x:
+    build:
+      context: 7.x
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./7.x:/var/www/html
+  template-8.x:
+    build:
+      context: 8.x
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./8.x:/var/www/html
 
   mariadb:
     image: mariadb:latest

