@@ -7,3 +7,11 @@ services:
       - "8080:80"
     volumes:
       - ./5.x:/var/www/html
+
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: example
+      MARIADB_USER: example_user
+      MARIADB_PASSWORD: example_user

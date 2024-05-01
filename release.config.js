@@ -67,7 +67,29 @@ module.exports = {
                 },
             },
         ],
-        "@semantic-release/github",
+        [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "cargo build --release --target x86_64-unknown-linux-gnu --target x86_64-pc-windows-gnu",
+            }
+        ],
+        [
+            "@semantic-release/github",
+            {
+                "assets": [
+                    {"path": "target/x86_64-unknown-linux-gnu/release/crabby", "label": "Crabby Linux binary"},
+                    {"path": "target/x86_64-unknown-linux-gnu/release/crabby.exe", "label": "Crabby Windows binary"},
+                ]
+            }
+        ],
+        [
+            "semantic-release-cargo",
+            {
+                "allFeatures": true,
+                "check": true,
+                "publishArgs": ["--locked --target x86_64-unknown-linux-gnu --target x86_64-pc-windows-gnu"]
+            }
+        ]
     ],
     preset: "angular",
 };

