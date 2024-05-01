@@ -164,6 +164,7 @@ fn minify(file_content: &str, args: &CliArguments) -> String {
 
 			minified_content
 		}
+		#[allow(unreachable_patterns)]
 		_ => minified_content
 	};
 

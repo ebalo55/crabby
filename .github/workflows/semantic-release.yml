@@ -27,7 +27,15 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm i --package-lock-only
-      - name: Release
+      - name: Install Rust and cross compile dependencies
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          . "$HOME/.cargo/env"
+          rustup target add x86_64-unknown-linux-gnu
+          rustup target add x86_64-pc-windows-gnu
+          apt update && apt install mingw-w64 -y
+      - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: npx semantic-release

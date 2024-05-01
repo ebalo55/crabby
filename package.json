@@ -8,7 +8,8 @@
     "url": "https://github.com/ebalo55/crabby.git"
   },
   "private": true,
-  "dependencies": {
+  "devDependencies": {
+    "@semantic-release/exec": "^6.0.3",
     "semantic-release": "^23.0.8",
     "semantic-release-cargo": "^2.2.7"
   }
