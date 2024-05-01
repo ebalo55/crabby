@@ -87,7 +87,7 @@ module.exports = {
             {
                 "allFeatures": true,
                 "check": true,
-                "publishArgs": ["--locked --target x86_64-unknown-linux-gnu --target x86_64-pc-windows-gnu"]
+                "publishArgs": ["--locked", "--target x86_64-unknown-linux-gnu", "--target x86_64-pc-windows-gnu"]
             }
         ]
     ],
