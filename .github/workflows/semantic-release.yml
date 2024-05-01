@@ -33,7 +33,7 @@ jobs:
           . "$HOME/.cargo/env"
           rustup target add x86_64-unknown-linux-gnu
           rustup target add x86_64-pc-windows-gnu
-          apt update && apt install mingw-w64 -y
+          sudo apt update && sudo apt install mingw-w64 -y
       - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
