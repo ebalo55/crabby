@@ -1,4 +1,5 @@
 services:
+  # php 5.x with apache
   template-5.x:
     build:
       context: 5.x
@@ -7,6 +8,8 @@ services:
       - "8080:80"
     volumes:
       - ./5.x:/var/www/html
+
+  # php 7.x with apache
   template-7.x:
     build:
       context: 7.x
@@ -15,6 +18,8 @@ services:
       - "8080:80"
     volumes:
       - ./7.x:/var/www/html
+
+  # php 8.x with apache
   template-8.x:
     build:
       context: 8.x
@@ -24,6 +29,12 @@ services:
     volumes:
       - ./8.x:/var/www/html
 
+  #########################################
+  # Sample webshell functionalities       #
+  # This sections is for testing purposes #
+  #########################################
+
+  # mysql
   mariadb:
     image: mariadb:latest
     environment:
@@ -31,3 +42,15 @@ services:
       MARIADB_DATABASE: example
       MARIADB_USER: example_user
       MARIADB_PASSWORD: example_user
+
+  # openldap (default user: admin, password: admin)
+  openldap:
+    image: osixia/openldap:1.5.0
+    ports:
+      - '389:389'
+      - '636:636'
+    environment:
+      LDAP_ORGANISATION: "Example Inc."
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_TLS: false

