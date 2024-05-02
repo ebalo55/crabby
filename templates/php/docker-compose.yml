@@ -29,6 +29,20 @@ services:
     volumes:
       - ./8.x:/var/www/html
 
+  # wordpress with webshell plugin (php 8.x) (default user: admin, password: admin)
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8081:80"
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: example_user
+      WORDPRESS_DB_PASSWORD: example_user
+      WORDPRESS_DB_NAME: example
+      WORDPRESS_DEBUG: 1
+    volumes:
+      - ./wordpress:/var/www/html/
+
   #########################################
   # Sample webshell functionalities       #
   # This sections is for testing purposes #
