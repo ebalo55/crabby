@@ -19,6 +19,8 @@ The webshell plugin is a PHP script that provides various functionalities once a
 The WordPress webshell includes all the features of the template webshell, plus:
 
 - [x] Added stealthiness - hides itself from the plugin list once activated
+- [ ] Deactivation bypass - hooks into the WordPress deactivation process to prevent the plugin from being deactivated
+- [ ] Persistence - hooks into the WordPress uninstall process to ensure the plugin cannot be removed
 
 ## Webshell Template
 
@@ -36,7 +38,7 @@ include:
 - [x] Querying databases based on the available PHP extensions and drivers
 - [x] Querying LDAP (authenticated and anonymously)
 - [x] Running BloodHound-like queries (supported but untested)
-- [ ] Php code evaluation - not implemented yet
+- [ ] Php code evaluation
 
 ## Login
 
