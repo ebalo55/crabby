@@ -22,4 +22,8 @@
     ::-webkit-scrollbar-thumb:hover {
         @apply dark:bg-zinc-600 bg-zinc-500;
     }
+
+    a {
+        text-decoration: none !important;
+    }
 }

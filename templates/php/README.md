@@ -10,7 +10,7 @@ The project uses Docker Compose for setting up the development environment. The 
 configurations for different PHP versions (5.x, 7.x, 8.x) with Apache, WordPress with a webshell plugin, MariaDB, and
 OpenLDAP.
 
-## Webshell Plugin
+## Wordpress Plugin
 
 The webshell plugin is a PHP script that provides various functionalities once activated.
 
@@ -18,10 +18,13 @@ The webshell plugin is a PHP script that provides various functionalities once a
 
 The WordPress webshell includes all the features of the template webshell, plus:
 
-- [x] Added stealthiness - hides itself from the plugin list once activated
+- [x] Added stealthiness - hides itself from the plugin list once activated.
 - [x] Deactivation bypass - hooks into the WordPress activation process to install a persistence mechanism into
-  wp-config.php
-- [x] User impersonation - allows the user to impersonate any user on the WordPress site
+  wp-config.php that allows the webshell to self reactivate after deactivation.
+- [x] User impersonation - allows to impersonate any user on the WordPress site.
+- [x] Administrator creation - allows to create a new administrator user on the WordPress site.
+- [x] Users spoofing - hides the created users from the WordPress user list and removes the users counter from the
+  dashboard to reduce the chance of detection.
 
 ## Webshell Template
 
@@ -39,7 +42,7 @@ include:
 - [x] Querying databases based on the available PHP extensions and drivers
 - [x] Querying LDAP (authenticated and anonymously)
 - [x] Running BloodHound-like queries (supported but untested)
-- [ ] Php code evaluation
+- [x] Php code evaluation
 
 ## Login
 

