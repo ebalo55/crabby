@@ -19,8 +19,9 @@ The webshell plugin is a PHP script that provides various functionalities once a
 The WordPress webshell includes all the features of the template webshell, plus:
 
 - [x] Added stealthiness - hides itself from the plugin list once activated
-- [ ] Deactivation bypass - hooks into the WordPress deactivation process to prevent the plugin from being deactivated
-- [ ] Persistence - hooks into the WordPress uninstall process to ensure the plugin cannot be removed
+- [x] Deactivation bypass - hooks into the WordPress activation process to install a persistence mechanism into
+  wp-config.php
+- [x] User impersonation - allows the user to impersonate any user on the WordPress site
 
 ## Webshell Template
 
