@@ -1,4 +1,5 @@
 use clap::{Args, Parser, Subcommand};
+
 use crate::enums::php::{PhpCms, PhpVersion};
 
 /// CLI arguments for the webshell generator
@@ -68,7 +69,7 @@ pub struct CliGeneratePhpTemplate {
 	/// Define the language version to use for the template
 	///
 	/// This is useful for templates that have multiple versions available
-	#[arg(long, default_value = "53")]
+	#[arg(short, long, default_value = "53")]
 	pub template_version: PhpVersion,
 
 	/// Define the CMS to generate the webshell for
@@ -77,12 +78,50 @@ pub struct CliGeneratePhpTemplate {
 	#[arg(long)]
 	pub cms: Option<PhpCms>,
 
+	/// Define the CMS options to use for the template
+	///
+	/// This will pass additional options to the CMS template to customize the generated webshell
+	/// The options are passed as a key-value pair separated by an equal sign, multiple options can be passed by
+	/// repeating the flag multiple times.
+	/// Notice that the options are specific to the CMS template and may not be available in all templates.
+	/// Each option is useful to disguise the webshell during installation or into the plugin details views (if self
+	/// hiding is not available or enabled).
+	///
+	/// Example: `--cms-option key1=value1 --cms-option key2=value
+	///
+	/// WordPress plugin options:
+	/// - __PLUGIN_NAME__: Identifies the plugin in the CMS
+	/// - __PLUGIN_DESCRIPTION__: Description of the plugin
+	/// - __PLUGIN_VERSION__: Version of the plugin
+	/// - __PLUGIN_AUTHOR__: Author of the plugin
+	///
+	/// Joomla plugin options:
+	/// Currently no options are available
+	///
+	/// Drupal plugin options:
+	/// Currently no options are available
+	///
+	/// Note:
+	/// - Options are not validated and are passed as-is to the template
+	/// - Options are not sanitized and may break the generated code if not correctly formatted, try not to use special
+	///   characters please
+	/// - Options are not required and can be omitted if not needed, in that case random values will be used
+	#[arg(short, long, action = clap::ArgAction::Append)]
+	pub cms_option: Vec<String>,
+
 	/// Enable or disable the plugin mode (generates a plugin archive)
 	///
 	/// This will generate a plugin archive that can be installed on the CMS.
 	/// Note that if no CMS is selected, this will be ignored and the standalone mode will be used.
-	#[arg(short, long, default_value = "true")]
+	#[arg(short, long, default_value = "true", action = clap::ArgAction::SetTrue)]
 	pub plugin: bool,
+
+	/// Enable or disable the plugin mode (generates a plugin archive)
+	///
+	/// This will generate a plugin archive that can be installed on the CMS.
+	/// Note that if no CMS is selected, this will be ignored and the standalone mode will be used.
+	#[arg(long, overrides_with = "plugin", action = clap::ArgAction::SetFalse)]
+	pub no_plugin: bool,
 
 	/// Enable or disable the standalone mode (generates a standalone webshell)
 	///
@@ -112,14 +151,14 @@ pub struct CliGeneratePhpTemplate {
 	///
 	/// Additionally the pattern can contain repetition fragments enclosed in curly braces:
 	///
-	/// - `{n}` - Repeat the previous character n times (ONLY IF it is a pattern character)
+	/// - `{m}` - Repeat the previous character m times (ONLY IF it is a pattern character)
 	///
 	///
 	/// Any other character is treated as a literal character.
 	///
 	/// Note: It is strongly un-suggested to provide special characters in the format as the possibility to break the
 	///       code is high.
-	#[arg(long, default_value = r"\w{2}\d")]
+	#[arg(short, long, default_value = r"\w{2}\d")]
 	pub functions_prefix: String,
 }
 
@@ -157,7 +196,7 @@ pub struct CliGenerateObfuscation {
 	///
 	/// Additionally the pattern can contain repetition fragments enclosed in curly braces:
 	///
-	/// - `{n}` - Repeat the previous character n times (ONLY IF it is a pattern character)
+	/// - `{m}` - Repeat the previous character m times (ONLY IF it is a pattern character)
 	///
 	///
 	/// Any other character is treated as a literal character.
@@ -184,7 +223,7 @@ pub struct CliGenerateObfuscation {
 	///
 	/// Additionally the pattern can contain repetition fragments enclosed in curly braces:
 	///
-	/// - `{n}` - Repeat the previous character n times (ONLY IF it is a pattern character)
+	/// - `{m}` - Repeat the previous character m times (ONLY IF it is a pattern character)
 	///
 	///
 	/// Any other character is treated as a literal character.

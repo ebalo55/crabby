@@ -85,7 +85,11 @@ fn main() -> anyhow::Result<()> {
 				args.security.password = Some(generate_random_string::generate_password(args.security.password_length).unwrap());
 			}
 			if !args.security.salt.is_some() {
-				args.security.salt = Some(generate_random_string::generate_password(args.security.salt_length).unwrap());
+				args.security.salt = match args.template {
+					CliGenerateCommand::Php(_) => {
+						Some(generate_random_string::generate_password(args.security.salt_length).unwrap())
+					}
+				};
 			}
 
 			debug!("Random salt: {}", args.security.salt.as_ref().unwrap());

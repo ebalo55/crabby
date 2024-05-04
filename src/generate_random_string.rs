@@ -16,7 +16,7 @@ use rand::thread_rng;
 /// - `\\` - Escape sequence
 ///
 /// Additionally the pattern can contain repetition fragments enclosed in curly braces:
-/// - `{n}` - Repeat the previous character n times (ONLY IF it is a pattern character)
+/// - `{m}` - Repeat the previous character m times (ONLY IF it is a pattern character)
 ///
 /// Any other character is treated as a literal character.
 ///
@@ -204,29 +204,14 @@ fn random_lowercase_letter(rng: &mut ThreadRng) -> char {
 /// # Arguments
 ///
 /// - `rng` - The random number generator
+/// - `char_map` - The special character map to choose from
 ///
 /// # Returns
 ///
 /// The random special character as a character
 fn random_special_character(rng: &mut ThreadRng) -> char {
-	char::from_u32(match rng.gen_range(0..15) {
-		0 => '!' as u32,
-		1 => '#' as u32,
-		2 => '$' as u32,
-		3 => '%' as u32,
-		4 => '&' as u32,
-		5 => '(' as u32,
-		6 => ')' as u32,
-		7 => '*' as u32,
-		8 => '+' as u32,
-		9 => ',' as u32,
-		10 => '-' as u32,
-		11 => '/' as u32,
-		12 => ':' as u32,
-		13 => ';' as u32,
-		14 => '?' as u32,
-		_ => unreachable!(),
-	}).unwrap()
+	let default_char_map = "!#$%&()*+,-/:;?<=>@[]^_{}~.";
+	default_char_map.chars().choose(rng).unwrap()
 }
 
 

@@ -32,7 +32,7 @@ $IMPERSONATE_WP_USER     = "__FEAT_IMPERSONATE_WP_USER__";
 
 $USERNAME = "__USERNAME__";
 $PASSWORD = "__PASSWORD__";
-$SALT     = "__SALT__";
+$SALT     = '__SALT__';
 
 /**
  * Define the enabled features
