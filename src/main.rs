@@ -1,18 +1,20 @@
 #[macro_use]
 extern crate log;
 
+use std::cmp::PartialEq;
 use anyhow::Context;
 use clap::Parser;
 
 use folder_exists::folder_exists;
 
-use crate::cli_arguments::CliArguments;
+use crate::cli_arguments::{CliArguments, CliCommand, CliGenerateCommand};
 
 mod enums;
 mod actions;
 mod folder_exists;
 mod generate_random_string;
 mod cli_arguments;
+mod extract_unique_strings;
 
 fn setup_logging(debug_level: u8) -> anyhow::Result<()> {
 	let mut base_config = fern::Dispatch::new()
@@ -63,52 +65,35 @@ fn main() -> anyhow::Result<()> {
 	let mut args = CliArguments::parse();
 
 	setup_logging(args.debug)?;
+	trace!("Parsed arguments: {:?}", args);
 
-	// If the user wants to clone the templates and exit, do so
-	if args.bare_clone {
-		actions::download_templates::download_templates();
-		return Ok(());
+	match args.command {
+		CliCommand::Clone => {
+			actions::download_templates::download_templates();
+		}
+		CliCommand::Generate(mut args) => {
+			// Check if the templates folder exists, and download them if it doesn't
+			if !folder_exists("templates").unwrap() {
+				actions::download_templates::download_templates();
+			}
+
+			// Set the default username, password, and salt if not provided
+			if !args.security.username.is_some() {
+				args.security.username = Some(generate_random_string::generate_password(args.security.username_length).unwrap());
+			}
+			if !args.security.password.is_some() {
+				args.security.password = Some(generate_random_string::generate_password(args.security.password_length).unwrap());
+			}
+			if !args.security.salt.is_some() {
+				args.security.salt = Some(generate_random_string::generate_password(args.security.salt_length).unwrap());
+			}
+
+			debug!("Random salt: {}", args.security.salt.as_ref().unwrap());
+
+			// Generate the webshell
+			return actions::generate_webshell::generate_webshell(&args);
+		}
 	}
 
-	// Check if the templates folder exists, and download them if it doesn't
-	if !folder_exists("templates").unwrap() {
-		actions::download_templates::download_templates();
-	}
-
-	// Set the default output filename if not provided
-	if !args.output.is_some() {
-		args.output = Some(format!("shell.{}", args.template.to_string().to_lowercase()));
-	}
-
-	// Set the default username, password, and salt if not provided
-	if !args.username.is_some() {
-		args.username = Some(generate_random_string::generate_password(args.username_length).unwrap());
-	}
-	if !args.password.is_some() {
-		args.password = Some(generate_random_string::generate_password(args.password_length).unwrap());
-	}
-	if !args.salt.is_some() {
-		args.salt = Some(generate_random_string::generate_password(args.salt_length).unwrap());
-	}
-
-	debug!("Random salt: {}", args.salt.as_ref().unwrap());
-
-	if !args.template_version.is_some() {
-		args.template_version = Some(
-			serde_json::from_str::<serde_json::Value>(
-				&std::fs::read_to_string(
-					format!(
-						"templates/{}/meta.json",
-						args.template.to_string().to_lowercase()
-					)
-				).with_context(|| "Could not read the meta.json file for the template")?
-			).with_context(|| "Cannot parse json data from meta.json")?["default_version"]
-				.as_str()
-				.unwrap()
-				.to_string()
-		);
-	}
-
-	// Generate the webshell
-	actions::generate_webshell::generate_webshell(&args)
+	Ok(())
 }
