@@ -2,5 +2,13 @@
   "require-dev": {
     "php": "^8.0",
     "rector/rector": "^1.0"
+  },
+  "require": {
+    "ext-zip": "*",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "ext-sqlite": "*",
+    "ext-ibm_db2": "*",
+    "ext-ldap": "*"
   }
 }
