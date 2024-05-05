@@ -12,6 +12,14 @@ use crate::extract_unique_strings::extract_unique_strings;
 use crate::generate_random_string::{generate_password, generate_random_string};
 
 /// Generate a PHP webshell
+///
+/// # Arguments
+/// * `args` - The CLI arguments
+/// * `php_args` - The PHP template arguments
+///
+/// # Returns
+///
+/// An empty `anyhow::Result` if the webshell was generated successfully, an error otherwise
 pub fn generate_php_webshell(args: &CliGenerateArguments, php_args: &CliGeneratePhpTemplate) -> anyhow::Result<()> {
     let base_template_path = PathBuf::from("templates/php/");
 
