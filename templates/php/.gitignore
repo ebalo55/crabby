@@ -21,3 +21,8 @@ joomla/tmp
 joomla/cli
 joomla/api
 joomla/installation
+joomla/layouts
+joomla/*.php
+joomla/*.txt
+joomla/*.dist
+joomla/*.htaccess
