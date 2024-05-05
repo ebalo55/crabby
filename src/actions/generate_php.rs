@@ -457,8 +457,30 @@ fn obfuscate(file_content: &str, params: &CliGenerateObfuscation, prefix: &Strin
     debug!("Php function definitions: {:?}", all_func_definitions);
 
     for func in all_func_definitions.iter() {
+        // func = function <name>
+        // casual_name = full function definition replacement
         let casual_name = generate_random_string(format!("function {prefix}{}", params.obfuscation_function_format).as_str()).unwrap();
-        obfuscated_content = obfuscated_content.replace(func, &casual_name);
+
+        let func_fragments = func.split_whitespace().collect::<Vec<&str>>();
+        let casual_function_name_fragments = casual_name.split_whitespace().collect::<Vec<&str>>();
+
+        // call_user_func_name = '<name>' or "<name>" (isolated function name with quotes, reported in strings and indirect calls)
+        let call_user_func_name = func_fragments.get(1).unwrap();
+        let call_user_func_apex = format!("'{}'", call_user_func_name);
+        let call_user_func_quotes = format!("\"{}\"", call_user_func_name);
+        // call_user_func_casual_name = '<casual_name>' or "<casual_name>" replacement for call_user_func_name
+        let call_user_func_casual_name = casual_function_name_fragments.get(1).unwrap();
+        let call_user_func_casual_name_apex = format!("'{}'", call_user_func_casual_name);
+        let call_user_func_casual_name_quotes = format!("\"{}\"", call_user_func_casual_name);
+
+        // direct_function_call_name = <name>( - (reported in direct calls)
+        let direct_function_call_name = format!("{}(", call_user_func_name);
+        let direct_function_call_casual_name = format!("{}(", call_user_func_casual_name);
+
+        obfuscated_content = obfuscated_content.replace(func, &casual_name)
+            .replace(&call_user_func_apex, &call_user_func_casual_name_apex)
+            .replace(&call_user_func_quotes, &call_user_func_casual_name_quotes)
+            .replace(&direct_function_call_name, &direct_function_call_casual_name);
     }
     info!("Php function names obfuscated (count: {})", all_func_definitions.len());
 

@@ -29,19 +29,33 @@ services:
     volumes:
       - ./8.x:/var/www/html
 
-  # wordpress with webshell plugin (php 8.x) (default user: admin, password: admin)
+  # WordPress with webshell plugin (php 8.x) (default user: admin, password: admin)
   wordpress:
     image: wordpress:latest
     ports:
       - "8081:80"
     environment:
       WORDPRESS_DB_HOST: mariadb
-      WORDPRESS_DB_USER: example_user
-      WORDPRESS_DB_PASSWORD: example_user
-      WORDPRESS_DB_NAME: example
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: root
+      WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DEBUG: 1
+    # Comment the volumes section to test the webshell functionalities
     volumes:
       - ./wordpress:/var/www/html/
+
+  joomla:
+    image: joomla:latest
+    ports:
+      - "8082:80"
+    environment:
+      JOOMLA_DB_HOST: mariadb
+      JOOMLA_DB_USER: root
+      JOOMLA_DB_PASSWORD: root
+      JOOMLA_DB_NAME: joomla
+      JOOMLA_DEBUG: 1
+    volumes:
+      - ./joomla:/var/www/html/
 
   #########################################
   # Sample webshell functionalities       #
@@ -56,6 +70,10 @@ services:
       MARIADB_DATABASE: example
       MARIADB_USER: example_user
       MARIADB_PASSWORD: example_user
+    ports:
+        - "3306:3306"
+    volumes:
+      - ./mariadb-docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
 
   # openldap (default user: admin, password: admin)
   openldap:
