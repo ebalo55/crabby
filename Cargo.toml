@@ -12,8 +12,12 @@ readme = "README.md"
 categories = ["web-programming", "development-tools"]
 
 [profile.release]
-#strip = true
-opt-level = 3
+strip = true
+opt-level = "z"
+incremental = true
+codegen-units = 1
+debug-assertions = false
+lto = true
 
 [dependencies]
 anyhow = "1.0.82"

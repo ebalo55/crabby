@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate log;
 
-use std::cmp::PartialEq;
-use anyhow::Context;
 use clap::Parser;
 
 use folder_exists::folder_exists;
@@ -62,7 +60,7 @@ fn setup_logging(debug_level: u8) -> anyhow::Result<()> {
 }
 
 fn main() -> anyhow::Result<()> {
-	let mut args = CliArguments::parse();
+	let args = CliArguments::parse();
 
 	setup_logging(args.debug)?;
 	trace!("Parsed arguments: {:?}", args);
