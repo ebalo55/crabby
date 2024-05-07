@@ -44,6 +44,7 @@ services:
     volumes:
       - ./wordpress:/var/www/html/
 
+  # Admin with webshell plugin (php 8.x) (default user: admin, password: 123456789012)
   joomla:
     image: joomla:latest
     ports:
