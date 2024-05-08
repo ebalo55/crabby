@@ -24,7 +24,8 @@ function __PREFIX__loadPageOrDefault($features) {
 /**
  * Render the page content by calling the named hook for the current page
  *
- * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
+ *     container
  * @param $page string The page to render
  *
  * @return void
@@ -55,19 +56,25 @@ function __PREFIX__isIsolatedOperation($operation, $isolated_ops) {
 /**
  * Open the command output screen where output can be freely written
  *
+ * @param bool $capture_output Whether to capture the output or not
  * @param string $classes Classes to apply to the command output screen
  * @param string $title Title of the command output screen
  * @param bool $no_margin Whether to remove the margin from the command output screen
  * @param bool $no_padding Whether to remove the padding from the command output screen
  *
- * @return void
+ * @return void|string Returns the output if $capture_output is true
  */
 function __PREFIX__openCommandOutputScreen(
+    $capture_output = false,
     $classes = "",
     $title = "Command output",
     $no_margin = false,
     $no_padding = false
 ) {
+    if ($capture_output) {
+        ob_start();
+    }
+
     ?>
     <div class="<?php
     echo $no_margin ? "" : "ml-72 ";
@@ -76,22 +83,36 @@ function __PREFIX__openCommandOutputScreen(
     <div class="container px-16">
     <div class="bg-zinc-900 font-mono text-sm overflow-auto rounded shadow-md text-white px-6 py-3">
     <h3 class="border-b border-zinc-700 text-sm font-semibold leading-8">
-        <?php echo $title ?>
+        <?= htmlentities($title) ?>
     </h3>
-    <pre class="p-2 mt-2 <?php echo $classes ?>"><?php
+    <pre class="p-2 mt-2 <?= htmlentities($classes) ?>"><?php
+
+    if ($capture_output) {
+        return ob_get_clean();
+    }
 }
 
 /**
  * Closes the command output screen
  *
- * @return void
+ * @param bool $capture_output Whether to capture the output or not
+ *
+ * @return void|string Returns the output if $capture_output is true
  */
-function __PREFIX__closeCommandOutputScreen() {
+function __PREFIX__closeCommandOutputScreen($capture_output = false) {
+    if ($capture_output) {
+        ob_start();
+    }
+
     ?></pre>
     </div>
     </div>
     </div>
     <?php
+
+    if ($capture_output) {
+        return ob_get_clean();
+    }
 }
 
 /**
@@ -300,4 +321,265 @@ function __PREFIX__pad_right($str, $pad_length = 10) {
  */
 function __PREFIX__convertUnixTimestampToDate($timestamp) {
     return date('Y-m-d H:i:s', $timestamp);
+}
+
+/**
+ * Create a page header
+ *
+ * @param $title string Title of the page
+ * @param $description string Description of the page
+ *
+ * @return string
+ */
+function __PREFIX__makePageHeader($title, $description) {
+    ob_start();
+    ?>
+    <div class="lg:flex lg:items-center lg:justify-between">
+        <div class="min-w-0 flex-1">
+            <h2 class="text-2xl font-bold leading-7 text-zinc-900 sm:truncate sm:text-3xl sm:tracking-tight">
+                <?= $title ?>
+            </h2>
+            <div class="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
+                <div class="mt-2 flex items-center text-sm text-zinc-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         stroke-width="1.5" stroke="currentColor"
+                         class="mr-1.5 h-5 w-5 flex-shrink-0 text-zinc-400">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>
+                    </svg>
+                    <?= $description ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Create a form with the given elements
+ *
+ * @param $operation string Operation to perform when the form is submitted
+ * @param $action string Action to perform when the form is submitted
+ * @param $elements string[] Elements to include in the form
+ * @param $method string Method to use for the form, default is "post"
+ *
+ * @return string
+ */
+function __PREFIX__makeForm(
+    $operation,
+    $action,
+    $elements,
+    $method = "post",
+    $submit_label = "Run operation",
+    $classes = "flex flex-col gap-y-6 max-w-xl mt-8"
+) {
+    ob_start();
+    ?>
+    <form action="<?= $action ?>" method="<?= htmlentities($method) ?>"
+          class="<?= htmlentities($classes) ?>">
+        <input type="hidden" name="__OPERATION__" value="<?= htmlentities($operation) ?>"/>
+        <?php
+        foreach ($elements as $element) {
+            echo $element;
+        }
+        ?>
+        <button type="submit"
+                class="rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
+                       hover:bg-zinc-700 transition-all duration-300">
+            <?= htmlentities($submit_label) ?>
+        </button>
+    </form>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Create an input field
+ *
+ * @param $type string Type of the input
+ * @param $label string Label for the input
+ * @param $name string Name of the input
+ * @param $placeholder string Placeholder for the input
+ * @param $description string Description of the input
+ * @param $required bool Whether is the input required
+ *
+ * @return string
+ */
+function __PREFIX__makeInput(
+    $type,
+    $label,
+    $name,
+    $placeholder,
+    $description,
+    $required = false,
+    $query_param = null,
+    $value = null
+) {
+    $name = htmlentities($name);
+
+    ob_start();
+    if ($type !== "textarea") {
+        ?>
+        <div class="flex flex-col gap-y-2 <?= $type === "hidden" ? "hidden" : ""; ?>"
+             id="<?= $name ?>-container">
+            <label for="<?= $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
+                <?= htmlentities($label) ?>
+                <?php
+                if ($required) {
+                    echo "<sup class='text-red-500'>*</sup>";
+                }
+                ?>
+            </label>
+            <input type="<?= htmlentities($type) ?>"
+                   id="<?= $name ?>"
+                   name="<?= $name ?>"
+                   placeholder="<?= htmlentities($placeholder) ?>"
+                <?php
+                if ($required) {
+                    echo "required ";
+                }
+                if (!empty($query_param)) {
+                    echo "value=\"" . htmlentities($_GET[$query_param]) . "\" ";
+                }
+                elseif (!empty($value)) {
+                    echo "value=\"" . htmlentities($value) . "\" ";
+                }
+                ?>
+                   class="block w-full border-0 rounded py-1.5 text-zinc-900 shadow ring-1 ring-inset ring-zinc-300 focus:ring-indigo-600 placeholder-zinc-400">
+            <p class="text-sm text-zinc-500">
+                <?= $description ?>
+            </p>
+        </div>
+        <?php
+    }
+    else {
+        ?>
+        <div class="flex flex-col gap-y-2" id="<?= $name ?>-container">
+            <label for="<?= $name ?>" class="block text-sm font-medium leading-6 text-zinc-900">
+                <?= $label ?>
+                <?php
+                if ($required) {
+                    echo "<sup class='text-red-500'>*</sup>";
+                }
+                ?>
+            </label>
+            <textarea id="<?= $name ?>"
+                      name="<?= $name ?>"
+                      placeholder="<?= htmlentities($placeholder) ?>"
+                <?php
+                if ($required) {
+                    echo "required";
+                }
+                ?>
+                      class="block w-full border-0 rounded py-1.5 text-zinc-900 shadow ring-1 ring-inset ring-zinc-300 focus:ring-indigo-600 placeholder-zinc-400"
+                      rows="5"
+            ><?php
+                if (!empty($value)) {
+                    echo htmlentities($value);
+                }
+                ?></textarea>
+            <p class="text-sm text-zinc-500">
+                <?= $description ?>
+            </p>
+        </div>
+        <?php
+    }
+    return ob_get_clean();
+}
+
+/**
+ * Create a select field
+ *
+ * @param $label string Label for the select
+ * @param $name string Name of the select
+ * @param $options array<{label: string, value: string, disabled?: bool, selected?: bool}> Options for the select
+ * @param $required bool Whether the select is required
+ * @param $disable_reason string|null Reason for the option to be disabled, if any
+ *
+ * @return string
+ */
+function __PREFIX__makeSelect($label, $name, $options, $required = false, $disable_reason = null) {
+    $name = htmlentities($name);
+
+    ob_start();
+    ?>
+    <div id="<?= $name ?>-container">
+        <label for="<?= $name ?>" class="block text-sm font-medium leading-6 text-gray-900">
+            <?= $label ?>
+            <?php
+            if ($required) {
+                echo "<sup class='text-red-500'>*</sup>";
+            }
+            ?>
+        </label>
+        <select id="<?= $name ?>" name="<?= $name ?>"
+                class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset
+                ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            <?php
+            if ($required) {
+                echo "required ";
+            }
+            ?>
+        >
+            <?php
+            foreach ($options as $option) {
+                echo "<option value='" . htmlentities($option["value"]) . "' " .
+                     ($option["disabled"] ? "disabled " : "") .
+                     ($option["selected"] ? "selected " : "") .
+                     ">" .
+                     htmlentities($option["label"]) .
+                     ($option["disabled"] && !empty($disable_reason) ? " - " . htmlentities($disable_reason) : "") .
+                     "</option>";
+            }
+            ?>
+        </select>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Create a checkbox field
+ *
+ * @param $name string Name of the checkbox
+ * @param $label string Label for the checkbox
+ * @param $description string Description of the checkbox
+ * @param $is_checked bool Whether the checkbox is checked
+ * @param $value string Value of the checkbox, default is "y"
+ * @param $onclick string|null OnClick event for the checkbox
+ *
+ * @return string
+ */
+function __PREFIX__makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null) {
+    $name = htmlentities($name);
+
+    ob_start();
+    ?>
+    <div class="relative flex items-start" id="<?= $name ?>-container">
+        <div class="flex h-6 items-center">
+            <input id="<?= $name ?>" name="<?= $name ?>" type="checkbox"
+                   class="h-4 w-4 text-indigo-600 border-zinc-300 rounded focus:ring-indigo-600 "
+                   value="<?= htmlentities($value) ?>"
+                <?php
+                if ($is_checked) {
+                    echo "checked ";
+                }
+                if ($onclick !== null) {
+                    echo "onclick=\"$onclick\" ";
+                }
+                ?>
+            >
+        </div>
+        <div class="ml-3 text-sm leading-6 flex flex-col select-none">
+            <label for="<?= $name ?>" class="font-medium text-zinc-900 w-full cursor-pointer">
+                <?= htmlentities($label) ?>
+            </label>
+            <p class="text-zinc-500 cursor-pointer" onclick="document.getElementById('<?= $name ?>').click()">
+                <?= htmlentities($description) ?>
+            </p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
 }
