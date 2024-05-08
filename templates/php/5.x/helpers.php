@@ -24,15 +24,16 @@ function __PREFIX__loadPageOrDefault($features) {
 /**
  * Render the page content by calling the named hook for the current page
  *
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
  * @param $page string The page to render
  *
  * @return void
  */
-function __PREFIX__renderPage($page) {
+function __PREFIX__renderPage($features, $page) {
     global $css;
     // Load the page content by calling the named hook for the current page
     $content = "";
-    $args    = array(&$content, $page, $css);
+    $args = array(&$content, $features, $page, $css);
     call_named_hook("GET_page", $page, $args);
 
     // Render the page content
@@ -91,4 +92,166 @@ function __PREFIX__closeCommandOutputScreen() {
     </div>
     </div>
     <?php
+}
+
+/**
+ * Create a page with the given elements
+ *
+ * @param $enabled_features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The
+ *     features container
+ * @param $css string CSS to include in the page
+ * @param $current_page string Current page to highlight in the navigation
+ * @param $elements string[] Elements to include in the page
+ *
+ * @return string
+ */
+function __PREFIX__makePage($enabled_features, $css, $current_page, $elements) {
+    $args = array(&$elements, $current_page, $css);
+    call_hook("page_generation", $args);
+
+    ob_start();
+    ?>
+    <html lang="en">
+    <head>
+        <title>__TITLE__</title>
+        <style><?= $css ?></style>
+        <script>__JS__</script>
+    </head>
+    <body class="bg-white">
+    <div class="fixed inset-y-0 z-50 w-72 flex flex-col">
+        <div class="flex flex-grow flex-col gap-y-5 overflow-y-auto bg-zinc-900 px-6 pb-4">
+            <div class="flex items-center h-16 shrink-0">
+                <h1 class="text-2xl text-white">__TITLE__</h1>
+            </div>
+            <nav class="flex flex-1 flex-col">
+                <ul role="list" class="flex flex-1 flex-col gap-y-7">
+                    <li>
+                        <ul role="list" class="-mx-2">
+                            <?php
+                            foreach ($enabled_features as $feature => $definition) {
+                                echo __PREFIX__makeNavLink($feature, $current_page, $definition);
+                            }
+                            ?>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="ml-72">
+        <main class="py-10">
+            <div class="container px-16">
+                <?php
+                foreach ($elements as $element) {
+                    echo $element;
+                }
+                ?>
+            </div>
+        </main>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Create a navigation link
+ *
+ * @param $page string Page to link to
+ * @param $current_page string Current page to highlight
+ * @param $definition array{title: string, description: string, svg: string, hidden?: bool, op: string} Nav item
+ *     definition
+ *
+ * @return string
+ */
+function __PREFIX__makeNavLink($page, $current_page, $definition) {
+    if ($definition["hidden"]) {
+        return "";
+    }
+
+    ob_start();
+    ?>
+    <li>
+        <a href="?page=<?= urlencode($page) ?>"
+           class="flex gap-x-3 rounded p-2 text-sm font-semibold leading-6
+           <?= __PREFIX__htmlHighlightActivePage($current_page, $page) ?>
+           "
+           id="nav-<?= $page ?>"
+        >
+            <div class="flex items-center justify-center">
+                <?= $definition["svg"]; ?>
+            </div>
+            <?= htmlentities($definition["title"]) ?>
+        </a>
+    </li>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Returns the classes to apply to the navigation item highlighted because it's the current page
+ *
+ * @param $current_page string Current page
+ * @param $checking_page string Page to check if it's the current page
+ *
+ * @return string
+ */
+function __PREFIX__htmlHighlightActivePage($current_page, $checking_page) {
+    if ($current_page === $checking_page) {
+        return "bg-zinc-800 text-white";
+    }
+    return "text-zinc-400";
+}
+
+/**
+ * Format bytes to human-readable format
+ *
+ * @param $bytes array|int|float Bytes to format
+ *
+ * @return string
+ */
+function __PREFIX__formatBytes($bytes) {
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+    $bytes = max($bytes, 0);
+    $pow   = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow   = min($pow, count($units) - 1);
+
+    // Calculate size in the chosen unit
+    $bytes /= pow(1024, $pow);
+
+    // Format with three-point precision
+    return __PREFIX__pad_right(round($bytes, 3) . ' ' . $units[$pow]);
+}
+
+/**
+ * Download a file in chunks
+ *
+ * @param $filepath string Path to the file to download
+ * @param $filesize int Size of the file
+ * @param $filename string|null Name of the file to download or null to use the original filename
+ *
+ * @return void
+ */
+function __PREFIX__chunkedDownload($filepath, $filesize, $filename = null) {
+    $chunk_size = 4096; // Adjust chunk size as needed
+
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream');
+    header(
+        'Content-Disposition: attachment; filename="' .
+        (!empty($filename) ? $filename : basename($filepath)) // Use the original filename if not provided
+        . '"'
+    );
+    header('Content-Transfer-Encoding: chunked');
+    header('Content-Length: ' . $filesize); // Set content length for progress tracking
+
+    $file_handle = fopen($filepath, 'rb');
+
+    while (!feof($file_handle)) {
+        $chunk = fread($file_handle, $chunk_size);
+        echo $chunk;
+        flush();     // Flush output buffer after sending each chunk
+    }
+
+    fclose($file_handle);
 }

@@ -128,7 +128,7 @@ if (
 ) {
     // load the page or get the fallback page
     $page = __PREFIX__loadPageOrDefault($ENABLED_FEATURES);
-    __PREFIX__renderPage($page);
+    __PREFIX__renderPage($ENABLED_FEATURES, $page);
 
     // Check if the request is POST and the operation is not in the isolated operations list,
     // if that is the case open the command output screen to display the command output
