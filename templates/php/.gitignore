@@ -26,3 +26,14 @@ joomla/*.txt
 joomla/*.dist
 joomla/*.htaccess
 joomla/plugins
+drupal/core
+drupal/profiles
+drupal/sites
+drupal/themes
+drupal/*.php
+drupal/*.htaccess
+drupal/*.txt
+drupal/*.config
+drupal/*.json
+drupal/*.eslint*
+drupal/*.css*

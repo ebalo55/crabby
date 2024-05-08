@@ -58,6 +58,21 @@ services:
     volumes:
       - ./joomla:/var/www/html/
 
+  # Admin with webshell plugin (php 8.x) (default user: admin, password: 123456789012)
+  drupal:
+    image: drupal:latest
+    ports:
+      - "8083:80"
+    environment:
+      MYSQL_HOST: mariadb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: drupal
+    volumes:
+      # Workaround for drupal files local mapping
+      - drupal:/var/www/html/
+
   #########################################
   # Sample webshell functionalities       #
   # This sections is for testing purposes #
@@ -87,3 +102,12 @@ services:
       LDAP_DOMAIN: "example.org"
       LDAP_ADMIN_PASSWORD: "admin"
       LDAP_TLS: false
+
+volumes:
+  # Workaround for drupal files local mapping
+  drupal:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./drupal/
+      o: bind

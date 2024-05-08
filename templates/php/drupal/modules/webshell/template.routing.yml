@@ -1,0 +1,9 @@
+template.template_route:
+  path: '/template'
+  defaults:
+    _controller: 'Drupal\template\Controller\TemplateController::content'
+    _title: 'Template Page'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true

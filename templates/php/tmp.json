@@ -1,0 +1,25 @@
+[
+  [
+    "auth",
+    false
+  ],
+  [
+    "b:1;_sf2_meta",
+    true
+  ],
+  [
+    "a:4:{s:1:\"u\";i:1715134277;s:1:\"c\";i:1715132992;s:1:\"l\";i:2000000;s:1:\"s\";s:43:\"i0L_MO7Bo_u2ClKwsX1p3wKW9vzDDo8aPExJowlVEjU\";}_sf2_attributes",
+    {
+      "u": 1715134277,
+      "c": 1715132992,
+      "l": 2000000,
+      "s": "i0L_MO7Bo_u2ClKwsX1p3wKW9vzDDo8aPExJowlVEjU"
+    }
+  ],
+  [
+    "a:1:{s:3:\"uid\";s:1:\"1\";}",
+    {
+      "uid": "1"
+    }
+  ]
+]
