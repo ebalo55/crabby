@@ -8,6 +8,11 @@ $FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
 // section.functions
 /**
  * Make the file extraction page
+ *
+ * @param $page_content string The page content container
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
+ * @param $page string The current page
+ * @param $css string The CSS of the page
  */
 function __PREFIX__makeFileExtractionPage(&$page_content, $features, $page, $css) {
     global $FILE_EXTRACTION_PREVIEW, $FILE_EXTRACTION;

@@ -255,3 +255,49 @@ function __PREFIX__chunkedDownload($filepath, $filesize, $filename = null) {
 
     fclose($file_handle);
 }
+
+/**
+ * Create a code highlight element
+ *
+ * @param $code float|int|string Code to highlight
+ *
+ * @return string
+ */
+function __PREFIX__makeCodeHighlight($code) {
+    ob_start();
+    ?>
+    <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?= htmlentities(
+            $code
+        ) ?></code>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Pad a string to the left with spaces
+ *
+ * @param $str string String to pad
+ * @param $pad_length int Length to pad to
+ *
+ * @return string
+ */
+function __PREFIX__pad_right($str, $pad_length = 10) {
+    // Ensure string and pad length are valid
+    if (!is_string($str) || !is_int($pad_length) || $pad_length <= 0) {
+        return $str; // Return unmodified string for invalid input
+    }
+
+    // Pad the string with spaces using str_pad
+    return str_pad($str, $pad_length);
+}
+
+/**
+ * Convert a Unix timestamp to a date string
+ *
+ * @param $timestamp int Unix timestamp
+ *
+ * @return string
+ */
+function __PREFIX__convertUnixTimestampToDate($timestamp) {
+    return date('Y-m-d H:i:s', $timestamp);
+}

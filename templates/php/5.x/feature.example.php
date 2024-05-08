@@ -9,9 +9,14 @@ $SALT     = '__SALT__';
 
 // section.functions
 /**
- * Create the login page
+ * Create the example page
+ *
+ * @param $page_content string The page content container
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
+ * @param $page string The current page
+ * @param $css string The CSS of the page
  */
-function __PREFIX__makeExamplePage(&$page_content, $page, $css) {
+function __PREFIX__makeExamplePage(&$page_content, $features, $page, $css) {
     $username = !empty($_GET["username"]) ? htmlentities($_GET["username"]) : false;
     $error    = !empty($_GET["error"]) ? htmlentities($_GET["error"]) : false;
 

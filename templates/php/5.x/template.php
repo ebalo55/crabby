@@ -13,9 +13,9 @@ error_reporting(0);
 session_start();
 
 // Features name constants
-$LOGIN                   = "__FEAT_LOGIN__";
-$FILE_EXTRACTION         = "__FEAT_FILE_EXTRACTION__";
-$FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
+$LOGIN                   = "__FEAT_LOGIN__";                   // migrated
+$FILE_EXTRACTION         = "__FEAT_FILE_EXTRACTION__";         // migrated
+$FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__"; // migrated
 $DIRECTORY_LISTING       = "__FEAT_DIRECTORY_LISTING__";
 $EXFILTRATE              = "__FEAT_EXFILTRATE__";
 $PORT_SCAN               = "__FEAT_PORT_SCAN__";

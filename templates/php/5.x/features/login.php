@@ -11,7 +11,7 @@ $SALT     = '__SALT__';
 /**
  * Create the login page
  */
-function __PREFIX__makeLoginPage(&$page_content, $page, $css) {
+function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css) {
     $username = !empty($_GET["username"]) ? htmlentities($_GET["username"]) : false;
     $error    = !empty($_GET["error"]) ? htmlentities($_GET["error"]) : false;
 
