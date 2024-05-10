@@ -226,7 +226,9 @@ function __PREFIX__handleCreateZip() {
 
     $file_size = filesize($zip_name);
     __PREFIX__chunkedDownload($zip_name, $file_size, "export.zip");
-    unlink($zip_name); // Delete temporary zip file;
+
+    // Delete temporary zip file;
+    unlink($zip_name);
 }
 
 /**
