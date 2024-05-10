@@ -15,16 +15,17 @@ pub enum PhpCms {
 impl Display for PhpCms {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
-			PhpCms::Wordpress => write!(f, "WordPress"),
-			PhpCms::Joomla => write!(f, "Joomla"),
-			PhpCms::Drupal => write!(f, "Drupal"),
+			Self::Wordpress => write!(f, "WordPress"),
+			Self::Joomla => write!(f, "Joomla"),
+			Self::Drupal => write!(f, "Drupal"),
 		}
 	}
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, Default)]
 pub enum PhpVersion {
 	/// Generate webshell for PHP >= 5.3 & < 7.0
+	#[default]
 	_53,
 	/// Generate webshell for PHP >= 7.0 & < 8.0
 	_70,
@@ -35,9 +36,27 @@ pub enum PhpVersion {
 impl Display for PhpVersion {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
-			PhpVersion::_53 => write!(f, "PHP >= 5.3 & < 7.0"),
-			PhpVersion::_70 => write!(f, "PHP >= 7.0 & < 8.0"),
-			PhpVersion::_80 => write!(f, "PHP >= 8.0"),
+			Self::_53 => write!(f, "PHP >= 5.3 & < 7.0"),
+			Self::_70 => write!(f, "PHP >= 7.0 & < 8.0"),
+			Self::_80 => write!(f, "PHP >= 8.0"),
+		}
+	}
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, Default)]
+pub enum TemplateVariant {
+	/// Generate webshell using the base template
+	#[default]
+	Base,
+	/// Generate webshell using the minimal template
+	Minimal,
+}
+
+impl Display for TemplateVariant {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::Base => write!(f, "base"),
+			Self::Minimal => write!(f, "minimal"),
 		}
 	}
 }

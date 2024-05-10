@@ -1,9 +1,10 @@
 use clap::{Args, Parser, Subcommand};
+use crate::enums::list_features::ListFeatures;
 
-use crate::enums::php::{PhpCms, PhpVersion};
+use crate::enums::php::{PhpCms, PhpVersion, TemplateVariant};
 
 /// CLI arguments for the webshell generator
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Default)]
 #[command(author, version, long_about)]
 pub struct CliArguments {
     /// Enable debug mode.
@@ -18,12 +19,16 @@ pub struct CliArguments {
 }
 
 /// CLI main subcommands
-#[derive(Subcommand, Debug, PartialEq)]
+#[derive(Subcommand, Debug, PartialEq, Default)]
 pub enum CliCommand {
     /// Clone templates and exit.
     ///
     /// This will clone the templates from the repository and exit, useful for updating the templates or customizing them.
+    #[default]
     Clone,
+
+    /// List available features for a template language.
+    FeatureList(CliFeatureListArguments),
 
     /// Generate a webshell.
     ///
@@ -31,8 +36,15 @@ pub enum CliCommand {
     Generate(CliGenerateArguments),
 }
 
+/// CLI arguments for the feature list command
+#[derive(Debug, Args, PartialEq, Default)]
+pub struct CliFeatureListArguments {
+    /// Template language to list the features for.
+    pub template: ListFeatures,
+}
+
 /// CLI arguments for the webshell generator (generate command)
-#[derive(Debug, Args, PartialEq)]
+#[derive(Debug, Args, PartialEq, Default)]
 pub struct CliGenerateArguments {
     /// Obfuscation options, flattened in cli
     #[command(flatten)]
@@ -63,17 +75,30 @@ pub enum CliGenerateCommand {
     Php(CliGeneratePhpTemplate),
 }
 
+/// Default implementation for the webshell generator (generate command).
+impl Default for CliGenerateCommand {
+    fn default() -> Self {
+        CliGenerateCommand::Php(CliGeneratePhpTemplate::default())
+    }
+}
+
 /// CLI arguments for the PHP template generator
-#[derive(Debug, Args, PartialEq)]
+#[derive(Debug, Args, PartialEq, Default)]
 pub struct CliGeneratePhpTemplate {
     /// Define the language version to use for the template.
-    #[arg(short, long, default_value = "53", display_order = 0)]
+    #[arg(short, long, default_value = "53", display_order = 0, value_enum)]
     pub template_version: PhpVersion,
+
+    /// Define the template variant to use for the template.
+    ///
+    /// This will generate a webshell based on the chosen variant.
+    #[arg(long, default_value = "base", display_order = 0, value_enum)]
+    pub variant: TemplateVariant,
 
     /// Define the CMS to generate the webshell for.
     ///
     /// This will generate a webshell that is compatible with the selected CMS.
-    #[arg(long, display_order = 2)]
+    #[arg(long, display_order = 2, value_enum)]
     pub cms: Option<PhpCms>,
 
     /// Define the CMS options to use for the template.
@@ -169,10 +194,28 @@ Note: It is strongly un-suggested to provide special characters in the format as
       break the code is high."#
     )]
     pub functions_prefix: String,
+
+    /// Features to include in the generated webshell.
+    #[arg(
+    short,
+    long,
+    action = clap::ArgAction::Append,
+    display_order = 2,
+    long_help = r#"Features to include in the generated webshell.
+
+This will include optional features in the generated webshell, each additional feature will add more code increasing its overall size,
+complexity, detectability and functionality.
+
+Note that the features are specific to the template and may not be available in all templates or cms.
+
+To see the available features for the selected template, use the `feature-list [template-language]` command.
+"#
+    )]
+    pub features: Vec<String>,
 }
 
 /// CLI arguments for the obfuscation options, common to all templates
-#[derive(Debug, Args, PartialEq)]
+#[derive(Debug, Args, PartialEq, Default)]
 pub struct CliGenerateObfuscation {
     /// Obfuscate the generated code.
     ///
@@ -240,7 +283,7 @@ Note: It is strongly un-suggested to provide special characters in the format as
 }
 
 /// CLI arguments for the security options, common to all templates
-#[derive(Debug, Args, PartialEq)]
+#[derive(Debug, Args, PartialEq, Default)]
 pub struct CliGenerateSecurity {
     /// Password used to authenticate to the webshell.
     ///

@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate log;
 
+use std::fmt::format;
 use clap::Parser;
 
 use folder_exists::folder_exists;
@@ -13,6 +14,7 @@ mod folder_exists;
 mod generate_random_string;
 mod cli_arguments;
 mod extract_unique_strings;
+mod strategies;
 
 fn setup_logging(debug_level: u8) -> anyhow::Result<()> {
 	let mut base_config = fern::Dispatch::new()
@@ -94,6 +96,12 @@ fn main() -> anyhow::Result<()> {
 
 			// Generate the webshell
 			return actions::generate_webshell::generate_webshell(&args);
+		}
+		CliCommand::FeatureList(args) => {
+			let path = format!("templates/{}", args.template);
+			let extension = args.template.to_string();
+
+			actions::feature_list::list_features(&path, &extension);
 		}
 	}
 
