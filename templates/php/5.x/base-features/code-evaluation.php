@@ -6,7 +6,7 @@ $EVAL = "__FEAT_EVAL__";
 
 // section.functions
 /**
- * Create the example page
+ * Create the code evaluation page
  *
  * @param $page_content string The page content container
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
@@ -43,10 +43,10 @@ function __PREFIX__makeCodeEvaluationPage(&$page_content, $features, $page, $css
 }
 
 /**
- * Handle the login operation
+ * Handle the code evaluation operation
  *
  * @param $operation string The operation to handle
- * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
  *
  * @return void
  */
@@ -55,14 +55,14 @@ function __PREFIX__handleCodeEvaluation($operation, $features) {
 }
 
 /**
- * Hook the features to add the login feature
+ * Hook the features to add the code evaluation feature
  *
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
  *     container
  *
  * @return void
  */
-function __PREFIX__code_eval_hooks_features(&$features) {
+function __PREFIX__codeEvalHooksFeatures(&$features) {
     global $EVAL;
 
     $features[] = array(
@@ -78,7 +78,7 @@ function __PREFIX__code_eval_hooks_features(&$features) {
 // section.functions.end
 
 // section.hooks
-add_hook("features", "__PREFIX__code_eval_hooks_features");
+add_hook("features", "__PREFIX__codeEvalHooksFeatures");
 add_named_hook("GET_page", $EVAL, "__PREFIX__makeCodeEvaluationPage");
 add_named_hook("POST_operation", $EVAL, "__PREFIX__handleCodeEvaluation");
 // section.hooks.end

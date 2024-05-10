@@ -71,7 +71,7 @@ function __PREFIX__handleSystemCommand($operation, $features) {
  *
  * @return void
  */
-function __PREFIX__system_command_hooks_features(&$features) {
+function __PREFIX__systemCommandHooksFeatures(&$features) {
     global $RUN_COMMAND;
 
     $features[] = array(
@@ -87,7 +87,7 @@ function __PREFIX__system_command_hooks_features(&$features) {
 // section.functions.end
 
 // section.hooks
-add_hook("features", "__PREFIX__system_command_hooks_features");
+add_hook("features", "__PREFIX__systemCommandHooksFeatures");
 add_named_hook("GET_page", $RUN_COMMAND, "__PREFIX__makeSystemCommandPage");
 add_named_hook("POST_operation", $RUN_COMMAND, "__PREFIX__handleSystemCommand");
 // section.hooks.end

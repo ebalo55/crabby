@@ -55,13 +55,15 @@ function __PREFIX__makeDirectoryListingPage(&$page_content, $features, $page, $c
 /**
  * Handle the directory listing operation
  *
+ * @param $operation string The operation to handle
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
+ *
  * @return void
  */
-function __PREFIX__handleDirectoryListing() {
-    $path      = $_POST['__PARAM_1__'];
+function __PREFIX__handleDirectoryListing($operation, $features) {
     $max_depth = strtolower($_POST['__PARAM_2__']) === "inf" ? INF : intval($_POST['__PARAM_2__']);
 
-    __PREFIX__listFilesRecursive($path, $max_depth);
+    __PREFIX__listFilesRecursive($_POST['__PARAM_1__'], $max_depth);
 }
 
 /**
@@ -188,7 +190,7 @@ function __PREFIX__listFilesRecursive($path, $max_depth, $depth = 0, $show_line_
  *
  * @return void
  */
-function __PREFIX__directory_listing_hooks_features(&$features) {
+function __PREFIX__directoryListingHooksFeatures(&$features) {
     global $DIRECTORY_LISTING;
 
     $features[] = array(
@@ -200,11 +202,10 @@ function __PREFIX__directory_listing_hooks_features(&$features) {
         "op"          => $DIRECTORY_LISTING,
     );
 }
-
 // section.functions.end
 
 // section.hooks
-add_hook("features", "__PREFIX__directory_listing_hooks_features");
+add_hook("features", "__PREFIX__directoryListingHooksFeatures");
 add_named_hook("GET_page", $DIRECTORY_LISTING, "__PREFIX__makeDirectoryListingPage");
 add_named_hook("POST_operation", $DIRECTORY_LISTING, "__PREFIX__handleDirectoryListing");
 // section.hooks.end

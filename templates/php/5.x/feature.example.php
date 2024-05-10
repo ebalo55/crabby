@@ -1,10 +1,7 @@
 <?php
 
 // section.constants
-$LOGIN    = "__FEAT_LOGIN__";
-$USERNAME = "__USERNAME__";
-$PASSWORD = "__PASSWORD__";
-$SALT     = '__SALT__';
+$EXAMPLE = "__FEAT_EXAMPLE__";
 // section.constants.end
 
 // section.functions
@@ -17,25 +14,23 @@ $SALT     = '__SALT__';
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeExamplePage(&$page_content, $features, $page, $css) {
-    $username = !empty($_GET["username"]) ? htmlentities($_GET["username"]) : false;
-    $error    = !empty($_GET["error"]) ? htmlentities($_GET["error"]) : false;
-
-    ob_start();
-    // ...
-    $page_content = ob_get_clean();
+    $page_content = __PREFIX__makePage(
+        $features,
+        $page,
+        $css,
+        array(/* Add your content here */)
+    );
 }
 
 /**
  * Handle the login operation
  *
  * @param $operation string The operation to handle
- * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
  *
  * @return void
  */
 function __PREFIX__handleExample($operation, $features) {
-    global $SALT, $PASSWORD, $USERNAME;
-
     //...
 }
 
@@ -44,8 +39,8 @@ function __PREFIX__handleExample($operation, $features) {
  *
  * @return void
  */
-function __PREFIX__example_hooks_page_generation() {
-    global $LOGIN;
+function __PREFIX__exampleHooksPageGeneration() {
+    global $EXAMPLE;
 
     // ...
 }
@@ -57,10 +52,10 @@ function __PREFIX__example_hooks_page_generation() {
  *
  * @return void
  */
-function __PREFIX__example_hooks_isolated_ops(&$isolated_ops) {
-    global $LOGIN;
+function __PREFIX__exampleHooksIsolatedOps(&$isolated_ops) {
+    global $EXAMPLE;
 
-    $isolated_ops[] = $LOGIN;
+    $isolated_ops[] = $EXAMPLE;
 }
 
 /**
@@ -71,18 +66,23 @@ function __PREFIX__example_hooks_isolated_ops(&$isolated_ops) {
  *
  * @return void
  */
-function __PREFIX__example_hooks_features(&$features) {
-    global $LOGIN;
+function __PREFIX__exampleHooksFeatures(&$features) {
+    global $EXAMPLE;
 
-    // ...
+    $features[] = array(
+        "title"       => "Example",
+        "description" => "Example feature",
+        "svg"         => 'INSERT RAW SVG HERE',
+        "op"          => $EXAMPLE,
+    );
 }
 
 // section.functions.end
 
 // section.hooks
-add_hook("page_generation", "__PREFIX__login_hooks_page_generation");
-add_hook("isolated_ops", "__PREFIX__login_hooks_isolated_ops");
-add_hook("features", "__PREFIX__login_hooks_features");
-add_named_hook("GET_page", $LOGIN, "__PREFIX__makeLoginPage");
-add_named_hook("POST_operation", $LOGIN, "__PREFIX__handleLogin");
+add_hook("page_generation", "__PREFIX__exampleHooksPageGeneration");
+add_hook("isolated_ops", "__PREFIX__exampleHooksIsolatedOps");
+add_hook("features", "__PREFIX__exampleHooksFeatures");
+add_named_hook("GET_page", $EXAMPLE, "__PREFIX__makeExamplePage");
+add_named_hook("POST_operation", $EXAMPLE, "__PREFIX__handleExample");
 // section.hooks.end

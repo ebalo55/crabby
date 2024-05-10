@@ -14,7 +14,7 @@ $PORT_SCAN = "__FEAT_PORT_SCAN__";
  * @param $page string The current page
  * @param $css string The CSS of the page
  */
-function __PREFIX__makeExamplePage(&$page_content, $features, $page, $css) {
+function __PREFIX__makePortScanPage(&$page_content, $features, $page, $css) {
     $page_content = __PREFIX__makePage(
         $features,
         $css,
@@ -66,12 +66,12 @@ function __PREFIX__makeExamplePage(&$page_content, $features, $page, $css) {
  *
  * @return void
  */
-function __PREFIX__handleExample($operation, $features) {
+function __PREFIX__handlePortScan($operation, $features) {
     $host      = $_POST['__PARAM_1__'];
     $startPort = intval($_POST['__PARAM_2__']);
     $endPort   = intval($_POST['__PARAM_3__']);
 
-    echo "Scanning ports $startPort to $endPort on " . htmlentities($host) . "...";
+    echo "Scanning ports $startPort to $endPort on " . htmlentities($host) . "...\n";
 
     // Loop through the port range
     for ($port = $startPort; $port <= $endPort; $port++) {
@@ -82,11 +82,11 @@ function __PREFIX__handleExample($operation, $features) {
         if ($socket) {
             // The port is open
             fclose($socket);
-            echo "Port $port: OPEN";
+            echo "Port $port: OPEN\n";
         }
         else {
             // The port is closed or unreachable
-            echo "Port $port: CLOSED / UNREACHABLE (err: $errstr)";
+            echo "Port $port: CLOSED / UNREACHABLE (err: $errstr)\n";
         }
         flush();
     }
@@ -100,7 +100,7 @@ function __PREFIX__handleExample($operation, $features) {
  *
  * @return void
  */
-function __PREFIX__port_scan_hooks_features(&$features) {
+function __PREFIX__portScanHooksFeatures(&$features) {
     global $PORT_SCAN;
 
     $features[] = array(
@@ -116,7 +116,7 @@ function __PREFIX__port_scan_hooks_features(&$features) {
 // section.functions.end
 
 // section.hooks
-add_hook("features", "__PREFIX__port_scan_hooks_features");
-add_named_hook("GET_page", $PORT_SCAN, "__PREFIX__makeLoginPage");
-add_named_hook("POST_operation", $PORT_SCAN, "__PREFIX__handleLogin");
+add_hook("features", "__PREFIX__portScanHooksFeatures");
+add_named_hook("GET_page", $PORT_SCAN, "__PREFIX__makePortScanPage");
+add_named_hook("POST_operation", $PORT_SCAN, "__PREFIX__handlePortScan");
 // section.hooks.end

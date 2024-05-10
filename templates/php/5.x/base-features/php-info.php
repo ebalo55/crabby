@@ -73,7 +73,7 @@ function __PREFIX__listEnabledExtensions() {
  *
  * @return void
  */
-function __PREFIX__php_info_hooks_features(&$features) {
+function __PREFIX__phpInfoHooksFeatures(&$features) {
     global $PHP_INFO;
 
     $features[] = array(
@@ -89,6 +89,6 @@ function __PREFIX__php_info_hooks_features(&$features) {
 // section.functions.end
 
 // section.hooks
-add_hook("features", "__PREFIX__php_info_hooks_features");
+add_hook("features", "__PREFIX__phpInfoHooksFeatures");
 add_named_hook("GET_page", $PHP_INFO, "__PREFIX__makePhpInfoPage");
 // section.hooks.end

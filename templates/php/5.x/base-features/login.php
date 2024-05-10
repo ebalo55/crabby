@@ -20,7 +20,7 @@ function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css) {
     <html lang="en" class="h-full bg-zinc-900">
     <head>
         <title>__TITLE__</title>
-        <style><?php echo $css ?></style>
+        <style><?= $css ?></style>
         <script>__JS__</script>
     </head>
     <body class="h-full">
@@ -40,8 +40,8 @@ function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css) {
         <?php endif; ?>
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form class="space-y-6" action="<?php echo $_SERVER["REQUEST_URI"]; ?>" method="post">
-                <input type="hidden" name="__OPERATION__" value="<?php echo $page ?>"/>
+            <form class="space-y-6" action="<?= $_SERVER["REQUEST_URI"]; ?>" method="post">
+                <input type="hidden" name="__OPERATION__" value="<?= $page ?>"/>
                 <div>
                     <label for="__PARAM_1__" class="block text-sm font-medium leading-6 text-white">
                         Username
@@ -58,7 +58,6 @@ function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css) {
                         >
                     </div>
                 </div>
-
                 <div>
                     <div class="flex items-center justify-between">
                         <label for="__PARAM_2__" class="block text-sm font-medium leading-6 text-white">
@@ -74,7 +73,6 @@ function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css) {
                         >
                     </div>
                 </div>
-
                 <div>
                     <button type="submit"
                             class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm
@@ -113,7 +111,7 @@ function __PREFIX__handleLogin($operation, $features) {
         $_SESSION["auth"] = true;
 
         // redirect the user to the second feature page
-        header("Location: ?page=" . $features[1]["op"], true, 301);
+        header("Location: ?page=" . urlencode($features[1]["op"]), true, 301);
         return;
     }
 
@@ -131,13 +129,13 @@ function __PREFIX__handleLogin($operation, $features) {
  *
  * @return void
  */
-function __PREFIX__login_hooks_page_generation() {
+function __PREFIX__loginHooksPageGeneration() {
     global $LOGIN;
 
     // Check if the user is authenticated
     if ($_SESSION["auth"] !== true) {
         header("Location: ?page=" . $LOGIN);
-        die();
+        die;
     }
 
     // if the user is authenticated simply continues
@@ -150,7 +148,7 @@ function __PREFIX__login_hooks_page_generation() {
  *
  * @return void
  */
-function __PREFIX__login_hooks_isolated_ops(&$isolated_ops) {
+function __PREFIX__loginHooksIsolatedOps(&$isolated_ops) {
     global $LOGIN;
 
     $isolated_ops[] = $LOGIN;
@@ -164,7 +162,7 @@ function __PREFIX__login_hooks_isolated_ops(&$isolated_ops) {
  *
  * @return void
  */
-function __PREFIX__login_hooks_features(&$features) {
+function __PREFIX__loginHooksFeatures(&$features) {
     global $LOGIN;
 
     // Emplace the login feature at the beginning of the features array to make sure its picked as the fallback route if
@@ -184,9 +182,9 @@ function __PREFIX__login_hooks_features(&$features) {
 
 // section.hooks
 session_start();
-add_hook("page_generation", "__PREFIX__login_hooks_page_generation");
-add_hook("isolated_ops", "__PREFIX__login_hooks_isolated_ops");
-add_hook("features", "__PREFIX__login_hooks_features");
+add_hook("page_generation", "__PREFIX__loginHooksPageGeneration");
+add_hook("isolated_ops", "__PREFIX__loginHooksIsolatedOps");
+add_hook("features", "__PREFIX__loginHooksFeatures");
 add_named_hook("GET_page", $LOGIN, "__PREFIX__makeLoginPage");
 add_named_hook("POST_operation", $LOGIN, "__PREFIX__handleLogin");
 // section.hooks.end

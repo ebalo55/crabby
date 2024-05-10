@@ -199,7 +199,7 @@ function __PREFIX__makeNavLink($page, $current_page, $definition) {
            id="nav-<?= $page ?>"
         >
             <div class="flex items-center justify-center">
-                <?= $definition["svg"]; ?>
+                <?= $definition["svg"] ?>
             </div>
             <?= htmlentities($definition["title"]) ?>
         </a>
@@ -287,9 +287,9 @@ function __PREFIX__chunkedDownload($filepath, $filesize, $filename = null) {
 function __PREFIX__makeCodeHighlight($code) {
     ob_start();
     ?>
-    <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all"><?= htmlentities(
-            $code
-        ) ?></code>
+    <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all">
+        <?= htmlentities($code) ?>
+    </code>
     <?php
     return ob_get_clean();
 }
@@ -337,7 +337,7 @@ function __PREFIX__makePageHeader($title, $description) {
     <div class="lg:flex lg:items-center lg:justify-between">
         <div class="min-w-0 flex-1">
             <h2 class="text-2xl font-bold leading-7 text-zinc-900 sm:truncate sm:text-3xl sm:tracking-tight">
-                <?= $title ?>
+                <?= htmlentities($title) ?>
             </h2>
             <div class="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
                 <div class="mt-2 flex items-center text-sm text-zinc-500">
@@ -576,7 +576,120 @@ function __PREFIX__makeCheckbox($name, $label, $description, $is_checked = false
                 <?= htmlentities($label) ?>
             </label>
             <p class="text-zinc-500 cursor-pointer" onclick="document.getElementById('<?= $name ?>').click()">
-                <?= htmlentities($description) ?>
+                <?= $description ?>
+            </p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Check if the checkbox is active
+ *
+ * @param $name string Name of the checkbox
+ *
+ * @return bool
+ */
+function __PREFIX__isCheckboxActive($name) {
+    return isset($_POST[$name]) && $_POST[$name] === "y";
+}
+
+/**
+ * Array column function __PREFIX__for PHP < 5.5
+ *
+ * @param $array array Array to extract the column from
+ * @param $column_name string Column name to extract
+ *
+ * @return array Extracted column
+ */
+function __PREFIX__array_column($array, $column_name) {
+    return array_map(function ($element) use ($column_name) { return $element[$column_name]; }, $array);
+}
+
+/**
+ * Print an ASCII table from the given data
+ *
+ * @param $data array[] Data to print
+ *
+ * @return void
+ */
+function __PREFIX__printAsciiTable($data) {
+    // Get column headers
+    $headers = array_keys($data[0]);
+
+    // Calculate column widths
+    $columnWidths = array();
+    foreach ($headers as $header) {
+        $columnWidths[$header] = max(array_map('strlen', __PREFIX__array_column($data, $header))) + 2;
+    }
+
+    // Print top row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+
+    // Print header row
+    echo "|";
+    foreach ($headers as $header) {
+        printf("%-{$columnWidths[$header]}s|", htmlentities($header));
+    }
+    echo PHP_EOL;
+
+    // Print divider row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+
+    // Print table rows
+    foreach ($data as $row) {
+        echo "|";
+        foreach ($row as $key => $value) {
+            printf("%-{$columnWidths[$key]}s|", htmlentities($value));
+        }
+        echo PHP_EOL;
+    }
+
+    // Print bottom row
+    echo "+";
+    foreach ($headers as $header) {
+        echo str_repeat("-", $columnWidths[$header]);
+        echo "+";
+    }
+    echo PHP_EOL;
+}
+
+/**
+ * Create an alert element on the page
+ *
+ * @param $title string Title of the alert box
+ * @param $message string Message of the alert
+ *
+ * @return string
+ */
+function __PREFIX__makeAlert($title, $message) {
+    ob_start();
+    ?>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
+        <div class="flex items-start justify-center text-yellow-600">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                 stroke="currentColor" class="w-8 h-8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/>
+            </svg>
+        </div>
+        <div class="flex flex-col">
+            <h3 class="text-sm leading-7 font-semibold">
+                <?= htmlentities($title) ?>
+            </h3>
+            <p class="text-sm">
+                <?= $message ?>
             </p>
         </div>
     </div>

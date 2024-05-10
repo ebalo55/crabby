@@ -115,13 +115,13 @@ function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $
     $ldap_conn = ldap_connect("ldap://$server", $port);
 
     if (!$ldap_conn) {
-        echo "Connection failed: " . ldap_error($ldap_conn);
+        echo "Connection failed: " . htmlentities(ldap_error($ldap_conn));
         return;
     }
 
     $base_dn = "DC=" . implode(",DC=", explode(".", $domain));
-    echo "Connected successfully to LDAP server $server:$port.\n";
-    echo "Base DN: $base_dn\n";
+    echo "Connected successfully to LDAP server " . htmlentities($server) . ":" . htmlentities($port) . PHP_EOL;
+    echo "Base DN: " . htmlentities($base_dn) . PHP_EOL;
 
     // Set LDAP options
     ldap_set_option($ldap_conn, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -131,7 +131,7 @@ function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $
     // Bind to LDAP server
     if (!empty($username) && !empty($password)) {
         $username = "CN=$username,$base_dn";
-        echo "Binding with username: $username\n";
+        echo "Binding with username: " . htmlentities($username) . PHP_EOL;
 
         // Bind with username and password (authenticating)
         $ldap_bind = ldap_bind($ldap_conn, $username, $password);
@@ -142,7 +142,7 @@ function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $
     }
 
     if (!$ldap_bind) {
-        echo "Bind failed: " . ldap_error($ldap_conn);
+        echo "Bind failed: " . htmlentities(ldap_error($ldap_conn));
         return;
     }
 
@@ -150,7 +150,7 @@ function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $
     $ldap_search = ldap_search($ldap_conn, $base_dn, trim($query), array("*"), 0, 0);
 
     if (!$ldap_search) {
-        echo "Search failed: " . ldap_error($ldap_conn);
+        echo "Search failed: " . htmlentities(ldap_error($ldap_conn));
         return;
     }
 
@@ -158,11 +158,11 @@ function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $
     $ldap_entries = ldap_get_entries($ldap_conn, $ldap_search);
 
     if (!$ldap_entries) {
-        echo "Search failed: " . ldap_error($ldap_conn);
+        echo "Search failed: " . htmlentities(ldap_error($ldap_conn));
         return;
     }
 
-    echo "Query executed successfully (Query: $query).\n";
+    echo "Query executed successfully (Query: " . htmlentities($query) . ")\n";
     echo json_encode($ldap_entries);
 
     // Close LDAP connection
@@ -177,7 +177,7 @@ function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $
  *
  * @return void
  */
-function __PREFIX__query_ldap_hooks_features(&$features) {
+function __PREFIX__queryLdapHooksFeatures(&$features) {
     global $QUERY_LDAP;
 
     $features[] = array(
@@ -193,7 +193,7 @@ function __PREFIX__query_ldap_hooks_features(&$features) {
 // section.functions.end
 
 // section.hooks
-add_hook("features", "__PREFIX__query_ldap_hooks_features");
+add_hook("features", "__PREFIX__queryLdapHooksFeatures");
 add_named_hook("GET_page", $QUERY_LDAP, "__PREFIX__makeQueryLDAPPage");
 add_named_hook("POST_operation", $QUERY_LDAP, "__PREFIX__handleQueryLDAP");
 // section.hooks.end
