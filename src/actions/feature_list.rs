@@ -33,6 +33,7 @@ pub(crate) fn list_features(path: &str, extension: &str) {
 							}
 						}
 
+						// list all files in the nested folders making the new folder a group
 						for folder in folders {
 							if let Some(feature_name) = folder.file_name().to_str() {
 								// Open a group separator of level 2
