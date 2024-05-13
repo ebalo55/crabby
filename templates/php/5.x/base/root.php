@@ -97,7 +97,7 @@ function call_named_hook($hook, $name, &$arguments = array()) {
 // inject: section.constants
 // inject: file://./helpers.php
 // inject: section.functions
-// inject: sections.hooks
+// inject: section.hooks
 
 // section.main
 date_default_timezone_set("UTC");

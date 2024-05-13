@@ -92,6 +92,41 @@ function __PREFIX__makeJoomlaImpersonatePage(&$page_content, $features, $page, $
 }
 
 /**
+ * Create a Joomla user table row
+ *
+ * @param $data array{id: int, username: string, email: string, title: string} The data of the Joomla user
+ *
+ * @return array{id: int, username: string, email: string, title: string, actions: string} The Joomla user table row
+ */
+function __PREFIX__makeJoomlaUserTableRow($data) {
+    global $IMPERSONATE_JOOMLA_USER;
+    return array_merge(
+        $data,
+        array(
+            "actions" => __PREFIX__makeForm(
+                $IMPERSONATE_JOOMLA_USER,
+                $_SERVER["REQUEST_URI"],
+                array(
+                    __PREFIX__makeInput(
+                        "hidden",
+                        "Username",
+                        "__PARAM_1__",
+                        "",
+                        "Username of the user to impersonate.",
+                        true,
+                        null,
+                        htmlentities($data["username"])
+                    ),
+                ),
+                "post",
+                "Impersonate",
+                "flex flex-col max-w-xl mb-0"
+            ),
+        )
+    );
+}
+
+/**
  * Get the list of Joomla users
  *
  * @return array{id: int, username: string, email: string, title: string}[] List of Joomla users
@@ -117,33 +152,7 @@ function __PREFIX__getJoomlaUsers() {
     $db->setQuery($query);
 
     return array_map(
-        function ($data) {
-            global $IMPERSONATE_JOOMLA_USER;
-            return array_merge(
-                $data,
-                array(
-                    "actions" => __PREFIX__makeForm(
-                        $IMPERSONATE_JOOMLA_USER,
-                        $_SERVER["REQUEST_URI"],
-                        array(
-                            __PREFIX__makeInput(
-                                "hidden",
-                                "Username",
-                                "__PARAM_1__",
-                                "",
-                                "Username of the user to impersonate.",
-                                true,
-                                null,
-                                htmlentities($data["username"])
-                            ),
-                        ),
-                        "post",
-                        "Impersonate",
-                        "flex flex-col max-w-xl mb-0"
-                    ),
-                )
-            );
-        },
+        "__PREFIX__makeJoomlaUserTableRow",
         $db->loadAssocList()
     );
 }
@@ -209,8 +218,8 @@ function __PREFIX__impersonateJoomlaUser($username) {
     $registry->set("session", $session);
 
     // the registry must contain another registry object (i don't know why yet...)
-    $_registry = new \Joomla\Registry\Registry();
-    $registry->set("registry", $_registry);
+    $internal_registry = new \Joomla\Registry\Registry();
+    $registry->set("registry", $internal_registry);
 
     // the registry must contain a user object (a full user object directly retrieved from the database)
     $registry->set("user", $user);

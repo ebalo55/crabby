@@ -128,41 +128,50 @@ function __PREFIX__handleWpImpersonate($operation, $features) {
 }
 
 /**
+ * Create the table row for the WordPress users
+ *
+ * @param $data WP_User The WordPress user data
+ *
+ * @return array The table row
+ */
+function __PREFIX__makeWpUserTableRow($data) {
+    global $IMPERSONATE_WP_USER;
+
+    return array_merge(
+        (array) $data->data,
+        array(
+            "roles"   => $data->roles,
+            "actions" => __PREFIX__makeForm(
+                $IMPERSONATE_WP_USER,
+                $_SERVER["REQUEST_URI"],
+                array(
+                    __PREFIX__makeInput(
+                        "hidden",
+                        "username",
+                        "__PARAM_1__",
+                        "",
+                        "Username of the user to impersonate.",
+                        true,
+                        null,
+                        htmlentities($data->data->user_login)
+                    ),
+                ),
+                "post",
+                "Impersonate",
+                "flex flex-col max-w-xl mb-0"
+            ),
+        )
+    );
+}
+
+/**
  * Get the list of WordPress users
  *
  * @return array List of WordPress users
  */
 function __PREFIX__getWPUsers() {
     return array_map(
-        function ($data) {
-            global $IMPERSONATE_WP_USER;
-
-            return array_merge(
-                (array) $data->data,
-                array(
-                    "roles"   => $data->roles,
-                    "actions" => __PREFIX__makeForm(
-                        $IMPERSONATE_WP_USER,
-                        $_SERVER["REQUEST_URI"],
-                        array(
-                            __PREFIX__makeInput(
-                                "hidden",
-                                "username",
-                                "__PARAM_1__",
-                                "",
-                                "Username of the user to impersonate.",
-                                true,
-                                null,
-                                htmlentities($data->data->user_login)
-                            ),
-                        ),
-                        "post",
-                        "Impersonate",
-                        "flex flex-col max-w-xl mb-0"
-                    ),
-                )
-            );
-        },
+        "__PREFIX__makeWpUserTableRow",
         get_users()
     );
 }

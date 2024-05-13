@@ -1,7 +1,8 @@
-use std::path::{Path, PathBuf};
-use glob::glob;
 use std::fs;
+use std::path::Path;
+
 use colored::Colorize;
+use glob::glob;
 
 pub(crate) fn list_features(path: &str, extension: &str) {
 	// Create the glob pattern for the root files
@@ -24,11 +25,9 @@ pub(crate) fn list_features(path: &str, extension: &str) {
 
 						// List all files in the "features" folder
 						for feature_entry in features_dir.filter_map(Result::ok) {
-
 							if Path::is_file(&feature_entry.path()) {
 								println!("   - {}", feature_entry.file_name().to_str().unwrap().replace(format!(".{}", extension).as_str(), ""));
-							}
-							else if Path::is_dir(&feature_entry.path()) {
+							} else if Path::is_dir(&feature_entry.path()) {
 								folders.push(feature_entry);
 							}
 						}
@@ -42,8 +41,12 @@ pub(crate) fn list_features(path: &str, extension: &str) {
 								// List all files in the feature folder
 								let feature_files = fs::read_dir(folder.path()).unwrap();
 								for feature_file in feature_files.filter_map(Result::ok) {
-									if(Path::is_file(&feature_file.path())) {
-										println!("      - {}", feature_file.file_name().to_str().unwrap().replace(format!(".{}", extension).as_str(), ""));
+									if (Path::is_file(&feature_file.path())) {
+										println!(
+											"      - {}/{}",
+											folder.file_name().to_str().unwrap(),
+											feature_file.file_name().to_str().unwrap().replace(format!(".{}", extension).as_str(), "")
+										);
 									}
 								}
 							}

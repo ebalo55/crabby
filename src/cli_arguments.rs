@@ -169,9 +169,9 @@ Example: `--cms-option key1=value1 --cms-option key2=value`"#
 
     /// Prefix to use for the functions.
     #[arg(
-    short,
+    short = 'F',
     long,
-    default_value = r"\w{2}\d",
+    default_value = r"\w",
     display_order = 1,
     long_help = r#"Prefix to use for the functions.
 
@@ -201,6 +201,7 @@ Note: It is strongly un-suggested to provide special characters in the format as
     long,
     action = clap::ArgAction::Append,
     display_order = 2,
+    default_value = "all",
     long_help = r#"Features to include in the generated webshell.
 
 This will include optional features in the generated webshell, each additional feature will add more code increasing its overall size,
@@ -209,9 +210,30 @@ complexity, detectability and functionality.
 Note that the features are specific to the template and may not be available in all templates or cms.
 
 To see the available features for the selected template, use the `feature-list [template-language]` command.
+
+Additionally a special feature `all` can be used to include all the available features for the selected template.
 "#
     )]
     pub features: Vec<String>,
+
+    /// Features to exclude from the generated webshell.
+    #[arg(
+    short,
+    long,
+    action = clap::ArgAction::Append,
+    display_order = 2,
+    long_help = r#"Features to exclude from the generated webshell.
+
+This will exclude optional features from the generated webshell, each excluded feature will reduce the overall size,
+complexity, detectability and functionality of the webshell.
+
+Note that the features are specific to the template and may not be available in all templates or cms.
+
+This flag is particularly useful when the `all` feature is used to include all the available features but some of them
+need to be excluded.
+    "#
+    )]
+    pub exclude_features: Vec<String>,
 }
 
 /// CLI arguments for the obfuscation options, common to all templates
@@ -230,6 +252,12 @@ pub struct CliGenerateObfuscation {
     /// the overall file size and making the code harder to read and understand.
     #[arg(long, global = true, default_value = "false", display_order = 0)]
     pub minify: bool,
+
+    /// Remove all the icons from the generated code if minification is enabled.
+    ///
+    /// This will remove all the icons from the generated code, drastically reducing the overall file size.
+    #[arg(long, global = true, default_value = "false", display_order = 0)]
+    pub remove_icons: bool,
 
     /// Format used to generate variable names if obfuscation is enabled.
     #[arg(

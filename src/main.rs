@@ -15,6 +15,7 @@ mod generate_random_string;
 mod cli_arguments;
 mod extract_unique_strings;
 mod strategies;
+mod pretty_print_filesize;
 
 fn setup_logging(debug_level: u8) -> anyhow::Result<()> {
 	let mut base_config = fern::Dispatch::new()

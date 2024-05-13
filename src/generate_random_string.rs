@@ -209,7 +209,7 @@ fn random_lowercase_letter(rng: &mut ThreadRng) -> char {
 ///
 /// The random special character as a character
 fn random_special_character(rng: &mut ThreadRng) -> char {
-    let default_char_map = "!#$%&()*+,-/:;?<=>@[]^_{}~.";
+    let default_char_map = "!#$%&()*+,-/:;?<=>@[]^_~.";
     default_char_map.chars().choose(rng).unwrap()
 }
 

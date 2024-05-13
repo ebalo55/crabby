@@ -171,7 +171,7 @@ function __PREFIX__impersonateDrupalUser($id) {
         $database = \Drupal::database();
 
         $auth            = true;
-        $_sf2_meta       = array(
+        $sf2_meta       = array(
             // session timestamp
             "u" => time(),
             // login timestamp as from user_field_data
@@ -181,7 +181,7 @@ function __PREFIX__impersonateDrupalUser($id) {
             // csrf token seed - set via Crypt::randomBytesBase64()
             "s" => \Drupal\Component\Utility\Crypt::randomBytesBase64(),
         );
-        $_sf2_attributes = array(
+        $sf2_attributes = array(
             "uid" => "$id",
         );
 
@@ -190,16 +190,16 @@ function __PREFIX__impersonateDrupalUser($id) {
         $forged_session = "auth|" .
                           serialize($auth) .
                           "_sf2_meta|" .
-                          serialize($_sf2_meta) .
+                          serialize($sf2_meta) .
                           "_sf2_attributes|" .
-                          serialize($_sf2_attributes);
+                          serialize($sf2_attributes);
 
         try {
             $database->query(
                 "update {$prefix}sessions as s set s.session=:a, timestamp=:b, uid=:c where sid=:d",
                 array(
                     ":a" => $forged_session,
-                    ":b" => $_sf2_meta['u'],
+                    ":b" => $sf2_meta['u'],
                     ":c" => $id,
                     ":d" => \Drupal\Component\Utility\Crypt::hashBase64(session_id()),
                 )
