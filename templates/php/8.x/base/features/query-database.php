@@ -14,120 +14,103 @@ $QUERY_DATABASES = "__FEAT_QUERY_DATABASES__";
  * @param $page string The current page
  * @param $css string The CSS of the page
  */
-function __PREFIX__makeQueryDatabasePage(&$page_content, array $features, $page, $css): void {
+function __PREFIX__makeQueryDatabasePage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, fn($feature) => $feature["op"] === $page));
+
     $page_content = __PREFIX__makePage(
         $features,
         $css,
         $page,
-        [
-            __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
-            ),
-            __PREFIX__makeForm(
-                $page,
-                $_SERVER["REQUEST_URI"],
-                [
-                    __PREFIX__makeSelect(
-                        "Database",
-                        "__PARAM_1__",
-                        [
-                            [
-                                "value"    => "mysql",
-                                "label"    => "MySQL",
-                                "disabled" => !extension_loaded("mysql") &&
-                                              !extension_loaded("mysqli") &&
-                                              !extension_loaded("pdo_mysql"),
-                            ],
-                            [
-                                "value"    => "cubrid",
-                                "label"    => "CUBRID",
-                                "disabled" => !extension_loaded("cubrid") &&
-                                              !extension_loaded("pdo_cubrid"),
-                            ],
-                            [
-                                "value"    => "pgsql",
-                                "label"    => "PostgreSQL",
-                                "disabled" => !extension_loaded("pgsql") &&
-                                              !extension_loaded("pdo_pgsql"),
-                            ],
-                            [
-                                "value"    => "sqlite",
-                                "label"    => "SQLite",
-                                "disabled" => !extension_loaded("sqlite3") &&
-                                              !extension_loaded("pdo_sqlite"),
-                            ],
-                            [
-                                "value"    => "sqlsrv",
-                                "label"    => "SQL Server",
-                                "disabled" => !extension_loaded("sqlsrv") &&
-                                              !extension_loaded("pdo_sqlsrv"),
-                            ],
-                            [
-                                "value"    => "oci",
-                                "label"    => "Oracle",
-                                "disabled" => !extension_loaded("oci8") &&
-                                              !extension_loaded("pdo_oci"),
-                            ],
-                            [
-                                "value"    => "mongodb",
-                                "label"    => "MongoDB",
-                                "disabled" => !extension_loaded("mongo") &&
-                                              !extension_loaded("mongodb"),
-                            ],
-                            [
-                                "value"    => "ibm",
-                                "label"    => "IBM DB2",
-                                "disabled" => !extension_loaded("ibm_db2") &&
-                                              !extension_loaded("pdo_ibm"),
-                            ],
-                            [
-                                "value"    => "firebird",
-                                "label"    => "Firebird/Interbase",
-                                "disabled" => !extension_loaded("interbase") &&
-                                              !extension_loaded("pdo_firebird"),
-                            ],
-                            [
-                                "value"    => "odbc",
-                                "label"    => "ODBC",
-                                "disabled" => !extension_loaded("odbc") &&
-                                              !extension_loaded("pdo_odbc"),
-                            ],
-                            [
-                                "value"    => "informix",
-                                "label"    => "Informix",
-                                "disabled" => !extension_loaded("pdo_informix"),
-                            ],
-                            [
-                                "value"    => "sybase",
-                                "label"    => "Sybase",
-                                "disabled" => !extension_loaded("sybase") &&
-                                              !extension_loaded("mssql") &&
-                                              !extension_loaded("pdo_dblib"),
-                            ],
-                            [
-                                "value"    => "raw",
-                                "label"    => "Raw PDO connection string",
-                                "disabled" => !extension_loaded("pdo"),
-                                "selected" => true,
-                            ],
-                        ],
-                        true,
-                        "Database driver not available."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Host",
-                        "__PARAM_2__",
-                        "localhost",
-                        "The host to connect to (default: localhost)"
-                    ),
-                    __PREFIX__makeInput(
-                        "number",
-                        "Port",
-                        "__PARAM_3__",
-                        "3306",
-                        "
+        [__PREFIX__makePageHeader(
+            $feature[0]["title"],
+            $feature[0]["description"]
+        ), __PREFIX__makeForm(
+            $page,
+            $_SERVER["REQUEST_URI"],
+            [__PREFIX__makeSelect(
+                "Database",
+                "__PARAM_1__",
+                [[
+                    "value"    => "mysql",
+                    "label"    => "MySQL",
+                    "disabled" => !extension_loaded("mysql") &&
+                                  !extension_loaded("mysqli") &&
+                                  !extension_loaded("pdo_mysql"),
+                ], [
+                    "value"    => "cubrid",
+                    "label"    => "CUBRID",
+                    "disabled" => !extension_loaded("cubrid") &&
+                                  !extension_loaded("pdo_cubrid"),
+                ], [
+                    "value"    => "pgsql",
+                    "label"    => "PostgreSQL",
+                    "disabled" => !extension_loaded("pgsql") &&
+                                  !extension_loaded("pdo_pgsql"),
+                ], [
+                    "value"    => "sqlite",
+                    "label"    => "SQLite",
+                    "disabled" => !extension_loaded("sqlite3") &&
+                                  !extension_loaded("pdo_sqlite"),
+                ], [
+                    "value"    => "sqlsrv",
+                    "label"    => "SQL Server",
+                    "disabled" => !extension_loaded("sqlsrv") &&
+                                  !extension_loaded("pdo_sqlsrv"),
+                ], [
+                    "value"    => "oci",
+                    "label"    => "Oracle",
+                    "disabled" => !extension_loaded("oci8") &&
+                                  !extension_loaded("pdo_oci"),
+                ], [
+                    "value"    => "mongodb",
+                    "label"    => "MongoDB",
+                    "disabled" => !extension_loaded("mongo") &&
+                                  !extension_loaded("mongodb"),
+                ], [
+                    "value"    => "ibm",
+                    "label"    => "IBM DB2",
+                    "disabled" => !extension_loaded("ibm_db2") &&
+                                  !extension_loaded("pdo_ibm"),
+                ], [
+                    "value"    => "firebird",
+                    "label"    => "Firebird/Interbase",
+                    "disabled" => !extension_loaded("interbase") &&
+                                  !extension_loaded("pdo_firebird"),
+                ], [
+                    "value"    => "odbc",
+                    "label"    => "ODBC",
+                    "disabled" => !extension_loaded("odbc") &&
+                                  !extension_loaded("pdo_odbc"),
+                ], [
+                    "value"    => "informix",
+                    "label"    => "Informix",
+                    "disabled" => !extension_loaded("pdo_informix"),
+                ], [
+                    "value"    => "sybase",
+                    "label"    => "Sybase",
+                    "disabled" => !extension_loaded("sybase") &&
+                                  !extension_loaded("mssql") &&
+                                  !extension_loaded("pdo_dblib"),
+                ], [
+                    "value"    => "raw",
+                    "label"    => "Raw PDO connection string",
+                    "disabled" => !extension_loaded("pdo"),
+                    "selected" => true,
+                ]],
+                true,
+                "Database driver not available."
+            ), __PREFIX__makeInput(
+                "text",
+                "Host",
+                "__PARAM_2__",
+                "localhost",
+                "The host to connect to (default: localhost)"
+            ), __PREFIX__makeInput(
+                "number",
+                "Port",
+                "__PARAM_3__",
+                "3306",
+                "
                                     The port to connect to, default depend on the database
                                     <ul class='text-sm text-zinc-500 list-disc list-inside'>
                                         <li>MySQL (default: 3306)</li>
@@ -143,122 +126,105 @@ function __PREFIX__makeQueryDatabasePage(&$page_content, array $features, $page,
                                         <li>Informix (default: 9800)</li>
                                         <li>Sybase (default: 5000)</li>
                                     </ul>"
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Username",
-                        "__PARAM_4__",
-                        "admin",
-                        "The username to connect with.",
-                        true
-                    ),
-                    __PREFIX__makeInput(
-                        "password",
-                        "Password",
-                        "__PARAM_5__",
-                        "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
-                        "The password to connect with.",
-                        true
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Database",
-                        "__PARAM_6__",
-                        "ExampleDB",
-                        "The database to connect to."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Charset",
-                        "__PARAM_7__",
-                        "utf8",
-                        "The charset to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Service name",
-                        "__PARAM_8__",
-                        "orcl",
-                        "The service name to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "SID",
-                        "__PARAM_9__",
-                        "orcl",
-                        "The SID to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Options",
-                        "__PARAM_10__",
-                        "ssl=true",
-                        "The options to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Role",
-                        "__PARAM_11__",
-                        "SYSDBA",
-                        "The role to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Dialect",
-                        "__PARAM_12__",
-                        "3",
-                        "The dialect to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Protocol",
-                        "__PARAM_13__",
-                        "onsoctcp",
-                        "The protocol to use for the connection."
-                    ),
-                    __PREFIX__makeCheckbox(
-                        "__PARAM_14__",
-                        "Enable scrollable cursors",
-                        "Enable scrollable cursors for the connection.",
-                        true,
-                        "1"
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "ODBC driver",
-                        "__PARAM_15__",
-                        "ODBC Driver 17 for SQL Server",
-                        "The ODBC driver to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Raw connection string",
-                        "__PARAM_16__",
-                        "mysql:host=localhost;port=3306;dbname=ExampleDB;charset=utf8",
-                        "The raw connection string to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Server",
-                        "__PARAM_17__",
-                        "ol_informix1170",
-                        "The Informix server name to use for the connection."
-                    ),
-                    __PREFIX__makeInput(
-                        "textarea",
-                        "Query",
-                        "__PARAM_18__",
-                        "SHOW DATABASES",
-                        "The query to run against the database. Leave empty to perform a connection test."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Collection",
-                        "__PARAM_19__",
-                        "users",
-                        "The collection to query against for MongoDB."
-                    ),
-                    '<script>
+            ), __PREFIX__makeInput(
+                "text",
+                "Username",
+                "__PARAM_4__",
+                "admin",
+                "The username to connect with.",
+                true
+            ), __PREFIX__makeInput(
+                "password",
+                "Password",
+                "__PARAM_5__",
+                "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                "The password to connect with.",
+                true
+            ), __PREFIX__makeInput(
+                "text",
+                "Database",
+                "__PARAM_6__",
+                "ExampleDB",
+                "The database to connect to."
+            ), __PREFIX__makeInput(
+                "text",
+                "Charset",
+                "__PARAM_7__",
+                "utf8",
+                "The charset to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "Service name",
+                "__PARAM_8__",
+                "orcl",
+                "The service name to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "SID",
+                "__PARAM_9__",
+                "orcl",
+                "The SID to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "Options",
+                "__PARAM_10__",
+                "ssl=true",
+                "The options to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "Role",
+                "__PARAM_11__",
+                "SYSDBA",
+                "The role to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "Dialect",
+                "__PARAM_12__",
+                "3",
+                "The dialect to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "Protocol",
+                "__PARAM_13__",
+                "onsoctcp",
+                "The protocol to use for the connection."
+            ), __PREFIX__makeCheckbox(
+                "__PARAM_14__",
+                "Enable scrollable cursors",
+                "Enable scrollable cursors for the connection.",
+                true,
+                "1"
+            ), __PREFIX__makeInput(
+                "text",
+                "ODBC driver",
+                "__PARAM_15__",
+                "ODBC Driver 17 for SQL Server",
+                "The ODBC driver to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "Raw connection string",
+                "__PARAM_16__",
+                "mysql:host=localhost;port=3306;dbname=ExampleDB;charset=utf8",
+                "The raw connection string to use for the connection."
+            ), __PREFIX__makeInput(
+                "text",
+                "Server",
+                "__PARAM_17__",
+                "ol_informix1170",
+                "The Informix server name to use for the connection."
+            ), __PREFIX__makeInput(
+                "textarea",
+                "Query",
+                "__PARAM_18__",
+                "SHOW DATABASES",
+                "The query to run against the database. Leave empty to perform a connection test."
+            ), __PREFIX__makeInput(
+                "text",
+                "Collection",
+                "__PARAM_19__",
+                "users",
+                "The collection to query against for MongoDB."
+            ), '<script>
                         function __PREFIX__hideAll() {
                             for (let i = 2; i <= 17; i++) {
                                 document.getElementById(`__PARAM_${i}__-container`).classList.add(`hidden`);
@@ -322,10 +288,8 @@ function __PREFIX__makeQueryDatabasePage(&$page_content, array $features, $page,
                                     break;
                            }
                         });
-                    </script>',
-                ]
-            ),
-        ]
+                    </script>']
+        )]
     );
 }
 
@@ -334,8 +298,10 @@ function __PREFIX__makeQueryDatabasePage(&$page_content, array $features, $page,
  *
  * @param $operation string The operation to handle
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
+ *
+ * @return void
  */
-function __PREFIX__handleQueryDatabase($operation, $features): void {
+function __PREFIX__handleQueryDatabase($operation, $features) {
     __PREFIX__connectAndQueryDatabase(
         $_POST["__PARAM_1__"],
         $_POST["__PARAM_4__"],
@@ -364,8 +330,10 @@ function __PREFIX__handleQueryDatabase($operation, $features): void {
  *
  * @param $pdo PDO PDO connection to use
  * @param $query string Query to run
+ *
+ * @return void
  */
-function __PREFIX__runPDOQuery($pdo, $query): void {
+function __PREFIX__runPDOQuery($pdo, $query) {
     $stmt = $pdo->query($query);
     if ($stmt) {
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -404,12 +372,14 @@ function __PREFIX__runPDOQuery($pdo, $query): void {
  * @param $raw_connection_string string Raw connection string to use for connection
  * @param $query string|null Query to run
  * @param $collection string|null Collection to use for connection
+ *
+ * @return void
  */
 function __PREFIX__connectAndQueryDatabase(
     $db_type,
     $username,
     $password,
-    string $host = 'localhost',
+    $host = 'localhost',
     $port = null,
     $service_name = null,
     $sid = null,
@@ -425,7 +395,7 @@ function __PREFIX__connectAndQueryDatabase(
     $raw_connection_string = "",
     $query = null,
     $collection = null
-): void {
+) {
     if ($db_type === 'mysql') {
         $port = $port ?: 3306;
 
@@ -887,7 +857,7 @@ function __PREFIX__connectAndQueryDatabase(
                     __PREFIX__printAsciiTable($rows);
                 }
             }
-            catch (MongoConnectionException | Exception $e) {
+            catch (MongoConnectionException|Exception $e) {
                 echo "[Driver: mongo] Connection failed: " . htmlentities($e->getMessage());
             }
         }
@@ -1247,18 +1217,15 @@ function __PREFIX__connectAndQueryDatabase(
  *
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
  *     container
+ *
+ * @return void
  */
-function __PREFIX__queryDatabaseHooksFeatures(&$features): void {
+function __PREFIX__queryDatabaseHooksFeatures(&$features) {
     global $QUERY_DATABASES;
 
-    $features[] = [
-        "title"       => "Query databases",
-        "description" => "Query databases using the provided credentials.",
-        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    $features[] = ["title"       => "Query databases", "description" => "Query databases using the provided credentials.", "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-</svg>',
-        "op"          => $QUERY_DATABASES,
-    ];
+</svg>', "op"          => $QUERY_DATABASES];
 }
 
 // section.functions.end

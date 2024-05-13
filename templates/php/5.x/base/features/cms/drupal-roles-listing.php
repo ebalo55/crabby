@@ -15,15 +15,19 @@ $CHECK_DRUPAL_USER_ROLES = "__FEAT_CHECK_DRUPAL_USER_ROLES__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeCheckDrupalRolesPage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $roles        = __PREFIX__getDrupalRoles();
     $page_content = __PREFIX__makePage(
         $features,
-        $page,
         $css,
+        $page,
         array(
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             __PREFIX__makeTable(
                 "Roles",
@@ -44,6 +48,10 @@ function __PREFIX__makeCheckDrupalRolesPage(&$page_content, $features, $page, $c
  * @return array
  */
 function __PREFIX__getDrupalRoles() {
+    if(!class_exists('\Drupal\user\Entity\Role')) {
+        return array();
+    }
+
     $roles       = \Drupal\user\Entity\Role::loadMultiple();
     $permissions = \Drupal::service('user.permissions')
         ->getPermissions();

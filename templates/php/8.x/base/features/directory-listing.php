@@ -14,41 +14,37 @@ $DIRECTORY_LISTING = "__FEAT_DIRECTORY_LISTING__";
  * @param $page string The current page
  * @param $css string The CSS of the page
  */
-function __PREFIX__makeDirectoryListingPage(&$page_content, array $features, $page, $css): void {
+function __PREFIX__makeDirectoryListingPage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, fn($feature) => $feature["op"] === $page));
+
     $page_content = __PREFIX__makePage(
         $features,
         $css,
         $page,
-        [
-            __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
-            ),
-            __PREFIX__makeForm(
-                $page,
-                $_SERVER["REQUEST_URI"],
-                [
-                    __PREFIX__makeInput(
-                        "text",
-                        "Path",
-                        "__PARAM_1__",
-                        "C://path/to/directory or \\\\network\\path\\to\\directory",
-                        "Fully qualified path to the directory to list.",
-                        true
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Depth",
-                        "__PARAM_2__",
-                        "5",
-                        "How many levels deep to list, where " . __PREFIX__makeCodeHighlight(0) .
-                        " is the current directory and " . __PREFIX__makeCodeHighlight("inf") .
-                        " means to list all.",
-                        true
-                    ),
-                ]
-            ),
-        ]
+        [__PREFIX__makePageHeader(
+            $feature[0]["title"],
+            $feature[0]["description"]
+        ), __PREFIX__makeForm(
+            $page,
+            $_SERVER["REQUEST_URI"],
+            [__PREFIX__makeInput(
+                "text",
+                "Path",
+                "__PARAM_1__",
+                "C://path/to/directory or \\\\network\\path\\to\\directory",
+                "Fully qualified path to the directory to list.",
+                true
+            ), __PREFIX__makeInput(
+                "text",
+                "Depth",
+                "__PARAM_2__",
+                "5",
+                "How many levels deep to list, where " . __PREFIX__makeCodeHighlight(0) .
+                " is the current directory and " . __PREFIX__makeCodeHighlight("inf") .
+                " means to list all.",
+                true
+            )]
+        )]
     );
 }
 
@@ -56,10 +52,11 @@ function __PREFIX__makeDirectoryListingPage(&$page_content, array $features, $pa
  * Handle the directory listing operation
  *
  * @param $operation string The operation to handle
- * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
- *     container
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
+ *
+ * @return void
  */
-function __PREFIX__handleDirectoryListing($operation, $features): void {
+function __PREFIX__handleDirectoryListing($operation, $features) {
     $max_depth = strtolower($_POST['__PARAM_2__']) === "inf" ? INF : intval($_POST['__PARAM_2__']);
 
     __PREFIX__listFilesRecursive($_POST['__PARAM_1__'], $max_depth);
@@ -69,8 +66,10 @@ function __PREFIX__handleDirectoryListing($operation, $features): void {
  * Get the permissions string for a file or directory (unix like `ls -l` output)
  *
  * @param $path string Path to get permissions for
+ *
+ * @return string
  */
-function __PREFIX__getPermissionsString($path): string {
+function __PREFIX__getPermissionsString($path) {
     if (!file_exists($path)) {
         return "----------";
     }
@@ -140,8 +139,10 @@ function __PREFIX__getStatForCurrentPath($path) {
  * @param $max_depth int Maximum depth to list
  * @param $depth int Current depth
  * @param $show_line_split bool Whether to show a line split between entries
+ *
+ * @return void
  */
-function __PREFIX__listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true): void {
+function __PREFIX__listFilesRecursive($path, $max_depth, $depth = 0, $show_line_split = true) {
     // Get stat for current path
     __PREFIX__getStatForCurrentPath($path);
 
@@ -182,20 +183,16 @@ function __PREFIX__listFilesRecursive($path, $max_depth, $depth = 0, $show_line_
  *
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
  *     container
+ *
+ * @return void
  */
-function __PREFIX__directoryListingHooksFeatures(&$features): void {
+function __PREFIX__directoryListingHooksFeatures(&$features) {
     global $DIRECTORY_LISTING;
 
-    $features[] = [
-        "title"       => "Directory listing",
-        "description" => "List all files and folders in a directory and optionally its subdirectories.",
-        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    $features[] = ["title"       => "Directory listing", "description" => "List all files and folders in a directory and optionally its subdirectories.", "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
-</svg>',
-        "op"          => $DIRECTORY_LISTING,
-    ];
+</svg>', "op"          => $DIRECTORY_LISTING];
 }
-
 // section.functions.end
 
 // section.hooks

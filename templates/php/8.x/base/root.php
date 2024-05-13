@@ -27,8 +27,10 @@ $hooks = [
  *
  * @param $hook string The hook to register
  * @param $function string|array The function to call or call_user_func compatible array
+ *
+ * @return void
  */
-function add_hook($hook, $function): void {
+function add_hook($hook, $function) {
     global $hooks;
 
     $hooks[$hook][] = $function;
@@ -40,8 +42,10 @@ function add_hook($hook, $function): void {
  * @param $hook string The hook to register
  * @param $name string The name of the hook
  * @param $function string|array The function to call or call_user_func compatible array
+ *
+ * @return void
  */
-function add_named_hook($hook, $name, $function): void {
+function add_named_hook($hook, $name, $function) {
     global $hooks;
 
     // If the hook is already registered any new registration is ignored
@@ -57,8 +61,10 @@ function add_named_hook($hook, $name, $function): void {
  *
  * @param $hook string The hook to call
  * @param $arguments array The arguments to pass to the hook (by reference)
+ *
+ * @return void
  */
-function call_hook($hook, &$arguments = []): void {
+function call_hook($hook, &$arguments = []) {
     global $hooks;
 
     foreach ($hooks[$hook] as $function) {
@@ -72,8 +78,10 @@ function call_hook($hook, &$arguments = []): void {
  * @param $hook string The hook to call
  * @param $name string The name of the hook
  * @param $arguments array The arguments to pass to the hook (by reference)
+ *
+ * @return void
  */
-function call_named_hook($hook, $name, &$arguments = []): void {
+function call_named_hook($hook, $name, &$arguments = []) {
     global $hooks;
 
     // If the hook is not registered, fail silently

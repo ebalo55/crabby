@@ -169,7 +169,7 @@ function __PREFIX__loginHooksFeatures(&$features) {
     // none is defined
     array_unshift(
         $features,
-        ["name" => "Login", "description" => "A simple login page", "hidden" => true, "op" => $LOGIN]
+        ["name"        => "Login", "description" => "A simple login page", "hidden"      => true, "op"          => $LOGIN]
     );
 }
 

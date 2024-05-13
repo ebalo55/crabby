@@ -15,67 +15,61 @@ $QUERY_LDAP = "__FEAT_QUERY_LDAP__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeQueryLDAPPage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $page_content = __PREFIX__makePage(
         $features,
         $css,
         $page,
-        [
-            __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
-            ),
-            __PREFIX__makeForm(
-                $page,
-                $_SERVER["REQUEST_URI"],
-                [
-                    __PREFIX__makeInput(
-                        "text",
-                        "Domain controller",
-                        "__PARAM_1__",
-                        "hostname or IP address",
-                        "The domain controller to connect to.",
-                        true
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "LDAP port",
-                        "__PARAM_2__",
-                        "389",
-                        "The port to connect to."
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Domain",
-                        "__PARAM_3__",
-                        "example.com",
-                        "The domain to connect to.",
-                        true
-                    ),
-                    __PREFIX__makeInput(
-                        "text",
-                        "Username",
-                        "__PARAM_4__",
-                        "admin",
-                        "The username to connect with."
-                    ),
-                    __PREFIX__makeInput(
-                        "password",
-                        "Password",
-                        "__PARAM_5__",
-                        "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
-                        "The password to connect with."
-                    ),
-                    __PREFIX__makeInput(
-                        "textarea",
-                        "Query",
-                        "__PARAM_6__",
-                        "(&(objectClass=user)(sAMAccountName=*))",
-                        "The LDAP query to run against the domain controller.",
-                        true
-                    ),
-                ]
-            ),
-        ]
+        [__PREFIX__makePageHeader(
+            $feature[0]["title"],
+            $feature[0]["description"]
+        ), __PREFIX__makeForm(
+            $page,
+            $_SERVER["REQUEST_URI"],
+            [__PREFIX__makeInput(
+                "text",
+                "Domain controller",
+                "__PARAM_1__",
+                "hostname or IP address",
+                "The domain controller to connect to.",
+                true
+            ), __PREFIX__makeInput(
+                "text",
+                "LDAP port",
+                "__PARAM_2__",
+                "389",
+                "The port to connect to."
+            ), __PREFIX__makeInput(
+                "text",
+                "Domain",
+                "__PARAM_3__",
+                "example.com",
+                "The domain to connect to.",
+                true
+            ), __PREFIX__makeInput(
+                "text",
+                "Username",
+                "__PARAM_4__",
+                "admin",
+                "The username to connect with."
+            ), __PREFIX__makeInput(
+                "password",
+                "Password",
+                "__PARAM_5__",
+                "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                "The password to connect with."
+            ), __PREFIX__makeInput(
+                "textarea",
+                "Query",
+                "__PARAM_6__",
+                "(&(objectClass=user)(sAMAccountName=*))",
+                "The LDAP query to run against the domain controller.",
+                true
+            )]
+        )]
     );
 }
 
@@ -180,14 +174,9 @@ function __PREFIX__runLDAPQuery($server, $port, $username, $password, $domain, $
 function __PREFIX__queryLdapHooksFeatures(&$features) {
     global $QUERY_LDAP;
 
-    $features[] = [
-        "title"       => "Query LDAP",
-        "description" => "Query LDAP using the provided credentials.",
-        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    $features[] = ["title"       => "Query LDAP", "description" => "Query LDAP using the provided credentials.", "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-</svg>',
-        "op"          => $QUERY_LDAP,
-    ];
+</svg>', "op"          => $QUERY_LDAP];
 }
 
 // section.functions.end

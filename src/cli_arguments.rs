@@ -126,7 +126,10 @@ WordPress plugin options:
 - __PLUGIN_AUTHOR__: Author of the plugin
 
 Joomla plugin options:
-Currently no options are available
+- __PLUGIN_NAME__: Identifies the plugin in the CMS
+- __PLUGIN_DESCRIPTION__: Description of the plugin
+- __CREATION_DATE__: Creation date of the plugin
+- __PLUGIN_VERSION__: Version of the plugin
 
 Drupal plugin options:
 Currently no options are available
@@ -243,6 +246,9 @@ pub struct CliGenerateObfuscation {
     ///
     /// This will make the code harder to read and understand also reducing the file size, it will
     /// also reduce the possibility of detection by antivirus software.
+    ///
+    /// ALERT: Due to the large amount of regexes and randomness used in the obfuscation process, the obfuscation
+    /// process may be unstable resulting in a broken code. If this happens, try again or disable the obfuscation.
     #[arg(long, global = true, default_value = "false", display_order = 0)]
     pub obfuscate: bool,
 
@@ -250,6 +256,9 @@ pub struct CliGenerateObfuscation {
     ///
     /// This will remove all comments and unnecessary whitespace from the code, drastically reducing
     /// the overall file size and making the code harder to read and understand.
+    ///
+    /// ALERT: Due to the large amount of regexes used in the minification process, the minification process may be
+    /// unstable resulting in a broken code. If this happens, disable the minification.
     #[arg(long, global = true, default_value = "false", display_order = 0)]
     pub minify: bool,
 

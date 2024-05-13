@@ -2,8 +2,10 @@
 
 /**
  * Check if the request method is POST
+ *
+ * @return bool
  */
-function __PREFIX__isPost(): bool {
+function __PREFIX__isPost() {
     return $_SERVER['REQUEST_METHOD'] === 'POST';
 }
 
@@ -25,12 +27,14 @@ function __PREFIX__loadPageOrDefault($features) {
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
  *     container
  * @param $page string The page to render
+ *
+ * @return void
  */
-function __PREFIX__renderPage($features, $page): void {
+function __PREFIX__renderPage($features, $page) {
     global $css;
     // Load the page content by calling the named hook for the current page
     $content = "";
-    $args    = [&$content, $features, $page, $css];
+    $args = [&$content, $features, $page, $css];
     call_named_hook("GET_page", $page, $args);
 
     // Render the page content
@@ -42,8 +46,10 @@ function __PREFIX__renderPage($features, $page): void {
  *
  * @param $operation string The operation to check
  * @param $isolated_ops array The isolated operations list
+ *
+ * @return bool
  */
-function __PREFIX__isIsolatedOperation($operation, $isolated_ops): bool {
+function __PREFIX__isIsolatedOperation($operation, $isolated_ops) {
     return in_array($operation, $isolated_ops);
 }
 
@@ -64,7 +70,7 @@ function __PREFIX__openCommandOutputScreen(
     $title = "Command output",
     $no_margin = false,
     $no_padding = false
-): string | false {
+) {
     if ($capture_output) {
         ob_start();
     }
@@ -93,7 +99,7 @@ function __PREFIX__openCommandOutputScreen(
  *
  * @return void|string Returns the output if $capture_output is true
  */
-function __PREFIX__closeCommandOutputScreen($capture_output = false): string | false {
+function __PREFIX__closeCommandOutputScreen($capture_output = false) {
     if ($capture_output) {
         ob_start();
     }
@@ -120,7 +126,7 @@ function __PREFIX__closeCommandOutputScreen($capture_output = false): string | f
  *
  * @return string
  */
-function __PREFIX__makePage($enabled_features, $css, $current_page, $elements): string | false {
+function __PREFIX__makePage($enabled_features, $css, $current_page, $elements) {
     $args = [&$elements, $current_page, $css];
     call_hook("page_generation", $args);
 
@@ -178,7 +184,7 @@ function __PREFIX__makePage($enabled_features, $css, $current_page, $elements): 
  *
  * @return string
  */
-function __PREFIX__makeNavLink($page, $current_page, array $definition): string | false {
+function __PREFIX__makeNavLink($page, $current_page, $definition) {
     if ($definition["hidden"]) {
         return "";
     }
@@ -186,11 +192,11 @@ function __PREFIX__makeNavLink($page, $current_page, array $definition): string 
     ob_start();
     ?>
     <li>
-        <a href="?page=<?= urlencode($page) ?>"
+        <a href="?page=<?= urlencode($definition["op"]) ?>"
            class="flex gap-x-3 rounded p-2 text-sm font-semibold leading-6
-           <?= __PREFIX__htmlHighlightActivePage($current_page, $page) ?>
+           <?= __PREFIX__htmlHighlightActivePage($current_page, $definition["op"]) ?>
            "
-           id="nav-<?= $page ?>"
+           id="nav-<?= $definition["op"] ?>"
         >
             <div class="flex items-center justify-center">
                 <?= $definition["svg"] ?>
@@ -207,8 +213,10 @@ function __PREFIX__makeNavLink($page, $current_page, array $definition): string 
  *
  * @param $current_page string Current page
  * @param $checking_page string Page to check if it's the current page
+ *
+ * @return string
  */
-function __PREFIX__htmlHighlightActivePage($current_page, $checking_page): string {
+function __PREFIX__htmlHighlightActivePage($current_page, $checking_page) {
     if ($current_page === $checking_page) {
         return "bg-zinc-800 text-white";
     }
@@ -242,8 +250,10 @@ function __PREFIX__formatBytes($bytes) {
  * @param $filepath string Path to the file to download
  * @param $filesize int Size of the file
  * @param $filename string|null Name of the file to download or null to use the original filename
+ *
+ * @return void
  */
-function __PREFIX__chunkedDownload($filepath, string $filesize, $filename = null): void {
+function __PREFIX__chunkedDownload($filepath, $filesize, $filename = null) {
     $chunk_size = 4096; // Adjust chunk size as needed
 
     header('Content-Description: File Transfer');
@@ -274,7 +284,7 @@ function __PREFIX__chunkedDownload($filepath, string $filesize, $filename = null
  *
  * @return string
  */
-function __PREFIX__makeCodeHighlight($code): string | false {
+function __PREFIX__makeCodeHighlight($code) {
     ob_start();
     ?>
     <code class="font-mono bg-zinc-100 text-zinc-900 text-sm px-2 py-1 rounded mx-1 select-all">
@@ -306,8 +316,10 @@ function __PREFIX__pad_right($str, $pad_length = 10) {
  * Convert a Unix timestamp to a date string
  *
  * @param $timestamp int Unix timestamp
+ *
+ * @return string
  */
-function __PREFIX__convertUnixTimestampToDate($timestamp): string {
+function __PREFIX__convertUnixTimestampToDate($timestamp) {
     return date('Y-m-d H:i:s', $timestamp);
 }
 
@@ -319,7 +331,7 @@ function __PREFIX__convertUnixTimestampToDate($timestamp): string {
  *
  * @return string
  */
-function __PREFIX__makePageHeader($title, $description): string | false {
+function __PREFIX__makePageHeader($title, $description) {
     ob_start();
     ?>
     <div class="lg:flex lg:items-center lg:justify-between">
@@ -361,7 +373,7 @@ function __PREFIX__makeForm(
     $method = "post",
     $submit_label = "Run operation",
     $classes = "flex flex-col gap-y-6 max-w-xl mt-8"
-): string | false {
+) {
     ob_start();
     ?>
     <form action="<?= $action ?>" method="<?= htmlentities($method) ?>"
@@ -403,7 +415,7 @@ function __PREFIX__makeInput(
     $required = false,
     $query_param = null,
     $value = null
-): string | false {
+) {
     $name = htmlentities($name);
 
     ob_start();
@@ -487,7 +499,7 @@ function __PREFIX__makeInput(
  *
  * @return string
  */
-function __PREFIX__makeSelect($label, $name, $options, $required = false, $disable_reason = null): string | false {
+function __PREFIX__makeSelect($label, $name, $options, $required = false, $disable_reason = null) {
     $name = htmlentities($name);
 
     ob_start();
@@ -539,14 +551,7 @@ function __PREFIX__makeSelect($label, $name, $options, $required = false, $disab
  *
  * @return string
  */
-function __PREFIX__makeCheckbox(
-    $name,
-    $label,
-    $description,
-    $is_checked = false,
-    $value = "y",
-    $onclick = null
-): string | false {
+function __PREFIX__makeCheckbox($name, $label, $description, $is_checked = false, $value = "y", $onclick = null) {
     $name = htmlentities($name);
 
     ob_start();
@@ -583,8 +588,10 @@ function __PREFIX__makeCheckbox(
  * Check if the checkbox is active
  *
  * @param $name string Name of the checkbox
+ *
+ * @return bool
  */
-function __PREFIX__isCheckboxActive($name): bool {
+function __PREFIX__isCheckboxActive($name) {
     return isset($_POST[$name]) && $_POST[$name] === "y";
 }
 
@@ -596,7 +603,7 @@ function __PREFIX__isCheckboxActive($name): bool {
  *
  * @return array Extracted column
  */
-function __PREFIX__array_column($array, $column_name): array {
+function __PREFIX__array_column($array, $column_name) {
     return array_map(fn($element) => $element[$column_name], $array);
 }
 
@@ -604,8 +611,10 @@ function __PREFIX__array_column($array, $column_name): array {
  * Print an ASCII table from the given data
  *
  * @param $data array[] Data to print
+ *
+ * @return void
  */
-function __PREFIX__printAsciiTable($data): void {
+function __PREFIX__printAsciiTable($data) {
     // Get column headers
     $headers = array_keys($data[0]);
 
@@ -664,7 +673,7 @@ function __PREFIX__printAsciiTable($data): void {
  *
  * @return string
  */
-function __PREFIX__makeAlert($title, $message): string | false {
+function __PREFIX__makeAlert($title, $message) {
     ob_start();
     ?>
     <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded mt-4 text-zinc-900 flex gap-x-4">
@@ -682,6 +691,76 @@ function __PREFIX__makeAlert($title, $message): string | false {
             <p class="text-sm">
                 <?= $message ?>
             </p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Create a table element on the page
+ *
+ * @param $title string Title of the table
+ * @param $description string Description of the table
+ * @param $rows array[] Rows to display in the table
+ * @param $columns string[]|null Columns to display in the table
+ *
+ * @return string
+ */
+function __PREFIX__makeTable($title, $description, $rows, $columns = null, $action_form = null) {
+    $columns = $columns ?: array_keys($rows[0]);
+    ob_start();
+    ?>
+    <div class="px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-base font-semibold leading-6 text-gray-900"><?= $title; ?></h1>
+                <p class="mt-2 text-sm text-gray-700"><?= $description; ?></p>
+            </div>
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                <?php
+                if ($action_form !== null) {
+                    echo $action_form;
+                }
+                ?>
+            </div>
+        </div>
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <?php
+                                foreach ($columns as $column) {
+                                    echo "<th scope='col' class='px-3 py-3.5 text-left text-sm font-semibold text-gray-900'>$column</th>";
+                                }
+                                ?>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                            <?php
+                            foreach ($rows as $row) {
+                                echo "<tr>";
+                                foreach ($columns as $key => $column) {
+                                    if (is_array($row[$key])) {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" .
+                                             implode(", ", $row[$key]) .
+                                             "</td>";
+                                    }
+                                    else {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
+                                    }
+                                }
+                                echo "</tr>";
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <?php

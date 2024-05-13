@@ -15,16 +15,20 @@ $IMPERSONATE_JOOMLA_USER = "__FEAT_IMPERSONATE_JOOMLA_USER__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeJoomlaImpersonatePage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $users = __PREFIX__getJoomlaUsers();
 
     $page_content = __PREFIX__makePage(
         $features,
-        $page,
         $css,
+        $page,
         array(
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             __PREFIX__makeTable(
                 "Users",
@@ -132,6 +136,10 @@ function __PREFIX__makeJoomlaUserTableRow($data) {
  * @return array{id: int, username: string, email: string, title: string}[] List of Joomla users
  */
 function __PREFIX__getJoomlaUsers() {
+    if(!class_exists("Joomla\CMS\Factory")) {
+        return array();
+    }
+
     // inject joomla dependencies
     $container = \Joomla\CMS\Factory::getContainer();
     $db        = $container->get("Joomla\Database\DatabaseInterface");
@@ -163,6 +171,8 @@ function __PREFIX__getJoomlaUsers() {
  * @return void
  */
 function __PREFIX__redirectJoomlaToAdminPanel() {
+    if(!class_exists("JUri"))
+
     // Get the base URL of the Joomla site
     $baseUrl = JUri::base();
 
@@ -182,6 +192,9 @@ function __PREFIX__redirectJoomlaToAdminPanel() {
  * @return void
  */
 function __PREFIX__impersonateJoomlaUser($username) {
+    if(!class_exists("Joomla\CMS\Factory") || !class_exists("Joomla\Registry\Registry")){
+        return;
+    }
     // inject joomla dependencies
     $container = \Joomla\CMS\Factory::getContainer();
     /**
@@ -268,6 +281,10 @@ function __PREFIX__impersonateJoomlaUser($username) {
  * @return void
  */
 function __PREFIX__addJoomlaSuperUser($username, $email, $password) {
+    if(!class_exists("Joomla\CMS\Factory") || !class_exists("JUserHelper")){
+        return;
+    }
+
     // inject joomla dependencies
     $container = \Joomla\CMS\Factory::getContainer();
     /**

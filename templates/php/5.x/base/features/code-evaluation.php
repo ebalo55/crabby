@@ -15,14 +15,18 @@ $EVAL = "__FEAT_EVAL__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeCodeEvaluationPage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $page_content = __PREFIX__makePage(
         $features,
         $css,
         $page,
         array(
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             __PREFIX__makeForm(
                 $page,

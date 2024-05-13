@@ -26,7 +26,6 @@ if (!defined('_JEXEC')) {
 // Empty system plugin definition
 class plgSystem__PLUGIN_NAME_SNAKE__
     extends JPlugin {
-    public
     function __construct(
         &$subject,
         $config = array()

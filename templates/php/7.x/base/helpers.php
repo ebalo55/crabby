@@ -34,7 +34,7 @@ function __PREFIX__renderPage($features, $page) {
     global $css;
     // Load the page content by calling the named hook for the current page
     $content = "";
-    $args    = [&$content, $features, $page, $css];
+    $args = [&$content, $features, $page, $css];
     call_named_hook("GET_page", $page, $args);
 
     // Render the page content
@@ -192,11 +192,11 @@ function __PREFIX__makeNavLink($page, $current_page, $definition) {
     ob_start();
     ?>
     <li>
-        <a href="?page=<?= urlencode($page) ?>"
+        <a href="?page=<?= urlencode($definition["op"]) ?>"
            class="flex gap-x-3 rounded p-2 text-sm font-semibold leading-6
-           <?= __PREFIX__htmlHighlightActivePage($current_page, $page) ?>
+           <?= __PREFIX__htmlHighlightActivePage($current_page, $definition["op"]) ?>
            "
-           id="nav-<?= $page ?>"
+           id="nav-<?= $definition["op"] ?>"
         >
             <div class="flex items-center justify-center">
                 <?= $definition["svg"] ?>
@@ -691,6 +691,76 @@ function __PREFIX__makeAlert($title, $message) {
             <p class="text-sm">
                 <?= $message ?>
             </p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Create a table element on the page
+ *
+ * @param $title string Title of the table
+ * @param $description string Description of the table
+ * @param $rows array[] Rows to display in the table
+ * @param $columns string[]|null Columns to display in the table
+ *
+ * @return string
+ */
+function __PREFIX__makeTable($title, $description, $rows, $columns = null, $action_form = null) {
+    $columns = $columns ?: array_keys($rows[0]);
+    ob_start();
+    ?>
+    <div class="px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+                <h1 class="text-base font-semibold leading-6 text-gray-900"><?= $title; ?></h1>
+                <p class="mt-2 text-sm text-gray-700"><?= $description; ?></p>
+            </div>
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                <?php
+                if ($action_form !== null) {
+                    echo $action_form;
+                }
+                ?>
+            </div>
+        </div>
+        <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-300">
+                            <thead class="bg-gray-50">
+                            <tr>
+                                <?php
+                                foreach ($columns as $column) {
+                                    echo "<th scope='col' class='px-3 py-3.5 text-left text-sm font-semibold text-gray-900'>$column</th>";
+                                }
+                                ?>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                            <?php
+                            foreach ($rows as $row) {
+                                echo "<tr>";
+                                foreach ($columns as $key => $column) {
+                                    if (is_array($row[$key])) {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>" .
+                                             implode(", ", $row[$key]) .
+                                             "</td>";
+                                    }
+                                    else {
+                                        echo "<td class='whitespace-nowrap px-3 py-4 text-sm text-gray-500'>$row[$key]</td>";
+                                    }
+                                }
+                                echo "</tr>";
+                            }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <?php

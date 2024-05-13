@@ -15,6 +15,10 @@ $PHP_INFO = "__FEAT_PHP_INFO__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makePhpInfoPage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     ob_start();
     phpinfo();
     $php_info     = ob_get_clean();
@@ -24,8 +28,8 @@ function __PREFIX__makePhpInfoPage(&$page_content, $features, $page, $css) {
         $page,
         array(
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             "<div class='grid grid-cols-2 gap-8 mt-8'>
                         <div>

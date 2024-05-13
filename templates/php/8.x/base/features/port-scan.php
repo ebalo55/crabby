@@ -14,47 +14,42 @@ $PORT_SCAN = "__FEAT_PORT_SCAN__";
  * @param $page string The current page
  * @param $css string The CSS of the page
  */
-function __PREFIX__makePortScanPage(&$page_content, array $features, $page, $css): void {
+function __PREFIX__makePortScanPage(&$page_content, $features, $page, $css) {
+    $feature = array_values(array_filter($features, fn($feature) => $feature["op"] === $page));
+
     $page_content = __PREFIX__makePage(
         $features,
         $css,
         $page,
-        [
-            __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
-            ),
-            __PREFIX__makeForm(
-                $page,
-                $_SERVER["REQUEST_URI"],
-                [
-                    __PREFIX__makeInput(
-                        "text",
-                        "Host",
-                        "__PARAM_1__",
-                        "localhost",
-                        "The host to connect to",
-                        true
-                    ),
-                    __PREFIX__makeInput(
-                        "number",
-                        "Starting port",
-                        "__PARAM_2__",
-                        "1",
-                        "Starting port of the scan (included)",
-                        true
-                    ),
-                    __PREFIX__makeInput(
-                        "number",
-                        "Ending port",
-                        "__PARAM_3__",
-                        "65535",
-                        "Ending port of the scan (included)",
-                        true
-                    ),
-                ]
-            ),
-        ]
+        [__PREFIX__makePageHeader(
+            $feature[0]["title"],
+            $feature[0]["description"]
+        ), __PREFIX__makeForm(
+            $page,
+            $_SERVER["REQUEST_URI"],
+            [__PREFIX__makeInput(
+                "text",
+                "Host",
+                "__PARAM_1__",
+                "localhost",
+                "The host to connect to",
+                true
+            ), __PREFIX__makeInput(
+                "number",
+                "Starting port",
+                "__PARAM_2__",
+                "1",
+                "Starting port of the scan (included)",
+                true
+            ), __PREFIX__makeInput(
+                "number",
+                "Ending port",
+                "__PARAM_3__",
+                "65535",
+                "Ending port of the scan (included)",
+                true
+            )]
+        )]
     );
 }
 
@@ -63,8 +58,10 @@ function __PREFIX__makePortScanPage(&$page_content, array $features, $page, $css
  *
  * @param $operation string The operation to handle
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
+ *
+ * @return void
  */
-function __PREFIX__handlePortScan($operation, $features): void {
+function __PREFIX__handlePortScan($operation, $features) {
     $host      = $_POST['__PARAM_1__'];
     $startPort = intval($_POST['__PARAM_2__']);
     $endPort   = intval($_POST['__PARAM_3__']);
@@ -95,18 +92,15 @@ function __PREFIX__handlePortScan($operation, $features): void {
  *
  * @param $features array{title: string, description: string, svg: string, hidden?: bool, op: string}[] The features
  *     container
+ *
+ * @return void
  */
-function __PREFIX__portScanHooksFeatures(&$features): void {
+function __PREFIX__portScanHooksFeatures(&$features) {
     global $PORT_SCAN;
 
-    $features[] = [
-        "title"       => "Port scan",
-        "description" => "Scan a given range of TCP ports using connect method.",
-        "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    $features[] = ["title"       => "Port scan", "description" => "Scan a given range of TCP ports using connect method.", "svg"         => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z" />
-</svg>',
-        "op"          => $PORT_SCAN,
-    ];
+</svg>', "op"          => $PORT_SCAN];
 }
 
 // section.functions.end

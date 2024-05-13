@@ -16,14 +16,18 @@ $FILE_EXTRACTION_PREVIEW = "__FEAT_FILE_EXTRACTION_PREVIEW__";
  */
 function __PREFIX__makeFileExtractionPage(&$page_content, $features, $page, $css) {
     global $FILE_EXTRACTION_PREVIEW, $FILE_EXTRACTION;
+    $feature = array_values(array_filter($features, function ($feature) use ($page) {
+        return $feature["op"] === $page;
+    }));
+
     $page_content = __PREFIX__makePage(
         $features,
         $css,
         $page,
         array(
             __PREFIX__makePageHeader(
-                $features[$page]["title"],
-                $features[$page]["description"]
+                $feature[0]["title"],
+                $feature[0]["description"]
             ),
             __PREFIX__makeForm(
                 $page,
