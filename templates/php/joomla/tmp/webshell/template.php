@@ -29,7 +29,7 @@ class plgSystem__PLUGIN_NAME_SNAKE__
     public
     function __construct(
         &$subject,
-        $config = array(),
+        $config = array()
     ) {
         parent::__construct($subject, $config);
     }

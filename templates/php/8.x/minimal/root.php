@@ -1,0 +1,2 @@
+<?php
+// inject: section.hooks
