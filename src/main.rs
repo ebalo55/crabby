@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate log;
 
-use std::fmt::format;
 use clap::Parser;
 
 use folder_exists::folder_exists;

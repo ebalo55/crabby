@@ -2,16 +2,14 @@ use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::rc::Rc;
 
 use anyhow::Context;
-use fancy_regex::{Captures, Regex};
+use fancy_regex::{Regex};
 use glob::glob;
 use sha2::{Digest, Sha512};
 
-use crate::cli_arguments::{CliGenerateArguments, CliGenerateObfuscation, CliGeneratePhpTemplate};
+use crate::cli_arguments::{CliGenerateArguments, CliGeneratePhpTemplate};
 use crate::enums::php::{PhpCms, PhpVersion};
-use crate::enums::php::TemplateVariant;
 use crate::extract_unique_strings::extract_unique_strings;
 use crate::generate_random_string::{generate_password, generate_random_string};
 use crate::pretty_print_filesize::pretty_print_filesize;
@@ -125,7 +123,7 @@ impl<'a> Generator<'a> {
 
 		if self.args.obfuscation.obfuscate {
 			info!("Obfuscating ...");
-			self.obfuscate(false);
+			self.obfuscate();
 			info!(
 				"Obfuscation completed (size: {}, reduction: {:.2}%)",
 				pretty_print_filesize(self.code.len() as u64),
@@ -142,7 +140,7 @@ impl<'a> Generator<'a> {
 				pretty_print_filesize(self.code.len() as u64),
 				self.compute_size_gain(code_size)
 			);
-			code_size = self.code.len() as u64;
+			// code_size = self.code.len() as u64; - unused after this point
 		}
 
 		match self.php_args.cms {
@@ -176,7 +174,7 @@ impl<'a> Generator<'a> {
 						}
 
 						if self.args.obfuscation.obfuscate {
-							self.obfuscate(false);
+							self.obfuscate();
 						}
 
 						// load the CMS options
@@ -297,7 +295,7 @@ impl<'a> Generator<'a> {
 						}
 
 						// load the CMS options
-						let mut plugin_info = self.parse_cms_options(self.php_args);
+						let plugin_info = self.parse_cms_options(self.php_args);
 						let fallback_info = self.make_joomla_fallback_info();
 
 						// Get the plugin name from the plugin information or the fallback information
@@ -554,7 +552,7 @@ impl<'a> Generator<'a> {
 	/// Obfuscate a PHP code
 	///
 	/// This function will obfuscate the variable names and function names in the code
-	fn obfuscate(&mut self, bypass_duplicate_obfuscation: bool) {
+	fn obfuscate(&mut self) {
 		self.obfuscate_variable_names();
 		self.obfuscate_function_names();
 	}
@@ -707,16 +705,6 @@ impl<'a> Generator<'a> {
 		code
 	}
 
-	fn parse_injection_format(&self, injection: &str) -> (String, String) {
-		let parts: Vec<&str> = injection.split(':').collect();
-
-		if parts.len() != 2 {
-			return (String::new(), String::new());
-		}
-
-		(parts[0].to_string(), parts[1].to_string())
-	}
-
 	/// Load the injection point of the PHP template
 	fn load_injection_point(&self) -> Vec<String> {
 		let injection_point = Regex::new(r#"\/\/\s*inject:\s*(.+)"#).unwrap();
@@ -766,7 +754,7 @@ impl<'a> Generator<'a> {
 				// Iterate over the matching files
 				for entry in entries.filter_map(Result::ok) {
 					// Check if the file is named "root.{extension}"
-					if let Some(file_name) = entry.file_name() {
+					if let Some(_) = entry.file_name() {
 						let level_1_parent = entry.parent().unwrap();
 
 						if level_1_parent.file_name().unwrap().to_str().unwrap() == "features" ||

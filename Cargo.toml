@@ -15,7 +15,6 @@ categories = ["web-programming", "development-tools"]
 strip = true
 opt-level = "z"
 incremental = true
-codegen-units = 1
 debug-assertions = false
 lto = true
 

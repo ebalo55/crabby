@@ -41,7 +41,7 @@ pub(crate) fn list_features(path: &str, extension: &str) {
 								// List all files in the feature folder
 								let feature_files = fs::read_dir(folder.path()).unwrap();
 								for feature_file in feature_files.filter_map(Result::ok) {
-									if (Path::is_file(&feature_file.path())) {
+									if Path::is_file(&feature_file.path()) {
 										println!(
 											"      - {}/{}",
 											folder.file_name().to_str().unwrap(),
