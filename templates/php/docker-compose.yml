@@ -1,4 +1,5 @@
 services:
+  # php 5.x with apache
   template-5.x:
     build:
       context: 5.x
@@ -8,6 +9,76 @@ services:
     volumes:
       - ./5.x:/var/www/html
 
+  # php 7.x with apache
+  template-7.x:
+    build:
+      context: 7.x
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./7.x:/var/www/html
+
+  # php 8.x with apache
+  template-8.x:
+    build:
+      context: 8.x
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./8.x:/var/www/html
+
+  # WordPress with webshell plugin (php 8.x) (default user: admin, password: admin)
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8081:80"
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: root
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: 1
+    # Comment the volumes section to test the webshell functionalities
+    volumes:
+      - ./wordpress:/var/www/html/
+
+  # Admin with webshell plugin (php 8.x) (default user: admin, password: 123456789012)
+  joomla:
+    image: joomla:latest
+    ports:
+      - "8082:80"
+    environment:
+      JOOMLA_DB_HOST: mariadb
+      JOOMLA_DB_USER: root
+      JOOMLA_DB_PASSWORD: root
+      JOOMLA_DB_NAME: joomla
+      JOOMLA_DEBUG: 1
+    volumes:
+      - ./joomla:/var/www/html/
+
+  # Admin with webshell plugin (php 8.x) (default user: admin, password: 123456789012)
+  drupal:
+    image: drupal:latest
+    ports:
+      - "8083:80"
+    environment:
+      MYSQL_HOST: mariadb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: drupal
+    volumes:
+      # Workaround for drupal files local mapping
+      - drupal:/var/www/html/
+
+  #########################################
+  # Sample webshell functionalities       #
+  # This sections is for testing purposes #
+  #########################################
+
+  # mysql
   mariadb:
     image: mariadb:latest
     environment:
@@ -15,3 +86,28 @@ services:
       MARIADB_DATABASE: example
       MARIADB_USER: example_user
       MARIADB_PASSWORD: example_user
+    ports:
+        - "3306:3306"
+    volumes:
+      - ./mariadb-docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+
+  # openldap (default user: admin, password: admin)
+  openldap:
+    image: osixia/openldap:1.5.0
+    ports:
+      - '389:389'
+      - '636:636'
+    environment:
+      LDAP_ORGANISATION: "Example Inc."
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_TLS: false
+
+volumes:
+  # Workaround for drupal files local mapping
+  drupal:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./drupal/
+      o: bind

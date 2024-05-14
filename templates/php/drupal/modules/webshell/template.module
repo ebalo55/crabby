@@ -1,0 +1,24 @@
+<?php
+
+//require_once __DIR__ . '/src/Controller/TemplateController.php';
+
+/**
+ * Implements hook_views_data().
+ *
+ * @param \Drupal\Core\Database\Query\AlterableInterface $query : A Query object describing the composite parts of a
+ *     SQL query.
+ */
+function template_query_alter($query) {
+    // \Drupal\mysql\Driver\Database\mysql\Select
+    //file_put_contents(__DIR__ . "/data.log", var_export($query, true) . "\n", FILE_APPEND);
+
+    // Exclude the Template Module from being displayed in the extensions list.
+    //unset($items['admin/modules/list/extend']['page arguments'][0]['template_module']);
+}
+
+/**
+ * Implements hook_install().
+ */
+function template_install() {
+    drupal_flush_all_caches();
+}

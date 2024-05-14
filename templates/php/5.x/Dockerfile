@@ -7,6 +7,6 @@ ADD --chmod=0755 https://github.com/mlocati/docker-php-extension-installer/relea
 #RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 # Install PHP extensions (only 5.5+)
-RUN install-php-extensions zip mysqli
+RUN install-php-extensions zip mysqli ldap
 
 RUN service apache2 start
