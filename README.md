@@ -8,6 +8,8 @@
     WebShells for Red Teams, just easily
 </h3>
 
+<!-- GitAds-Verify: Y3RJVDD1L8C7X5LGC8RAZ5A9ERRWCPH7 -->
+
 ## What is Crabby?
 
 Crabby is a tool developed to generate webshells written in - insert your desired webshell language -.
