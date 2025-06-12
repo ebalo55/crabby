@@ -8,12 +8,13 @@
     WebShells for Red Teams, just easily
 </h3>
 
-<!-- GitAds-Verify: Y3RJVDD1L8C7X5LGC8RAZ5A9ERRWCPH7 -->
-
 ## What is Crabby?
 
 Crabby is a tool developed to generate webshells written in - insert your desired webshell language -.
 It is designed to be used by red teams to aid in lateral movement, privilege escalation, and data exfiltration.
+
+## GitAds Sponsored
+[![Sponsored by GitAds](https://gitads.dev/v1/ad-serve?source=ebalo55/crabby@github)](https://gitads.dev/v1/ad-track?source=ebalo55/crabby@github)
 
 ## Features
 
